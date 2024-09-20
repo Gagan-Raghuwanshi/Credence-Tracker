@@ -3,7 +3,7 @@ import express from "express";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import DBconnection from "./config/db.js";
+import DBconnection from "./database/db.js"; // Database connection
 
 // Load environment variables
 dotenv.config();
