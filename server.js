@@ -7,6 +7,7 @@ import DBconnection from "./database/db.js"; // Database connection
 import superadminRoutes from './routes/superadminRoute.js';
 import userRoutes from './routes/userRoute.js';
 import authRoutes from './routes/authRoute.js'; 
+import GroupRoute from './routes/group.route.js'
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +37,10 @@ app.use('/user', userRoutes);
 
 
 
+    app.use("/api",GroupRoute);
+
+
+// Start server and connect to database
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
     try {
