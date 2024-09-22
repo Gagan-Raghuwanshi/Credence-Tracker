@@ -4,6 +4,9 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import DBconnection from "./database/db.js"; // Database connection
+import superadminRoutes from './routes/superadminRoute.js';
+import userRoutes from './routes/userRoute.js';
+import authRoutes from './routes/authRoute.js'; 
 
 // Load environment variables
 dotenv.config();
@@ -25,7 +28,14 @@ app.get("/", (req, res) => {
     });
 });
 
-// Start server and connect to database
+
+// Use routes
+app.use('/superadmin', superadminRoutes);
+app.use('/auth', authRoutes); 
+app.use('/user', userRoutes);  
+
+
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, async () => {
     try {
