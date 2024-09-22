@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import DBconnection from "./database/db.js"; // Database connection
+import GroupRoute from './routes/group.route.js'
 
 // Load environment variables
 dotenv.config();
@@ -24,6 +25,10 @@ app.get("/", (req, res) => {
         success: true
     });
 });
+
+
+    app.use("/api",GroupRoute);
+
 
 // Start server and connect to database
 const PORT = process.env.PORT || 3000;
