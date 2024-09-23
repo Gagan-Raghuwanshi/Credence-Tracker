@@ -1,4 +1,5 @@
 import Group from "../models/group.model.js"
+import cache from "../utils/cache.js";
 
 
                 // post group
@@ -40,6 +41,18 @@ export const createGroup = async (req, res) => {
                     // Get all groups
  
 export const getAllGroups = async (req, res) => {
+
+
+  const cacheKey = 'allGroups';
+
+  const cachedGroups = cache.get(cacheKey);
+  if (cachedGroups) {
+    console.log('Cache hit');
+    return res.status(200).json(cachedGroups);
+  }
+
+
+
   try {
     const { search, page = 1, limit = 10 } = req.query;
 
