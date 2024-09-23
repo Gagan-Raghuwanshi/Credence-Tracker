@@ -22,17 +22,17 @@ export const setupSocket = (server) => {
     dataForSocket = allData;
   };
 
-  setInterval(() => {
+  // setInterval(() => {
       dataCommingFromDB();
-  }, 10000);
+  // }, 10000);
 
   io.on("connection", (socket) => {
     console.log("A new user connected", socket.id);
     socket.emit("user", `welcome back ${socket.id}`);
 
-    setInterval(() => {
+    // setInterval(() => {
       socket.emit("all data", dataForSocket);
-    }, 10000);
+    // }, 10000);
   });
 
   return io;

@@ -39,9 +39,9 @@ app.use('/user', userRoutes);
 app.use("/api", GroupRoute);
 
 
-setInterval(() => {
+// setInterval(() => {
     fetchGPSdata();
-}, 10000);
+// }, 10000);
 
 const io = setupSocket(server); // Initialize Socket.IO
 
