@@ -1,8 +1,6 @@
 import bcrypt from 'bcrypt';
 import { User } from '../models/usermodel.js';
-//import { Group } from "../models/group.js";
-//import { Geofence } from "../models/geofence.js";
-import { Device } from '../models/device.js';
+
 
 
 export const createUser = async (req, res) => {
@@ -109,65 +107,5 @@ export const deleteUser = async (req, res) => {
     return res.status(500).json({ message: 'Error deleting user', error });
   }
 };
-//  add a device
-export const addDevice = async (req, res) => {
-  const {
-    devicename,
-    imei,
-    sim,
-    groups, // Array of groups
-    users,
-    geofences, // Now an array of geofences
-    speed,
-    average,
-    model,
-    category,
-    installationdate,
-    expirationdate,
-    extenddate,
-  } = req.body;
 
-  try {
-    // Check if users exist
-    const userDocuments = await User.find({ _id: { $in: users } });
-    if (userDocuments.length === 0) {
-      return res.status(400).json({ message: 'Invalid users provided' });
-    }
-
-    // Check if all groups exist
-    const groupDocuments = await Group.find({ _id: { $in: groups } });
-    if (groupDocuments.length !== groups.length) {
-      return res.status(400).json({ message: 'One or more invalid groups provided' });
-    }
-
-    // Check if all geofences exist
-    const geofenceDocuments = await Geofence.find({ _id: { $in: geofences } });
-    if (geofenceDocuments.length !== geofences.length) {
-      return res.status(400).json({ message: 'One or more invalid geofences provided' });
-    }
-
-    // Create new device
-    const device = new Device({
-      devicename,
-      imei,
-      sim,
-      groups, // Array of group IDs
-      users,
-      geofences, // Array of geofence IDs
-      speed,
-      average,
-      model,
-      category,
-      installationdate,
-      expirationdate,
-      extenddate,
-    });
-
-    await device.save();
-
-    return res.status(201).json({ message: 'Device added successfully', device });
-  } catch (error) {
-    return res.status(500).json({ message: 'Error adding device', error });
-  }
-};
 
