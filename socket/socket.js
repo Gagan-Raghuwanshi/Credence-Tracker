@@ -18,7 +18,7 @@ export const setupSocket = (server) => {
     const now = new Date(); // Current time
     const tenSecondsAgo = new Date(now.getTime() - 10 * 1000); // Time 10 seconds ago
     const allData = await History.find({ createdAt: { $gte: tenSecondsAgo, $lte: now } });
-    console.log("data comming from DB", allData);
+    // console.log("data comming from DB", allData);
     dataForSocket = allData;
   };
 
