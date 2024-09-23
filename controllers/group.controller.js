@@ -1,32 +1,24 @@
-import Group from "../models/group.model.js"
+import { Group } from "../models/group.model.js";
+import cache from "../utils/cache.js";
 
 
-                // post group
-                
+// post group
 export const createGroup = async (req, res) => {
   const { attributes, createdBy, name } = req.body;
-
   try {
-
-        const findGroup = await Group.findOne({name})
-        console.log("here is coming");
-        
-
-        if(findGroup) return res.status(409).json({message:"Group Already Exist"});
-      
+    const findGroup = await Group.findOne({ name })
+    console.log("here is coming");
+    if (findGroup) return res.status(409).json({ message: "Group Already Exist" });
     const newGroup = new Group({
-      attributes,  
-      createdBy,  
+      attributes,
+      createdBy,
       name
     });
-
     await newGroup.save();
-
     res.status(201).json({
       message: 'Group created successfully',
       group: newGroup
     });
-
   } catch (error) {
     res.status(500).json({
       message: 'Error creating group',
@@ -34,37 +26,40 @@ export const createGroup = async (req, res) => {
     });
   }
 };
-
-
-
-                    // Get all groups
- 
+// Get all groups
 export const getAllGroups = async (req, res) => {
+
+
+  const cacheKey = 'allGroups';
+
+  const cachedGroups = cache.get(cacheKey);
+  if (cachedGroups) {
+    console.log('Cache hit');
+    return res.status(200).json(cachedGroups);
+  }
+
+
+
   try {
     const { search, page = 1, limit = 10 } = req.query;
-
     const pageNumber = parseInt(page);
     const limitNumber = parseInt(limit);
-
     const startIndex = (pageNumber - 1) * limitNumber;
-
     let filter = {};
-
     if (search) {
-      filter = { name: { $regex: search, $options: 'i' } }; 
+      filter = { name: { $regex: search, $options: 'i' } };
     }
-
     const totalGroups = await Group.countDocuments(filter);
 
     const groups = await Group.find(filter)
-      .skip(startIndex)  
-      .limit(limitNumber); 
+      .skip(startIndex)
+      .limit(limitNumber);
 
     res.status(200).json({
       totalGroups,
       currentPage: pageNumber,
       totalPages: Math.ceil(totalGroups / limitNumber),
-      groups,  
+      groups,
     });
   } catch (error) {
     res.status(500).json({
@@ -73,31 +68,21 @@ export const getAllGroups = async (req, res) => {
     });
   }
 };
-
-
-
-                // Get groups created by 
-
+// Get groups created by 
 export const getGroupById = async (req, res) => {
   const { id } = req.params;
-  const { page = 1, limit = 10 } = req.query;  
-
+  const { page = 1, limit = 10 } = req.query;
   const pageNumber = parseInt(page);
   const limitNumber = parseInt(limit);
   const startIndex = (pageNumber - 1) * limitNumber;
-
   try {
-  
     const groups = await Group.find({ createdBy: id })
       .skip(startIndex)
       .limit(limitNumber);
-
     const totalGroups = await Group.countDocuments({ createdBy: id });
-
-    if (groups.length === 0) {  
+    if (groups.length === 0) {
       return res.status(404).json({ message: 'Group not found' });
     }
-
     res.status(200).json({
       totalGroups,
       currentPage: pageNumber,
@@ -111,26 +96,19 @@ export const getGroupById = async (req, res) => {
     });
   }
 };
-
-
-              // Update group feild 
-
+// Update group feild 
 export const updateGroup = async (req, res) => {
-  const { id } = req.params;  
-  const updates = req.body;  
-
+  const { id } = req.params;
+  const updates = req.body;
   try {
-
     const updatedGroup = await Group.findOneAndUpdate(
-      { id },  
-      updates, 
-      { new: true, runValidators: true }  
+      { id },
+      updates,
+      { new: true, runValidators: true }
     );
-
     if (!updatedGroup) {
       return res.status(404).json({ message: 'Group not found' });
     }
-
     res.status(200).json(updatedGroup);
   } catch (error) {
     res.status(500).json({
@@ -139,21 +117,14 @@ export const updateGroup = async (req, res) => {
     });
   }
 };
-
-
-    // Delete group by ID
-
+// Delete group by ID
 export const deleteGroup = async (req, res) => {
   const { id } = req.params;
-
   try {
-    
     const deletedGroup = await Group.findOneAndDelete({ id });
-
     if (!deletedGroup) {
       return res.status(404).json({ message: 'Group not found' });
     }
-
     res.status(200).json({
       message: 'Group deleted successfully',
       group: deletedGroup,

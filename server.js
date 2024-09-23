@@ -9,6 +9,8 @@ import superadminRoutes from './routes/superadminRoute.js';
 import userRoutes from './routes/userRoute.js';
 import authRoutes from './routes/authRoute.js';
 import GroupRoute from './routes/group.route.js'
+import deviceRoute from "./routes/deviceRoute.js"
+import driverRoute from './routes/driver.route.js';
 import { setupSocket } from "./socket/socket.js";
 import { fetchGPSdata } from "./utils/fetchGPSdata.js";
 dotenv.config();
@@ -36,7 +38,7 @@ app.get("/", (req, res) => {
 app.use('/superadmin', superadminRoutes);
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
-app.use("/api", GroupRoute);
+app.use("/group", GroupRoute);
 
 
 // setInterval(() => {
@@ -45,6 +47,10 @@ app.use("/api", GroupRoute);
 
 const io = setupSocket(server); // Initialize Socket.IO
 
+app.use("/driver", driverRoute);
+app.use("/device", deviceRoute)
+
+// import './utils/notification.utils.js';
 
 
 // Start server and connect to database
@@ -58,3 +64,5 @@ server.listen(PORT, async () => {
         process.exit(1);
     }
 });
+
+
