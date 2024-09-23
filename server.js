@@ -6,7 +6,7 @@ import cors from "cors";
 import DBconnection from "./database/db.js"; // Database connection
 import superadminRoutes from './routes/superadminRoute.js';
 import userRoutes from './routes/userRoute.js';
-import authRoutes from './routes/authRoute.js'; 
+import authRoutes from './routes/authRoute.js';
 import GroupRoute from './routes/group.route.js'
 
 // Load environment variables
@@ -32,12 +32,9 @@ app.get("/", (req, res) => {
 
 // Use routes
 app.use('/superadmin', superadminRoutes);
-app.use('/auth', authRoutes); 
-app.use('/user', userRoutes);  
-
-
-
-    app.use("/api",GroupRoute);
+app.use('/auth', authRoutes);
+app.use('/user', userRoutes);
+app.use("/api", GroupRoute);
 
 
 // Start server and connect to database

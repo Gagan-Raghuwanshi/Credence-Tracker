@@ -6,6 +6,7 @@ const deviceSchema = new mongoose.Schema({
   sim: { type: String, required: true },
   groups: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Group' }], // Array of group references
   users: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }], // Array of user references
+  driver: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Driver' }], // Array of driver references
   geofences: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Geofence' }], // Array of geofence references
   speed: { type: Number },
   average: { type: Number },

@@ -1,7 +1,7 @@
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 import { User } from '../models/usermodel.js';
-import { SuperAdmin } from '../models/superadminmodel.js';
+import { SuperAdmin } from '../models/superadminModel.js';
 
 
 export const loginUser = async (req, res) => {
