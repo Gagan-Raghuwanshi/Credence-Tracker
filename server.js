@@ -5,6 +5,10 @@ import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 import DBconnection from "./database/db.js"; // Database connection
+import superadminRoutes from './routes/superadminRoute.js';
+import userRoutes from './routes/userRoute.js';
+import authRoutes from './routes/authRoute.js';
+import GroupRoute from './routes/group.route.js'
 import { setupSocket } from "./socket/socket.js";
 import { fetchGPSdata } from "./utils/fetchGPSdata.js";
 dotenv.config();
@@ -26,6 +30,14 @@ app.get("/", (req, res) => {
         message: "hello"
     });
 });
+
+
+// Use routes
+app.use('/superadmin', superadminRoutes);
+app.use('/auth', authRoutes);
+app.use('/user', userRoutes);
+app.use("/api", GroupRoute);
+
 
 setInterval(() => {
     fetchGPSdata();
