@@ -51,8 +51,8 @@ export const loginUser = async (req, res) => {
         ...(!isSuperadmin ? userPermissions : {}) // Include permissions for regular users
       },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' } // Optional: Add token expiration time
-    );
+      
+      );
 
     return res.status(200).json({
       message: 'Login successful',
