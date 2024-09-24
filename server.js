@@ -13,6 +13,7 @@ import deviceRoute from "./routes/deviceRoute.js"
 import driverRoute from './routes/driver.route.js';
 import { setupSocket } from "./socket/socket.js";
 import { fetchGPSdata } from "./utils/fetchGPSdata.js";
+import geofenceRoute from "./routes/geofence.route.js";
 dotenv.config();
 
 const app = express();
@@ -49,6 +50,7 @@ const io = setupSocket(server); // Initialize Socket.IO
 
 app.use("/driver", driverRoute);
 app.use("/device", deviceRoute)
+app.use("/geofence", geofenceRoute)
 
 // import './utils/notification.utils.js';
 

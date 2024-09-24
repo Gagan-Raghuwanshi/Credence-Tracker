@@ -1,10 +1,13 @@
 import express from 'express';
-import { getDrivers, registerDriver, updateDriver, deleteDriver } from '../controllers/driver.controller.js';
+import { getAllDrivers, getDriversById, registerDriver, updateDriver, deleteDriver } from '../controllers/driver.controller.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 // GET Drivers
-router.get('/get-drivers', authenticateToken, getDrivers);
+router.get('/get-drivers', authenticateToken, getAllDrivers);
+
+// GET Drivers by id
+router.get('/get-drivers', authenticateToken, getDriversById);
 
 // Register Driver
 router.post('/register-driver', authenticateToken, registerDriver);
