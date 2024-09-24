@@ -4,7 +4,8 @@ import cache from "../utils/cache.js";
 
 // post group
 export const createGroup = async (req, res) => {
-  const { attributes, createdBy, name } = req.body;
+  const { attributes, name } = req.body;
+  const createdBy = req.user.id;
   try {
     const findGroup = await Group.findOne({ name })
     console.log("here is coming");
@@ -70,7 +71,7 @@ export const getAllGroups = async (req, res) => {
 };
 // Get groups created by 
 export const getGroupById = async (req, res) => {
-  const { id } = req.params;
+  const  id  = req.user.id;
   const { page = 1, limit = 10 } = req.query;
   const pageNumber = parseInt(page);
   const limitNumber = parseInt(limit);
