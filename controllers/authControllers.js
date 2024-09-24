@@ -25,7 +25,8 @@ export const loginUser = async (req, res) => {
       {
         id: user._id,
         users: isSuperadmin ? true : user.users,
-        superadmin: isSuperadmin
+        superadmin: isSuperadmin,
+        user: isSuperadmin? null : user
       },
       process.env.JWT_SECRET,
       
