@@ -20,6 +20,10 @@ const driverSchema = new mongoose.Schema({
             enum: ['String', 'Number', 'Boolean'],
         },
     }],
+    createdBy: {
+        type: String,
+        required: true,
+    },
 });
 
 const Driver = mongoose.model('Driver', driverSchema);

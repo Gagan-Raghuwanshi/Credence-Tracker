@@ -19,5 +19,4 @@ createdBy: {
 createdAt: { type: Date, default: Date.now },
 });
 groupSchema.plugin(AutoIncrement(mongoose), { inc_field: 'id' });
-const Group =  mongoose.model('Group', groupSchema);
-export { Group}
+export const Group =  mongoose.model('Group', groupSchema);

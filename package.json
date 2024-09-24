@@ -23,8 +23,7 @@
     "moment": "^2.30.1",
     "mongoose": "^8.6.3",
     "mongoose-sequence": "^6.0.1",
-    "jsonwebtoken": "^9.0.2"
-    ,
+    "node-cache": "^5.1.2",
     "node-fetch": "^3.3.2",
     "socket.io": "^4.7.5"
   },
@@ -32,5 +31,3 @@
     "nodemon": "^3.1.6"
   }
 }
-
-
