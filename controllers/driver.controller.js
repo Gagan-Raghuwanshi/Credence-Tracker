@@ -50,7 +50,7 @@ export const getDriversById = async (req, res) => {
         // const decoded = jwt.verify(token, process.env.JWT_SECRET);
         // const { id, username } = decoded;
 
-        const { id } = req.body;
+        const { id } = req.params;
 
         // Calculate the starting index for the documents
         const skip = (page - 1) * limit;
