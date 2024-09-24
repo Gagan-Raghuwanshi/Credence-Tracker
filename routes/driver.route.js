@@ -4,19 +4,19 @@ import { authenticateToken } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 // GET Drivers
-router.get('/get-all-drivers', authenticateToken, getAllDrivers);
+router.get('/', authenticateToken, getAllDrivers);
 
 // GET Drivers by id
-router.get('/get-drivers-by-id', authenticateToken, getDriversById);
+router.get('/:id', authenticateToken, getDriversById);
 
 // Register Driver
-router.post('/register-driver', authenticateToken, registerDriver);
+router.post('/', authenticateToken, registerDriver);
 
 // Update Driver
 
-router.put('/update-driver/:id', authenticateToken, updateDriver);
+router.put('/:id', authenticateToken, updateDriver);
 
 // Delete Driver
-router.delete('/delete-driver/:id', authenticateToken, deleteDriver);
+router.delete('/:id', authenticateToken, deleteDriver);
 
 export default router;
