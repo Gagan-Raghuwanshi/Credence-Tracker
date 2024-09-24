@@ -13,6 +13,11 @@ import deviceRoute from "./routes/deviceRoute.js"
 import driverRoute from './routes/driver.route.js';
 import { setupSocket } from "./socket/socket.js";
 import { fetchGPSdata } from "./utils/fetchGPSdata.js";
+import geofenceRoute from "./routes/geofence.route.js";
+import modelRoute from "./routes/modelRoute.js"
+// import './utils/notification.utils.js';
+
+
 import categoryRoute from "./routes/category.route.js"
 dotenv.config();
 
@@ -40,6 +45,9 @@ app.use('/superadmin', superadminRoutes);
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use("/group", GroupRoute);
+app.use("/driver", driverRoute);
+app.use("/device", deviceRoute);
+app.use("/model",modelRoute);
 app.use("/category",categoryRoute)
 
 
@@ -51,6 +59,7 @@ const io = setupSocket(server); // Initialize Socket.IO
 
 app.use("/driver", driverRoute);
 app.use("/device", deviceRoute)
+app.use("/geofence", geofenceRoute)
 
 // import './utils/notification.utils.js';
 

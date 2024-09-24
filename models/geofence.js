@@ -6,9 +6,7 @@ area:{
 },
 name:{
     type:String
-},
-de
-
+}
 });
 
 const Geofence = mongoose.model('Geofence', GeofenceSchema);
