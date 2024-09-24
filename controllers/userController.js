@@ -5,7 +5,14 @@ import { User } from '../models/usermodel.js';
 
 export const createUser = async (req, res) => {
   console.log("User attempting to create a new user:", req.user);
-  const { email, password, username, mobile, users, notification, devices, driver, groups, category, model, report, stop, trips } = req.body;
+  const { email, password, username,
+          mobile, users, notification,
+          devices, driver,groups,
+          category, model, report,
+          stop, trips, geofence,
+          maintenance,preferences,combinedReports,
+          customReports,history,schedulereports,
+          statistics,alerts ,summary,customCharts } = req.body;
 
   // Check if the user has permission to create users
   const isAuthorized = req.user.superadmin || req.user.users;
@@ -20,14 +27,10 @@ export const createUser = async (req, res) => {
     if (existingUser) {
       return res.status(400).json({ message: 'User already exists' });
     }
-
-    // Hash the password
-    const hashedPassword = await bcrypt.hash(password, 10);
-
     // Create new user with additional fields
     const user = new User({
       email,
-      password: hashedPassword,
+      password,
       username,
       mobile,
       createdBy: req.user.id, // Track who created the user
@@ -41,15 +44,29 @@ export const createUser = async (req, res) => {
       report: report || false,
       stop: stop || false,
       trips: trips || false,
+      geofence: geofence || false,
+      maintenance:maintenance || false,
+      preferences:preferences||false,
+      combinedReports:combinedReports||false,
+      customReports:customReports||false,
+      history:history||false,
+      schedulereports:schedulereports||false,
+      statistics:statistics||false,
+      alerts:alerts||false ,
+      summary:summary||false,
+      customCharts : customCharts || false
     });
 
     await user.save();
 
     return res.status(201).json({ message: 'User created successfully', user });
   } catch (error) {
+    console.log('error',error)
     return res.status(500).json({ message: 'Error creating user', error });
   }
 };
+
+
 export const getUsers = async (req, res) => {
   try {
     const users = await User.find();

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from "bcrypt";
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
@@ -15,7 +16,25 @@ const userSchema = new mongoose.Schema({
   users: { type: Boolean,default:false},
   report: { type: Boolean,default:false},
   stop: { type: Boolean ,default:false},
-  trips: { type: Boolean,default:false}
+  trips: { type: Boolean,default:false},
+  geofence: { type: Boolean,default:false},
+  maintenance: { type: Boolean,default:false},
+  preferences: { type: Boolean,default:false},
+  combinedReports: { type: Boolean,default:false},
+  customReports: { type: Boolean,default:false},
+  history: { type: Boolean,default:false},
+  schedulereports: { type: Boolean,default:false},
+  statistics: { type: Boolean,default:false},
+  alerts : { type: Boolean,default:false},
+  summary: { type: Boolean,default:false},
+  customCharts: { type: Boolean,default:false},
+});
+
+userSchema.pre('save', async function(next) {
+  if (this.isModified('password')) {
+    this.password = await bcrypt.hash(this.password, 10);  // Await the hash
+  }
+  next();
 });
 
 const User = mongoose.models.User || mongoose.model('User', userSchema);
