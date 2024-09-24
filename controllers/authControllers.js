@@ -28,8 +28,9 @@ export const loginUser = async (req, res) => {
         superadmin: isSuperadmin
       },
       process.env.JWT_SECRET,
-      { expiresIn: '1h' } 
-    );
+      
+      );
+
     return res.status(200).json({
       message: 'Login successful',
       token,
@@ -39,6 +40,7 @@ export const loginUser = async (req, res) => {
     });
   } catch (error) {
     return res.status(500).json({ message: error.message });
+    
   }
 };
 

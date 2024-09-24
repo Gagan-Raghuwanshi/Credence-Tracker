@@ -18,6 +18,7 @@ import modelRoute from "./routes/modelRoute.js"
 // import './utils/notification.utils.js';
 
 
+import categoryRoute from "./routes/category.route.js"
 dotenv.config();
 
 const app = express();
@@ -46,7 +47,9 @@ app.use('/user', userRoutes);
 app.use("/group", GroupRoute);
 app.use("/driver", driverRoute);
 app.use("/device", deviceRoute);
-app.use("/model",modelRoute)
+app.use("/model",modelRoute);
+app.use("/category",categoryRoute)
+
 
 setInterval(() => {
     fetchGPSdata();

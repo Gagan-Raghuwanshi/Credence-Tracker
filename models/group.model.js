@@ -11,10 +11,10 @@ attributes: {
      type: Map,
      of: Schema.Types.Mixed,
      default: {}
-},
+}, 
 createdBy: {
-     type: String,
-     required: true
+     type: mongoose.Schema.Types.ObjectId, ref: 'User',
+     default: null
 },
 createdAt: { type: Date, default: Date.now },
 });
