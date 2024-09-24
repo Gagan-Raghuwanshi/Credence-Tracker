@@ -83,6 +83,16 @@ export const getGroupById = async (req, res) => {
     if (groups.length === 0) {
       return res.status(404).json({ message: 'Group not found' });
     }
+
+    
+    const cacheKey = 'getGroupById';
+    const cachedGroups = cache.get(cacheKey);
+    if (cachedGroups) {
+      console.log('Cache hit');
+      return res.status(200).json(cachedGroups);
+    }
+   
+
     res.status(200).json({
       totalGroups,
       currentPage: pageNumber,

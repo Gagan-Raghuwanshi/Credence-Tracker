@@ -13,6 +13,7 @@ import deviceRoute from "./routes/deviceRoute.js"
 import driverRoute from './routes/driver.route.js';
 import { setupSocket } from "./socket/socket.js";
 import { fetchGPSdata } from "./utils/fetchGPSdata.js";
+import categoryRoute from "./routes/category.route.js"
 dotenv.config();
 
 const app = express();
@@ -39,6 +40,7 @@ app.use('/superadmin', superadminRoutes);
 app.use('/auth', authRoutes);
 app.use('/user', userRoutes);
 app.use("/group", GroupRoute);
+app.use("/category",categoryRoute)
 
 
 setInterval(() => {
