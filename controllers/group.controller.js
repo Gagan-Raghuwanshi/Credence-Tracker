@@ -71,7 +71,7 @@ export const getAllGroups = async (req, res) => {
 };
 // Get groups created by 
 export const getGroupById = async (req, res) => {
-  const  id  = req.user.id;
+  const  {id}  = req.user;
   const { page = 1, limit = 10 } = req.query;
   const pageNumber = parseInt(page);
   const limitNumber = parseInt(limit);
