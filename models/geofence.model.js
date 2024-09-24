@@ -16,6 +16,10 @@ const geofenceSchema = new mongoose.Schema({
   deviceId: {
     type: String,
     required: true
+  }, 
+  createdBy: {
+    type: String,
+    required: true
   }
 });
 

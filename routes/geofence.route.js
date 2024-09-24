@@ -1,16 +1,22 @@
 import express from "express";
-import Geofencing from "../models/geofence.model.js";
 import dotenv from "dotenv";
 dotenv.config();
 import { authenticateToken } from "../middleware/authMiddleware.js";
-import { getGeofence, isCrossed } from "../controllers/geofence.controller.js";
+import { getAllGeofences, getGeofenceById, isCrossed, addGeofence, deleteGeofence, updateGeofence } from "../controllers/geofence.controller.js";
 
 const router = express.Router();
 
-// GET route to retrieve geofencing data by deviceId
-router.get("/get-geofence", authenticateToken, getGeofence);
+
+router.post("/add-geofence", authenticateToken, addGeofence);
+
+router.get("/get-all-geofences", authenticateToken, getAllGeofences);
+
+router.get("/get-geofence-by-id", authenticateToken, getGeofenceById);
 
 router.put("/isCrossed", authenticateToken, isCrossed);
 
+router.put("/update-geofence/:id", authenticateToken, updateGeofence);
+
+router.delete("/delete-geofence/:id", authenticateToken, deleteGeofence);
 
 export default router;

@@ -4,10 +4,10 @@ import { authenticateToken } from '../middleware/authMiddleware.js';
 const router = express.Router();
 
 // GET Drivers
-router.get('/get-drivers', authenticateToken, getAllDrivers);
+router.get('/get-all-drivers', authenticateToken, getAllDrivers);
 
 // GET Drivers by id
-router.get('/get-drivers', authenticateToken, getDriversById);
+router.get('/get-drivers-by-id', authenticateToken, getDriversById);
 
 // Register Driver
 router.post('/register-driver', authenticateToken, registerDriver);
