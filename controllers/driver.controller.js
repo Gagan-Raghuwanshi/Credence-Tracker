@@ -80,8 +80,8 @@ export const getDriversById = async (req, res) => {
 
 export const registerDriver = async (req, res) => {
     try {
-        const { name, identifier, createdBy, attributes } = req.body;
-
+        const { name, identifier, attributes } = req.body;
+        const createdBy = req.user.id;
         const existingDriver = await Driver.findOne({ identifier });
         if (existingDriver) {
             return res.status(400).json({ error: 'Driver with this identifier already exists' });
