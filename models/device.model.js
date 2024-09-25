@@ -11,40 +11,53 @@ const deviceSchema = new mongoose.Schema({
                 unique: true 
               },
   sim:  { 
-              type: String 
+              type: String,
+              default:""
   },
   speed: {
-              type: String 
+              type: String,
+              default:"" 
    },
    average:{
-              type:String
+              type:String,
+              default:""
    },
    Driver:{
           type: mongoose.Schema.Types.ObjectId, 
-          ref: 'Driver'   
+          ref: 'Driver',
+          default:""
+  
          },
   groups: [{ 
             type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Group' 
+            ref: 'Group',
+            default:""
           }], 
   users: [{ 
             type: mongoose.Schema.Types.ObjectId, 
-            ref: 'User' 
+            ref: 'User',
+            default:""
+ 
   }], 
   geofences: [{ 
-            type:String, 
+            type:String,
+            default:"" 
   }],
   model: {
-            type:String, 
+            type:String,
+            default:"" 
     },
   category: { 
             type: String, 
+            default:""
   },
   installationdate: { 
-            type: String
+            type: String,
+            default:""
           },
   expirationdate: { 
-            type: String 
+            type: String,
+            default:""
   },
   extenddate: { 
             type: String,
