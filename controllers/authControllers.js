@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/usermodel.js';
 import { SuperAdmin } from '../models/superadminModel.js';
 
-export const loginUser = async (req, res) => {
+export const  loginUser = async (req, res) => {
   const { username, password } = req.body;
   let user = null;
   let isSuperadmin = false;

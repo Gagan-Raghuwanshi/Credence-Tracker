@@ -1,4 +1,4 @@
-import { Group } from "../models/group.model.js";
+// import { Group } from "../models/group.model.js";
 //import { Geofence } from "../models/geofence.js";
 import { Device } from '../models/device.model.js';
 import cache from "../utils/cache.js";
@@ -6,17 +6,17 @@ import cache from "../utils/cache.js";
 //  add a device
 export const addDevice = async (req, res) => {
   const {
-    devicename,
+    name,
     uniqueId,
     sim,
     groupId,   
     userId,
     DriverId,  
-    geofencesId,
+    geofences,
     speed,
     average,
-    modelId,
-    categoryId,
+    model,
+    category,
     installationdate,
     expirationdate,
     extenddate,
@@ -30,17 +30,17 @@ export const addDevice = async (req, res) => {
         if(!findUniqueId) {
 
     const device = new Device({
-      devicename,
+      name,
     uniqueId,
     sim,
     groups:groupId,   
     users:userId,
     Driver:DriverId,  
-    geofences:geofencesId,
+    geofences,
     speed,
     average,
-    models:modelId,
-    categories:categoryId,
+    model,
+    category,
     installationdate,
     expirationdate,
     extenddate,
@@ -70,7 +70,10 @@ export const getDeviceById = async (req, res) => {
   try {
     const devices = await Device.find({ createdBy: id }).sort({ createdAt: -1 })
       .skip(startIndex)
-      .limit(limitNumber);
+      .limit(limitNumber)
+      .populate('Driver','name')
+      .populate('groups','name')
+      .populate('users','username');
     const totalDevices = await Device.countDocuments({ createdBy: id }).sort({ createdAt: -1 });
     if (devices.length === 0) {
       return res.status(404).json({ message: 'Device not found' });
@@ -123,7 +126,10 @@ export const getAllDevice = async (req, res) => {
 
     const device = await Device.find(filter)
       .skip(startIndex)
-      .limit(limitNumber);
+      .limit(limitNumber)
+      .populate('Driver','name')
+      .populate('groups','name')
+      .populate('users','username')
 
     res.status(200).json({
       totalDevices,

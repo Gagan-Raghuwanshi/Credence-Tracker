@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const deviceSchema = new mongoose.Schema({
-  devicename: { 
+  name: { 
               type: String, 
               required: true 
             },
@@ -11,46 +11,57 @@ const deviceSchema = new mongoose.Schema({
                 unique: true 
               },
   sim:  { 
-              type: String 
+              type: String,
+              default:""
   },
   speed: {
-              type: Number 
+              type: String,
+              default:"" 
    },
    average:{
-              type:Number
+              type:String,
+              default:""
    },
    Driver:{
           type: mongoose.Schema.Types.ObjectId, 
-          ref: 'Driver'   
+          ref: 'Driver',
+          default:""
+  
          },
   groups: [{ 
             type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Group' 
+            ref: 'Group',
+            default:""
           }], 
   users: [{ 
             type: mongoose.Schema.Types.ObjectId, 
-            ref: 'User' 
+            ref: 'User',
+            default:""
+ 
   }], 
   geofences: [{ 
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Geofence' 
+            type:String,
+            default:"" 
   }],
-  models: {
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Model' 
+  model: {
+            type:String,
+            default:"" 
     },
-  categories: { 
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Category' 
+  category: { 
+            type: String, 
+            default:""
   },
   installationdate: { 
-            type: String
+            type: String,
+            default:""
           },
   expirationdate: { 
-            type: String 
+            type: String,
+            default:""
   },
   extenddate: { 
-            type: String 
+            type: String,
+            default:null
   },
   createdBy: {
           type: mongoose.Schema.Types.ObjectId, 
