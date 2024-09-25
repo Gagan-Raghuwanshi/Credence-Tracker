@@ -7,16 +7,16 @@ import { getAllGeofences, getGeofenceById, isCrossed, addGeofence, deleteGeofenc
 const router = express.Router();
 
 
-router.post("/add-geofence", authenticateToken, addGeofence);
+router.post("/", authenticateToken, addGeofence);
 
-router.get("/get-all-geofences", authenticateToken, getAllGeofences);
+router.get("/", authenticateToken, getAllGeofences);
 
-router.get("/get-geofence-by-id", authenticateToken, getGeofenceById);
+router.get("/:id", authenticateToken, getGeofenceById);
 
 router.put("/isCrossed", authenticateToken, isCrossed);
 
-router.put("/update-geofence/:id", authenticateToken, updateGeofence);
+router.put("/:id", authenticateToken, updateGeofence);
 
-router.delete("/delete-geofence/:id", authenticateToken, deleteGeofence);
+router.delete("/:id", authenticateToken, deleteGeofence);
 
 export default router;

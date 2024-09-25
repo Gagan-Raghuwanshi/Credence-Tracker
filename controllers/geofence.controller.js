@@ -29,6 +29,12 @@ export const getAllGeofences = async (req, res) => {
                 name: data.name,
                 area: data.area,
                 isCrossed: data.isCrossed,
+                createdBy: data.createdBy,
+                type: data.type,
+                geofenceCode: data.geofenceCode,
+                transitTime: data.transitTime,
+                assignType: data.assignType,
+                vehicleIds: data.vehicleIds,
             })),
             pagination: {
                 currentPage: page,
@@ -46,8 +52,8 @@ export const getAllGeofences = async (req, res) => {
 
 export const getGeofenceById = async (req, res) => {
     try {
-        const deviceId = req.body;
-        const geofenceData = await Geofence.find({ deviceId });
+        const userId = req.user.id;
+        const geofenceData = await Geofence.find({ createdBy: userId });
 
         if (!geofenceData || geofenceData.length === 0) {
             return res
@@ -57,10 +63,15 @@ export const getGeofenceById = async (req, res) => {
 
         // Restructure the response to have deviceId on top with nested geofencing data
         const response = {
-            deviceId: deviceId,
+            userId,
             geofences: geofenceData.map((data) => ({
                 _id: data._id,
                 name: data.name,
+                type: data.type,
+                geofenceCode: data.geofenceCode,
+                transitTime: data.transitTime,
+                assignType: data.assignType,
+                vehicleIds: data.vehicleIds,
                 area: data.area,
                 isCrossed: data.isCrossed,
             })),
@@ -112,21 +123,49 @@ export const isCrossed = async (req, res) => {
 
 export const addGeofence = async (req, res) => {
     try {
-        const { name, area, deviceId, createdBy } = req.body;
-        if (!name || !area || !deviceId) {
-            return res.status(400).json({ error: "Name, area, and device ID are required" });
-        }
-        const newGeofence = new Geofence({
+        const {
             name,
+            type,
+            geofenceCode,
+            transitTime,
+            assignType,
+            vehicleIds,
+            area
+        } = req.body;
+
+        const createdBy = req.user.id;
+
+        // Validation
+        if (!name || !type || !assignType) {
+            return res.status(400).json({ message: 'Name, Type, and Assign Type are required.' });
+        }
+
+        if (assignType === 'vehicle' && (!vehicleIds || vehicleIds.length === 0)) {
+            return res.status(400).json({ message: 'Please select at least one vehicle.' });
+        }
+
+        // Create the geofence object
+        const geofence = new Geofence({
+            name,
+            type,
+            geofenceCode,
+            transitTime,
             area,
-            deviceId,
-            createdBy
+            assignType,
+            vehicleIds,
+            createdBy,
         });
-        const savedGeofence = await newGeofence.save();
-        res.status(201).json({ message: "Geofence created successfully", geofence: savedGeofence });
+
+        // Save the geofence to the database
+        await geofence.save();
+
+        return res.status(201).json({
+            message: 'Geofence created successfully',
+            geofence
+        });
     } catch (error) {
-        console.error("Error creating geofencing area:", error);
-        res.status(500).json({ error: "Internal server error" });
+        console.error(error);
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
 };
 
@@ -151,17 +190,45 @@ export const deleteGeofence = async (req, res) => {
 export const updateGeofence = async (req, res) => {
     try {
         const { id } = req.params;
-        const { name, area, deviceId, createdBy } = req.body;
+        const {
+            name,
+            type,
+            geofenceCode,
+            transitTime,
+            assignType,
+            vehicleIds,
+            area
+        } = req.body;
 
-        const updatedGeofence = await Geofence.findByIdAndUpdate(id, { name, area, deviceId, createdBy }, { new: true });
+        // Find the geofence by ID
+        const geofence = await Geofence.findById(id);
 
-        if (!updatedGeofence) {
-            return res.status(404).json({ error: "Geofence not found" });
+        if (!geofence) {
+            return res.status(404).json({ message: 'Geofence not found' });
         }
 
-        res.status(200).json({ message: "Geofence updated successfully", geofence: updatedGeofence });
+        if (assignType === 'vehicle' && (!vehicleIds || vehicleIds.length === 0)) {
+            return res.status(400).json({ message: 'Please select at least one vehicle.' });
+        }
+
+        // Update the geofence fields
+        geofence.name = name || geofence.name;
+        geofence.type = type || geofence.type;
+        geofence.geofenceCode = geofenceCode || geofence.geofenceCode;
+        geofence.transitTime = transitTime || geofence.transitTime;
+        geofence.assignType = assignType || geofence.assignType;
+        geofence.vehicleIds = vehicleIds || geofence.vehicleIds;
+        geofence.area = area || geofence.area;
+
+        // Save the updated geofence
+        await geofence.save();
+
+        return res.status(200).json({
+            message: 'Geofence updated successfully',
+            geofence
+        });
     } catch (error) {
-        console.error("Error updating geofence:", error);
-        res.status(500).json({ error: "Internal server error" });
+        console.error(error);
+        return res.status(500).json({ message: 'Server error', error: error.message });
     }
-}
+};
