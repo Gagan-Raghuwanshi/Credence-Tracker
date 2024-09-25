@@ -7,57 +7,52 @@ import { User } from "../models/usermodel.js"
 export const addDevice = async (req, res) => {
   const {
     devicename,
-    imei,
+    uniqueId,
     sim,
-    groups,   
-    users,  
-    geofences,
+    groupId,   
+    userId,
+    DriverId,  
+    geofencesId,
     speed,
     average,
-    model,
-    category,
+    modelId,
+    categoryId,
     installationdate,
     expirationdate,
     extenddate,
   } = req.body;
 
   try {
-    // Normalize users and groups to arrays if they are not already
-    const userIds = Array.isArray(users) ? users : [users];
-    const groupIds = Array.isArray(groups) ? groups : [groups];
 
-    // Check if users exist
-    const userDocuments = await User.find({ _id: { $in: userIds } });
-    if (userDocuments.length !== userIds.length) {
-      return res.status(400).json({ message: 'One or more invalid users provided' });
-    }
+        const findUniqueId = await Device.findOne({uniqueId})
 
-    // Check if groups exist
-    const groupDocuments = await Group.find({ _id: { $in: groupIds } });
-    if (groupDocuments.length !== groupIds.length) {
-      return res.status(400).json({ message: 'One or more invalid groups provided' });
-    }
+        if(!findUniqueId) {
 
-    // Create new device
     const device = new Device({
       devicename,
-      imei,
-      sim,
-      groups: groupIds, 
-      users: userIds,   
-      geofences,
-      speed,
-      average,
-      model,
-      category,
-      installationdate,
-      expirationdate,
-      extenddate,
+    uniqueId,
+    sim,
+    groups:groupId,   
+    users:userId,
+    Driver:DriverId,  
+    geofences:geofencesId,
+    speed,
+    average,
+    models:modelId,
+    categories:categoryId,
+    installationdate,
+    expirationdate,
+    extenddate,
     });
 
     await device.save();
 
     return res.status(201).json({ message: 'Device added successfully', device });
+
+}
+else{
+  res.status(409).json({ message: "IMEI Number Is Already Exist" });
+}
   } catch (error) {
     return res.status(500).json({ message: 'Error adding device', error });
   }
