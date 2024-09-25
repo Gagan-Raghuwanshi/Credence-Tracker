@@ -1,4 +1,4 @@
-import { Group } from "../models/group.model.js";
+// import { Group } from "../models/group.model.js";
 //import { Geofence } from "../models/geofence.js";
 import { Device } from '../models/device.model.js';
 import { User } from "../models/usermodel.js"
@@ -125,7 +125,10 @@ export const getAllDevice = async (req, res) => {
 
     const device = await Device.find(filter)
       .skip(startIndex)
-      .limit(limitNumber);
+      .limit(limitNumber)
+      .populate('Driver','name')
+      .populate('groups','name')
+      .populate('users','username')
 
     res.status(200).json({
       totalDevices,
