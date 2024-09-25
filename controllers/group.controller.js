@@ -77,10 +77,10 @@ export const getGroupById = async (req, res) => {
   const limitNumber = parseInt(limit);
   const startIndex = (pageNumber - 1) * limitNumber;
   try {
-    const groups = await Group.find({ createdBy: id })
+    const groups = await Group.find({ createdBy: id }).sort({ createdAt: -1 })
       .skip(startIndex)
       .limit(limitNumber);
-    const totalGroups = await Group.countDocuments({ createdBy: id });
+    const totalGroups = await Group.countDocuments({ createdBy: id }).sort({ createdAt: -1 });
     if (groups.length === 0) {
       return res.status(404).json({ message: 'Group not found' });
     }

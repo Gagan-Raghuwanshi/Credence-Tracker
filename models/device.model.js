@@ -52,6 +52,12 @@ const deviceSchema = new mongoose.Schema({
   extenddate: { 
             type: String 
   },
+  createdBy: {
+          type: mongoose.Schema.Types.ObjectId, 
+          ref: 'User',
+          require:true
+},
+
 });
 
 const Device = mongoose.model('Device', deviceSchema);
