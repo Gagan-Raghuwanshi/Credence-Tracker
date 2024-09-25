@@ -113,7 +113,7 @@ export const updateGroup = async (req, res) => {
   const updates = req.body;
   try {
     const updatedGroup = await Group.findOneAndUpdate(
-      { id },
+      { _id:id },
       updates,
       { new: true, runValidators: true }
     );
@@ -132,7 +132,7 @@ export const updateGroup = async (req, res) => {
 export const deleteGroup = async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedGroup = await Group.findOneAndDelete({ id });
+    const deletedGroup = await Group.findOneAndDelete({ _id:id });
     if (!deletedGroup) {
       return res.status(404).json({ message: 'Group not found' });
     }
