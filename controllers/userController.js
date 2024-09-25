@@ -16,14 +16,16 @@ export const createUser = async (req, res) => {
   const isAuthorized = req.user.superadmin || req.user.users;
 
   if (!isAuthorized) {
-    return res.status(403).json({ message: 'You do not have permission to create users' });
+    return res
+      .status(403)
+      .json({ message: "You do not have permission to create users" });
   }
 
   try {
     // Check if a user with this email already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: "User already exists" });
     }
     // Create new user with additional fields
     const user = new User({
@@ -57,7 +59,7 @@ export const createUser = async (req, res) => {
 
     await user.save();
 
-    return res.status(201).json({ message: 'User created successfully', user });
+    return res.status(201).json({ message: "User created successfully", user });
   } catch (error) {
     console.log('error',error)
     return res.status(500).json({ message: 'Error creating user', error });
@@ -106,22 +108,22 @@ export const getUsers = async (req, res) => {
       pageSize: limit,
     });
   } catch (error) {
-    return res.status(500).json({ message: 'Error fetching users', error });
+    return res.status(500).json({ message: "Error fetching users", error });
   }
 };
 
 
 export const getUserById = async (req, res) => {
   const { id } = req.params;
-  
+
   try {
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
     return res.status(200).json(user);
   } catch (error) {
-    return res.status(500).json({ message: 'Error fetching user', error });
+    return res.status(500).json({ message: "Error fetching user", error });
   }
 };
 export const updateUser = async (req, res) => {
@@ -131,7 +133,7 @@ export const updateUser = async (req, res) => {
   try {
     const user = await User.findById(id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
 
     user.email = email || user.email;
@@ -139,9 +141,9 @@ export const updateUser = async (req, res) => {
     user.mobile = mobile || user.mobile;
 
     await user.save();
-    return res.status(200).json({ message: 'User updated successfully', user });
+    return res.status(200).json({ message: "User updated successfully", user });
   } catch (error) {
-    return res.status(500).json({ message: 'Error updating user', error });
+    return res.status(500).json({ message: "Error updating user", error });
   }
 };
 export const deleteUser = async (req, res) => {
@@ -150,12 +152,10 @@ export const deleteUser = async (req, res) => {
   try {
     const user = await User.findByIdAndDelete(id);
     if (!user) {
-      return res.status(404).json({ message: 'User not found' });
+      return res.status(404).json({ message: "User not found" });
     }
-    return res.status(200).json({ message: 'User deleted successfully' });
+    return res.status(200).json({ message: "User deleted successfully" });
   } catch (error) {
-    return res.status(500).json({ message: 'Error deleting user', error });
+    return res.status(500).json({ message: "Error deleting user", error });
   }
 };
-
-

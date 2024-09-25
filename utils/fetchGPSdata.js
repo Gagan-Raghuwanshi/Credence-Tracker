@@ -26,11 +26,11 @@ export const fetchGPSdata = async () => {
     const data = await response.json();
     // console.log("data from GPS device ",data)
     for (const gpsdata of data) {
-      const {speed,longitude,latitude,course,deviceId } = gpsdata
+      const {speed,longitude,latitude,course,deviceId,deviceTime } = gpsdata
       const { ignition,distance,totalDistance} = gpsdata.attributes
-    //   console.log("count", speed,longitude,latitude,course,deviceId,ignition,distance,totalDistance)
+      // console.log("count", speed,longitude,latitude,course,deviceId,deviceTime,ignition,distance,totalDistance)
       
-      // const newData = new History({ speed, longitude,latitude,course,deviceId,ignition,distance,totalDistance });
+      // const newData = new History({ speed, longitude,latitude,course,deviceId,deviceTime,ignition,distance,totalDistance });
       // await newData.save(); 
     }
   } catch (error) {
