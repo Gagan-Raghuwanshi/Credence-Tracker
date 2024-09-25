@@ -72,7 +72,10 @@ export const getDeviceById = async (req, res) => {
   try {
     const devices = await Device.find({ createdBy: id }).sort({ createdAt: -1 })
       .skip(startIndex)
-      .limit(limitNumber);
+      .limit(limitNumber)
+      .populate('Driver','name')
+      .populate('groups','name')
+      .populate('users','username');
     const totalDevices = await Device.countDocuments({ createdBy: id }).sort({ createdAt: -1 });
     if (devices.length === 0) {
       return res.status(404).json({ message: 'Device not found' });
