@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt';
-import { User } from '../models/usermodel.js';
 import { SuperAdmin } from '../models/superadminModel.js';
 
 

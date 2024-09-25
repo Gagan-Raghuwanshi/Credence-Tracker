@@ -4,7 +4,8 @@ import cache from "../utils/cache.js";
 
 // post group
 export const createGroup = async (req, res) => {
-  const { attributes, createdBy, name } = req.body;
+  const { attributes, name } = req.body;
+  const createdBy = req.user.id;
   try {
     const findGroup = await Group.findOne({ name })
     console.log("here is coming");
@@ -70,19 +71,29 @@ export const getAllGroups = async (req, res) => {
 };
 // Get groups created by 
 export const getGroupById = async (req, res) => {
-  const { id } = req.params;
+  const  {id}  = req.user;
   const { page = 1, limit = 10 } = req.query;
   const pageNumber = parseInt(page);
   const limitNumber = parseInt(limit);
   const startIndex = (pageNumber - 1) * limitNumber;
   try {
-    const groups = await Group.find({ createdBy: id })
+    const groups = await Group.find({ createdBy: id }).sort({ createdAt: -1 })
       .skip(startIndex)
       .limit(limitNumber);
-    const totalGroups = await Group.countDocuments({ createdBy: id });
+    const totalGroups = await Group.countDocuments({ createdBy: id }).sort({ createdAt: -1 });
     if (groups.length === 0) {
       return res.status(404).json({ message: 'Group not found' });
     }
+
+    
+    const cacheKey = 'getGroupById';
+    const cachedGroups = cache.get(cacheKey);
+    if (cachedGroups) {
+      console.log('Cache hit');
+      return res.status(200).json(cachedGroups);
+    }
+   
+
     res.status(200).json({
       totalGroups,
       currentPage: pageNumber,
@@ -102,7 +113,7 @@ export const updateGroup = async (req, res) => {
   const updates = req.body;
   try {
     const updatedGroup = await Group.findOneAndUpdate(
-      { id },
+      { _id:id },
       updates,
       { new: true, runValidators: true }
     );
@@ -121,7 +132,7 @@ export const updateGroup = async (req, res) => {
 export const deleteGroup = async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedGroup = await Group.findOneAndDelete({ id });
+    const deletedGroup = await Group.findOneAndDelete({ _id:id });
     if (!deletedGroup) {
       return res.status(404).json({ message: 'Group not found' });
     }

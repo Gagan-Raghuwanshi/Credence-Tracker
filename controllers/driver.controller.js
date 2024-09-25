@@ -1,6 +1,6 @@
 import { Driver } from '../models/driver.model.js';
 
-export const getDrivers = async (req, res) => {
+export const getAllDrivers = async (req, res) => {
     try {
         // Get page and limit from query parameters, with default values
         const page = parseInt(req.query.page) || 1;
@@ -32,16 +32,62 @@ export const getDrivers = async (req, res) => {
     }
 }
 
+export const getDriversById = async (req, res) => {
+    try {
+        // Get page and limit from query parameters, with default values
+        const page = parseInt(req.query.page) || 1;
+        const limit = parseInt(req.query.limit) || 10;
+
+        // Token Verification
+        // const authorization = req.headers.authorization;
+        // if (!authorization) {
+        //     return res.status(401).json({ error: 'Token Not Found' });
+        // }
+        // const token = authorization.split(' ')[1];
+        // if (!token) {
+        //     return res.status(401).json({ error: 'Unauthorized: Token missing' });
+        // }
+        // const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        // const { id, username } = decoded;
+
+        const { id } = req.params;
+
+        // Calculate the starting index for the documents
+        const skip = (page - 1) * limit;
+
+        // Get total number of drivers for pagination info
+        const totalDrivers = await Driver.countDocuments({ createdBy: id });
+
+        // Fetch the drivers with pagination
+        const drivers = await Driver.find({ createdBy: id })
+            .skip(skip)
+            .limit(limit);
+
+        // Send response with drivers and pagination info
+        res.status(200).json({
+            drivers,
+            pagination: {
+                currentPage: page,
+                totalPages: Math.ceil(totalDrivers / limit),
+                totalDrivers,
+            },
+        });
+    } catch (error) {
+        console.error('Error fetching drivers:', error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+}
+
 export const registerDriver = async (req, res) => {
     try {
         const { name, identifier, attributes } = req.body;
-
+        const createdBy = req.user.id;
         const existingDriver = await Driver.findOne({ identifier });
         if (existingDriver) {
             return res.status(400).json({ error: 'Driver with this identifier already exists' });
         }
 
-        const newDriver = new Driver({ name, identifier, attributes });
+        const newDriver = new Driver({ name, identifier, attributes, createdBy });
         await newDriver.save();
 
         res.status(200).json({ message: 'Driver registered successfully', driver: newDriver });
