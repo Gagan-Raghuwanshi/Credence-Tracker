@@ -21,6 +21,9 @@ const historyschema = new mongoose.Schema({
   deviceId: {
     type: Number,
   },
+  deviceTime: {
+    type: Date,
+  },
   distance: {
     type: Number,
   },

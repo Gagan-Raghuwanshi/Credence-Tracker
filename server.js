@@ -13,6 +13,7 @@ import deviceRoute from "./routes/deviceRoute.js"
 import driverRoute from './routes/driver.route.js';
 import { setupSocket } from "./socket/socket.js";
 import { fetchGPSdata } from "./utils/fetchGPSdata.js";
+import  historyRoute  from "./routes/deviceHistory.route.js";
 dotenv.config();
 
 const app = express();
@@ -43,12 +44,13 @@ app.use("/group", GroupRoute);
 
 // setInterval(() => {
     fetchGPSdata();
-// }, 10000);
+// }, 1000);
 
 const io = setupSocket(server); // Initialize Socket.IO
 
 app.use("/driver", driverRoute);
 app.use("/device", deviceRoute)
+app.use("/history", historyRoute)
 
 // import './utils/notification.utils.js';
 
