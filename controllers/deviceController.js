@@ -1,7 +1,6 @@
 import { Group } from "../models/group.model.js";
 //import { Geofence } from "../models/geofence.js";
 import { Device } from '../models/device.model.js';
-import { User } from "../models/usermodel.js"
 import cache from "../utils/cache.js";
 
 //  add a device
@@ -60,7 +59,6 @@ else{
     return res.status(500).json({ message: 'Error adding device', error });
   }
 };
-
 
 export const getDeviceById = async (req, res) => {
   const  id  = req.user.id;
