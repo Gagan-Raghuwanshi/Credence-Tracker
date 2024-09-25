@@ -7,17 +7,17 @@ import cache from "../utils/cache.js";
 //  add a device
 export const addDevice = async (req, res) => {
   const {
-    devicename,
+    name,
     uniqueId,
     sim,
     groupId,   
     userId,
     DriverId,  
-    geofencesId,
+    geofences,
     speed,
     average,
-    modelId,
-    categoryId,
+    model,
+    category,
     installationdate,
     expirationdate,
     extenddate,
@@ -31,17 +31,17 @@ export const addDevice = async (req, res) => {
         if(!findUniqueId) {
 
     const device = new Device({
-      devicename,
+      name,
     uniqueId,
     sim,
     groups:groupId,   
     users:userId,
     Driver:DriverId,  
-    geofences:geofencesId,
+    geofences,
     speed,
     average,
-    models:modelId,
-    categories:categoryId,
+    model,
+    category,
     installationdate,
     expirationdate,
     extenddate,

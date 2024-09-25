@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 
 const deviceSchema = new mongoose.Schema({
-  devicename: { 
+  name: { 
               type: String, 
               required: true 
             },
@@ -14,10 +14,10 @@ const deviceSchema = new mongoose.Schema({
               type: String 
   },
   speed: {
-              type: Number 
+              type: String 
    },
    average:{
-              type:Number
+              type:String
    },
    Driver:{
           type: mongoose.Schema.Types.ObjectId, 
@@ -32,16 +32,13 @@ const deviceSchema = new mongoose.Schema({
             ref: 'User' 
   }], 
   geofences: [{ 
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Geofence' 
+            type:String, 
   }],
-  models: {
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Model' 
+  model: {
+            type:String, 
     },
-  categories: { 
-            type: mongoose.Schema.Types.ObjectId, 
-            ref: 'Category' 
+  category: { 
+            type: String, 
   },
   installationdate: { 
             type: String
@@ -50,7 +47,8 @@ const deviceSchema = new mongoose.Schema({
             type: String 
   },
   extenddate: { 
-            type: String 
+            type: String,
+            default:null
   },
   createdBy: {
           type: mongoose.Schema.Types.ObjectId, 
