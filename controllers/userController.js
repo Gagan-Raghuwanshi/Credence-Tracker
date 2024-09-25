@@ -1,8 +1,6 @@
 import bcrypt from 'bcrypt';
 import { User } from '../models/usermodel.js';
 
-
-
 export const createUser = async (req, res) => {
   console.log("User attempting to create a new user:", req.user);
   const { email, password, username,
@@ -65,17 +63,54 @@ export const createUser = async (req, res) => {
     return res.status(500).json({ message: 'Error creating user', error });
   }
 };
-
-
 export const getUsers = async (req, res) => {
   try {
-    const users = await User.find();
-    return res.status(200).json(users);
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 10;
+    const skip = (page - 1) * limit;
+    const role = req.user.role;
+
+    console.log('role:', role);
+    let users;
+
+    if (role === 'superadmin') {
+      // If role is superadmin, fetch all users
+      users = await User.find()
+        .select('-password')
+        .populate('createdBy', 'username _id')
+        .skip(skip)
+        .limit(limit);
+    } else if (role === 'user') {
+      // If role is user, fetch only the users created by them
+      users = await User.find({ createdBy: req.user.id })
+        .select('-password')
+        .populate('createdBy', 'username _id')
+        .skip(skip)
+        .limit(limit);
+    } else {
+      return res.status(403).json({ message: 'Forbidden: Invalid role' });
+    }
+
+    // Count total users based on the role
+    const totalUsers = role === 'superadmin'
+      ? await User.countDocuments()
+      : await User.countDocuments({ createdBy: req.user.id });
+
+    const totalPages = Math.ceil(totalUsers / limit);
+
+    return res.status(200).json({
+      users,
+      totalUsers,
+      totalPages,
+      currentPage: page,
+      pageSize: limit,
+    });
   } catch (error) {
     return res.status(500).json({ message: 'Error fetching users', error });
   }
 };
-// Get User by ID
+
+
 export const getUserById = async (req, res) => {
   const { id } = req.params;
   
@@ -89,7 +124,6 @@ export const getUserById = async (req, res) => {
     return res.status(500).json({ message: 'Error fetching user', error });
   }
 };
-// Update User
 export const updateUser = async (req, res) => {
   const { id } = req.params;
   const { email, username, mobile } = req.body;
@@ -110,7 +144,6 @@ export const updateUser = async (req, res) => {
     return res.status(500).json({ message: 'Error updating user', error });
   }
 };
-// Delete User
 export const deleteUser = async (req, res) => {
   const { id } = req.params;
 
