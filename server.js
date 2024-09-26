@@ -15,11 +15,11 @@ import { setupSocket } from "./socket/socket.js";
 import { fetchGPSdata } from "./utils/fetchGPSdata.js";
 import geofenceRoute from "./routes/geofence.route.js";
 import modelRoute from "./routes/modelRoute.js"
+import reportRoute from "./routes/reportRoute.js"
 // import './utils/notification.utils.js';
-
-
 import categoryRoute from "./routes/category.route.js"
 import  historyRoute  from "./routes/deviceHistory.route.js";
+import alertRoute from "./routes/alert.route.js"
 import { fetchdevicedata } from "./utils/devicelistfunction.js";
 dotenv.config();
 
@@ -51,7 +51,10 @@ app.use("/driver", driverRoute);
 app.use("/device", deviceRoute);
 app.use("/model",modelRoute);
 app.use("/category",categoryRoute)
-
+app.use("/geofence", geofenceRoute)
+app.use("/history", historyRoute)
+app.use("/reports",reportRoute)
+app.use("/alerts",alertRoute)
 
 // setInterval(() => {
     fetchGPSdata();
@@ -62,14 +65,8 @@ app.use("/category",categoryRoute)
 
 const io = setupSocket(server); // Initialize Socket.IO
 
-app.use("/driver", driverRoute);
-app.use("/device", deviceRoute)
-app.use("/geofence", geofenceRoute)
-app.use("/history", historyRoute)
 
 // import './utils/notification.utils.js';
-
-
 // Start server and connect to database
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, async () => {
