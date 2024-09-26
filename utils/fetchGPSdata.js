@@ -1,5 +1,6 @@
 import fetch from "node-fetch";
 import { History } from "../models/history.model.js";
+import { Device } from "../models/device.model.js";
 
 export const fetchGPSdata = async () => {
   const url = "http://104.251.212.84/api/positions";
@@ -26,10 +27,13 @@ export const fetchGPSdata = async () => {
     const data = await response.json();
     // console.log("data from GPS device ",data)
     for (const gpsdata of data) {
+      
       const {speed,longitude,latitude,course,deviceId,deviceTime } = gpsdata
       const { ignition,distance,totalDistance} = gpsdata.attributes
+
+      const device = await Device.findOne({deviceId:deviceId})
       // console.log("count", speed,longitude,latitude,course,deviceId,deviceTime,ignition,distance,totalDistance)
-      
+      // console.log("device",device)
       // const newData = new History({ speed, longitude,latitude,course,deviceId,deviceTime,ignition,distance,totalDistance });
       // await newData.save(); 
     }
