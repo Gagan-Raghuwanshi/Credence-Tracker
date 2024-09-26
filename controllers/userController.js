@@ -11,7 +11,7 @@ export const createUser = async (req, res) => {
           stop, trips, geofence,
           maintenance,preferences,combinedReports,
           customReports,history,schedulereports,
-          statistics,alerts ,summary,customCharts } = req.body;
+          statistics,alerts ,summary,customCharts,devicelimit } = req.body;
 
   // Check if the user has permission to create users
   const isAuthorized = req.user.superadmin || req.user.users;
@@ -55,7 +55,8 @@ export const createUser = async (req, res) => {
       statistics:statistics||false,
       alerts:alerts||false ,
       summary:summary||false,
-      customCharts : customCharts || false
+      customCharts : customCharts || false,
+      devicelimit:devicelimit || false
     });
 
     await user.save();
@@ -189,7 +190,7 @@ export const updateUser = async (req, res) => {
     trips, geofence, maintenance, preferences,
     combinedReports, customReports, history,
     schedulereports, statistics, alerts,
-    summary, customCharts
+    summary, customCharts,devicelimit
   } = req.body;
 
   try {
@@ -224,7 +225,7 @@ export const updateUser = async (req, res) => {
     user.alerts = alerts !== undefined ? alerts : user.alerts;
     user.summary = summary !== undefined ? summary : user.summary;
     user.customCharts = customCharts !== undefined ? customCharts : user.customCharts;
-
+    user.devicelimit = devicelimit !== undefined ? devicelimit : user.devicelimit;
     await user.save();
 
     return res.status(200).json({ message: 'User updated successfully', user });
