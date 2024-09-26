@@ -5,11 +5,11 @@ const deviceSchema = new mongoose.Schema({
               type: String, 
               required: true 
             },
-  uniqueId: { 
+  uniqueId: [{ 
                 type: String, 
                 required: true, 
                 unique: true 
-              },
+              }],
   sim:  { 
               type: String,
               default:""
@@ -40,7 +40,8 @@ const deviceSchema = new mongoose.Schema({
  
   }], 
   geofences: [{ 
-            type:String,
+            type:mongoose.Schema.Types.ObjectId,
+            ref: 'Geofence',
             default:"" 
   }],
   model: {

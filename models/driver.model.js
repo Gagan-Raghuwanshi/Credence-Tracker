@@ -21,7 +21,8 @@ const driverSchema = new mongoose.Schema({
         },
     }],
     createdBy: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
         required: true,
     },
 });
