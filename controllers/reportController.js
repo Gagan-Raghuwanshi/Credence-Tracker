@@ -1,30 +1,50 @@
-import { Report } from '../models/report.model.js';
 
+import {History} from "../models/history.model.js"
 
-
-
-exports.getReports = async (req, res) => {
-  const { devices, groups, startDate, endDate } = req.body;
-  const deviceArray = devices ? devices : [];
-  const groupArray = groups ? groups : [];
-
+export const getDeviceReport = async (req, res) => {
   try {
-    let filter = {};
+      const { deviceId, from, to } = req.body;
+      const formattedFromDateStr = from.replace(" ", "+");
+      const formattedToDateStr = to.replace(" ", "+"); 
+      const historyData = await History.find({ 
+          deviceId, 
+          deviceTime: {
+            $gte: formattedFromDateStr, 
+            $lte: formattedToDateStr, 
+          },
+      });
 
-    if (deviceArray.length) {
-      filter.Devices = { $in: deviceArray };
-    }
 
-    if (groupArray.length) {
-      filter.Groups = { $in: groupArray };
-    }
-
-    const reports = await Report.find(filter);
-    res.json(reports);
+      const typesOnly = historyData.map(item => {
+          let type = "";
+          if (item.ignition && item.speed > 0) {
+              type = "Ignition On";
+          } else if (!item.ignition) {
+              type = "Ignition Off";
+          } else if (item.ignition && item.speed === 0) {
+              type = "Device Stopped";
+          }
+          return { 
+              type,
+              fixTime: item.deviceTime
+          };
+      });
+      res.status(200).json({
+          message: "Device history report fetched successfully",
+          success: true,
+          deviceId,
+          data: typesOnly
+      });
   } catch (error) {
-    res.status(500).json({ message: 'Error fetching reports', error });
+      res.status(500).json({
+          message: "Error fetching device history report",
+          success: false,
+          error: error.message
+      });
   }
 };
+
+
 
 
 
