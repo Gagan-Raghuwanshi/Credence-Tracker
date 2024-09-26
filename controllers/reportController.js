@@ -1,5 +1,7 @@
 
 import {History} from "../models/history.model.js"
+import moment from 'moment';
+
 
 export const getDeviceReport = async (req, res) => {
   try {
@@ -13,20 +15,20 @@ export const getDeviceReport = async (req, res) => {
             $lte: formattedToDateStr, 
           },
       });
-
-
       const typesOnly = historyData.map(item => {
           let type = "";
           if (item.ignition && item.speed > 0) {
               type = "Ignition On";
+              
           } else if (!item.ignition) {
               type = "Ignition Off";
           } else if (item.ignition && item.speed === 0) {
               type = "Device Stopped";
           }
+          const formattedDeviceTime = moment(item.deviceTime).format('DD-MM-YYYY HH:mm:ss');
           return { 
               type,
-              fixTime: item.deviceTime
+              fixTime: formattedDeviceTime
           };
       });
       res.status(200).json({
@@ -43,8 +45,6 @@ export const getDeviceReport = async (req, res) => {
       });
   }
 };
-
-
 
 
 
