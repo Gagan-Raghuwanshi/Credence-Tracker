@@ -10,9 +10,9 @@ export const addDevice = async (req, res) => {
     name,
     uniqueId,
     sim,
-    groupId,   
-    userId,
-    DriverId,  
+    groups,   
+    users,
+    Driver,  
     geofences,
     speed,
     average,
@@ -34,9 +34,9 @@ export const addDevice = async (req, res) => {
       name,
     uniqueId,
     sim,
-    groups:groupId,   
-    users:userId,
-    Driver:DriverId,  
+    groups,   
+    users,
+    Driver,  
     geofences,
     speed,
     average,
@@ -151,6 +151,7 @@ export const getAllDevice = async (req, res) => {
 export const updateDeviceById = async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
+  
   try {
     const updatedDevice = await Device.findOneAndUpdate(
       { _id:id },
