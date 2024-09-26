@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
-import bcrypt from "bcrypt";
+// import { encrypt, decrypt } from  './cryptoUtils.js';
+import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
@@ -28,6 +29,7 @@ const userSchema = new mongoose.Schema({
   alerts : { type: Boolean,default:false},
   summary: { type: Boolean,default:false},
   customCharts: { type: Boolean,default:false},
+  devicelimit:{ type: Boolean,default:false}
 });
 
 userSchema.pre('save', async function(next) {
@@ -37,6 +39,18 @@ userSchema.pre('save', async function(next) {
   next();
 });
 
+
+// userSchema.pre('save', async function(next) {
+//   if (this.isModified('password')) {
+//     this.password = encrypt(this.password);
+//   }
+//   next();
+// });
+
+// userSchema.methods.comparePassword = function(candidatePassword) {
+//   const decryptedPassword = decrypt(this.password);
+//   return candidatePassword === decryptedPassword;
+// };
 const User = mongoose.models.User || mongoose.model('User', userSchema);
 
 export { User };

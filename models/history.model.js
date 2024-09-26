@@ -45,4 +45,4 @@ const historyschema = new mongoose.Schema({
 
 );
 
-export const History = mongoose.model("History", historyschema);
+ export const History = mongoose.model("History", historyschema);

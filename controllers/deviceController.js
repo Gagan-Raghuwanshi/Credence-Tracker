@@ -1,7 +1,7 @@
 // import { Group } from "../models/group.model.js";
 //import { Geofence } from "../models/geofence.js";
 import { Device } from '../models/device.model.js';
-import { User } from "../models/usermodel.js"
+import { Devicelist } from '../models/devicelist.model.js';
 import cache from "../utils/cache.js";
 
 //  add a device
@@ -10,9 +10,9 @@ export const addDevice = async (req, res) => {
     name,
     uniqueId,
     sim,
-    groupId,   
-    userId,
-    DriverId,  
+    groups,   
+    users,
+    Driver,  
     geofences,
     speed,
     average,
@@ -27,16 +27,19 @@ export const addDevice = async (req, res) => {
   try {
 
         const findUniqueId = await Device.findOne({uniqueId})
+        const findbygivenId  = await Devicelist.findOne({uniqueId})
+        // console.log("findbygivenId",findbygivenId)
 
         if(!findUniqueId) {
 
     const device = new Device({
       name,
     uniqueId,
+    deviceId:findbygivenId.deviceId,
     sim,
-    groups:groupId,   
-    users:userId,
-    Driver:DriverId,  
+    groups,   
+    users,
+    Driver,  
     geofences,
     speed,
     average,
@@ -45,7 +48,10 @@ export const addDevice = async (req, res) => {
     installationdate,
     expirationdate,
     extenddate,
-    createdBy
+    createdBy,
+    // positionId:findbygivenId.positionId,
+    // status:findbygivenId.status,
+    // lastUpdate:findbygivenId.lastUpdate,
     });
 
     await device.save();
@@ -61,7 +67,6 @@ else{
   }
 };
 
-
 export const getDeviceById = async (req, res) => {
   const  id  = req.user.id;
   
@@ -72,7 +77,10 @@ export const getDeviceById = async (req, res) => {
   try {
     const devices = await Device.find({ createdBy: id }).sort({ createdAt: -1 })
       .skip(startIndex)
-      .limit(limitNumber);
+      .limit(limitNumber)
+      .populate('Driver','name')
+      .populate('groups','name')
+      .populate('users','username');
     const totalDevices = await Device.countDocuments({ createdBy: id }).sort({ createdAt: -1 });
     if (devices.length === 0) {
       return res.status(404).json({ message: 'Device not found' });
@@ -148,6 +156,7 @@ export const getAllDevice = async (req, res) => {
 export const updateDeviceById = async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
+  
   try {
     const updatedDevice = await Device.findOneAndUpdate(
       { _id:id },
