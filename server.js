@@ -20,6 +20,7 @@ import modelRoute from "./routes/modelRoute.js"
 
 import categoryRoute from "./routes/category.route.js"
 import  historyRoute  from "./routes/deviceHistory.route.js";
+import { fetchdevicedata } from "./utils/devicelistfunction.js";
 dotenv.config();
 
 const app = express();
@@ -55,6 +56,9 @@ app.use("/category",categoryRoute)
 // setInterval(() => {
     fetchGPSdata();
 // }, 1000);
+// setInterval(() => {
+    fetchdevicedata()
+    // }, 1000);
 
 const io = setupSocket(server); // Initialize Socket.IO
 

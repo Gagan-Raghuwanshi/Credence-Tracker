@@ -1,6 +1,7 @@
 // import { Group } from "../models/group.model.js";
 //import { Geofence } from "../models/geofence.js";
 import { Device } from '../models/device.model.js';
+import { Devicelist } from '../models/devicelist.model.js';
 import cache from "../utils/cache.js";
 
 //  add a device
@@ -26,12 +27,15 @@ export const addDevice = async (req, res) => {
   try {
 
         const findUniqueId = await Device.findOne({uniqueId})
+        const findbygivenId  = await Devicelist.findOne({uniqueId})
+        // console.log("findbygivenId",findbygivenId)
 
         if(!findUniqueId) {
 
     const device = new Device({
       name,
     uniqueId,
+    deviceId:findbygivenId.deviceId,
     sim,
     groups,   
     users,
@@ -44,7 +48,10 @@ export const addDevice = async (req, res) => {
     installationdate,
     expirationdate,
     extenddate,
-    createdBy
+    createdBy,
+    // positionId:findbygivenId.positionId,
+    // status:findbygivenId.status,
+    // lastUpdate:findbygivenId.lastUpdate,
     });
 
     await device.save();
