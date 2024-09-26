@@ -19,6 +19,7 @@ import reportRoute from "./routes/reportRoute.js"
 // import './utils/notification.utils.js';
 import categoryRoute from "./routes/category.route.js"
 import  historyRoute  from "./routes/deviceHistory.route.js";
+import alertRoute from "./routes/alert.route.js"
 dotenv.config();
 
 const app = express();
@@ -52,6 +53,7 @@ app.use("/category",categoryRoute)
 app.use("/geofence", geofenceRoute)
 app.use("/history", historyRoute)
 app.use("/reports",reportRoute)
+app.use("/alerts",alertRoute)
 
 // setInterval(() => {
     fetchGPSdata();
