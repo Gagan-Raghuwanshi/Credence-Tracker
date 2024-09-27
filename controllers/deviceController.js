@@ -67,6 +67,7 @@ else{
   }
 };
 
+
 export const getDevices = async (req, res) => {
   const role = req.user.role;
   const userId = req.user.id; 
@@ -119,6 +120,7 @@ export const getDevices = async (req, res) => {
     });
   }
 };
+
 
 export const updateDeviceById = async (req, res) => {
   const { id } = req.params;
