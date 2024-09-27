@@ -1,6 +1,6 @@
 
 import {History} from "../models/history.model.js"
-import moment from 'moment';
+
 
 
 
@@ -9,48 +9,46 @@ export const getDeviceReport = async (req, res) => {
       const { deviceId, period } = req.body;
 
       let from;
-      let to = new Date(); // Default to current date for 'to'
-
-      // Define 'from' and 'to' based on the selected period
+      let to = new Date(); 
       switch (period) {
           case "Today":
               from = new Date();
-              from.setHours(0, 0, 0, 0); // Start of today
+              from.setHours(0, 0, 0, 0); 
               break;
           case "Yesterday":
               from = new Date();
-              from.setDate(from.getDate() - 1); // Yesterday's date
-              from.setHours(0, 0, 0, 0); // Start of yesterday
-              to.setHours(0, 0, 0, 0); // End of yesterday
+              from.setDate(from.getDate() - 1);
+              from.setHours(0, 0, 0, 0);
+              to.setHours(0, 0, 0, 0);
               break;
           case "This Week":
               from = new Date();
-              from.setDate(from.getDate() - from.getDay()); // Set to start of the week (Sunday)
+              from.setDate(from.getDate() - from.getDay()); 
               from.setHours(0, 0, 0, 0);
               break;
           case "Previous Week":
               from = new Date();
               const dayOfWeek = from.getDay();
-              from.setDate(from.getDate() - dayOfWeek - 7); // Start of the previous week
+              from.setDate(from.getDate() - dayOfWeek - 7); 
               from.setHours(0, 0, 0, 0);
-              to.setDate(from.getDate() + 6); // End of the previous week
+              to.setDate(from.getDate() + 6); 
               to.setHours(23, 59, 59, 999);
               break;
           case "This Month":
               from = new Date();
-              from.setDate(1); // Start of the month
+              from.setDate(1); 
               from.setHours(0, 0, 0, 0);
               break;
           case "Previous Month":
               from = new Date();
-              from.setMonth(from.getMonth() - 1); // Previous month
-              from.setDate(1); // Start of the previous month
+              from.setMonth(from.getMonth() - 1); 
+              from.setDate(1); 
               from.setHours(0, 0, 0, 0);
-              to = new Date(from.getFullYear(), from.getMonth() + 1, 0); // End of the previous month
+              to = new Date(from.getFullYear(), from.getMonth() + 1, 0); 
               to.setHours(23, 59, 59, 999);
               break;
           case "Custom":
-              from = req.body.from; // For custom, you should pass the dates from the request
+              from = req.body.from; 
               to = req.body.to;
               break;
           default:
@@ -60,11 +58,12 @@ export const getDeviceReport = async (req, res) => {
               });
       }
 
-      const formattedFromDateStr = from.toISOString(); // '2024-09-24T00:41:17.000+00:00'
-      const formattedToDateStr = to.toISOString(); // '2024-09-24T00:41:17.000+00:00'
+      const formattedFromDateStr = from.toISOString(); 
+      const formattedToDateStr = to.toISOString();
 
       const historyData = await History.find({
           deviceId,
+        
           deviceTime: {
               $gte: formattedFromDateStr,
               $lte: formattedToDateStr,
@@ -83,19 +82,22 @@ export const getDeviceReport = async (req, res) => {
               type = "Device Stopped";
           }
 
-          // Device Moving (speed greater than 0)
-          if (item.speed > 0) {
-              type = "Device Moving";
-          }
+        //   // Device Moving (speed greater than 0)
+        //   if (item.speed > 0) {
+        //       type = "Device Moving";
+        //   }
 
           return {
               type,
-              fixTime: item.deviceTime
+              fixTime: item.deviceTime,
+              longitude: item.longitude,
+              latitude: item.latitude,
+              speed: item.speed
           };
       });
 
       res.status(200).json({
-          message: "Alert report fetched successfully",
+          message: "Report fetched successfully",
           success: true,
           deviceId,
           data: typesOnly
@@ -103,7 +105,7 @@ export const getDeviceReport = async (req, res) => {
   } catch (error) {
       console.log(error);
       res.status(500).json({
-          message: "Error fetching alert report",
+          message: "Error fetching reports",
           success: false,
           error: error.message
       });
