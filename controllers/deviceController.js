@@ -1,6 +1,7 @@
 // import { Group } from "../models/group.model.js";
 //import { Geofence } from "../models/geofence.js";
 import { Device } from '../models/device.model.js';
+import { Devicelist } from '../models/devicelist.model.js';
 import cache from "../utils/cache.js";
 
 //  add a device
@@ -26,12 +27,15 @@ export const addDevice = async (req, res) => {
   try {
 
         const findUniqueId = await Device.findOne({uniqueId})
+        const findbygivenId  = await Devicelist.findOne({uniqueId})
+        // console.log("findbygivenId",findbygivenId)
 
         if(!findUniqueId) {
 
     const device = new Device({
       name,
     uniqueId,
+    deviceId:findbygivenId.deviceId,
     sim,
     groups,   
     users,
@@ -44,7 +48,10 @@ export const addDevice = async (req, res) => {
     installationdate,
     expirationdate,
     extenddate,
-    createdBy
+    createdBy,
+    // positionId:findbygivenId.positionId,
+    // status:findbygivenId.status,
+    // lastUpdate:findbygivenId.lastUpdate,
     });
 
     await device.save();
@@ -60,51 +67,10 @@ else{
   }
 };
 
-export const getDeviceById = async (req, res) => {
-  const  id  = req.user.id;
-  
-  const { page = 1, limit = 10 } = req.query;
-  const pageNumber = parseInt(page);
-  const limitNumber = parseInt(limit);
-  const startIndex = (pageNumber - 1) * limitNumber;
-  try {
-    const devices = await Device.find({ createdBy: id }).sort({ createdAt: -1 })
-      .skip(startIndex)
-      .limit(limitNumber)
-      .populate('Driver','name')
-      .populate('groups','name')
-      .populate('users','username');
-    const totalDevices = await Device.countDocuments({ createdBy: id }).sort({ createdAt: -1 });
-    if (devices.length === 0) {
-      return res.status(404).json({ message: 'Device not found' });
-    }
 
-    
-    const cacheKey = 'getDeviceById';
-    const cachedDevice = cache.get(cacheKey);
-    if (cachedDevice) {
-      console.log('Cache hit');
-      return res.status(200).json(cachedDevice);
-    }
-   
-
-    res.status(200).json({
-      totalDevices,
-      currentPage: pageNumber,
-      totalPages: Math.ceil(totalDevices / limitNumber),
-      devices,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error fetching Device',
-      error: error.message,
-    });
-  }
-};
-
-
-export const getAllDevice = async (req, res) => {
-
+export const getDevices = async (req, res) => {
+  const role = req.user.role;
+  const userId = req.user.id; 
   const cacheKey = 'allDevices';
 
   const cachedDevices = cache.get(cacheKey);
@@ -118,24 +84,34 @@ export const getAllDevice = async (req, res) => {
     const pageNumber = parseInt(page);
     const limitNumber = parseInt(limit);
     const startIndex = (pageNumber - 1) * limitNumber;
+
     let filter = {};
+
     if (search) {
-      filter = { devicename: { $regex: search, $options: 'i' } };
+      filter.devicename = { $regex: search, $options: 'i' };
     }
+
+    if (role === 'superadmin') {
+      console.log('Superadmin access: All devices');
+    } else {
+      filter.createdBy = userId;
+      console.log(`Restricted access for role ${role}: Only devices created by user ${userId}`);
+    }
+
     const totalDevices = await Device.countDocuments(filter);
 
-    const device = await Device.find(filter)
+    const devices = await Device.find(filter)
       .skip(startIndex)
       .limit(limitNumber)
-      .populate('Driver','name')
-      .populate('groups','name')
-      .populate('users','username')
+      .populate('Driver', 'name')
+      .populate('groups', 'name')
+      .populate('users', 'username');
 
     res.status(200).json({
       totalDevices,
       currentPage: pageNumber,
       totalPages: Math.ceil(totalDevices / limitNumber),
-      device,
+      devices,
     });
   } catch (error) {
     res.status(500).json({
@@ -187,5 +163,6 @@ export const deleteDeviceById = async (req, res) => {
     });
   }
 };
+
 
 

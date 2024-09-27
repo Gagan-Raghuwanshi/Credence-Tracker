@@ -36,6 +36,12 @@ const historyschema = new mongoose.Schema({
   satellite: {
     type: String,
   },
+  category:{
+    type: String
+  },
+  event:{
+    type: Number
+  }
 },
 { timestamps: true }
 
