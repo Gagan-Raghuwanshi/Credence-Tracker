@@ -37,8 +37,10 @@ const historyschema = new mongoose.Schema({
     type: String,
   },
   category:{
-    type: mongoose.Schema.Types.ObjectId,
-    ref:"Device"
+    type: String
+  },
+  event:{
+    type: Number
   }
 },
 { timestamps: true }
