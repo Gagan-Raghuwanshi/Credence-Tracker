@@ -58,10 +58,10 @@ app.use("/alerts",alertRoute)
 
 // setInterval(() => {
     fetchGPSdata();
-// }, 1000);
+// }, 10000);
 // setInterval(() => {
     fetchdevicedata()
-    // }, 1000);
+    // }, 10000);
 
 const io = setupSocket(server); // Initialize Socket.IO
 
