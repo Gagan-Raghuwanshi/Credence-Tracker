@@ -29,7 +29,9 @@ const userSchema = new mongoose.Schema({
   alerts : { type: Boolean,default:false},
   summary: { type: Boolean,default:false},
   customCharts: { type: Boolean,default:false},
-  devicelimit:{ type: Boolean,default:false}
+  devicelimit:{ type: Boolean,default:false},
+  dataLimit:{type:Number,},
+  entriesCount:{type:Number, default:0}
 });
 
 userSchema.pre('save', async function(next) {
