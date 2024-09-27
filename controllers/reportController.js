@@ -111,5 +111,38 @@ export const getDeviceReport = async (req, res) => {
 };
 
 
+export const getCustomReport = async (req, res) => {
+  try {
+    const { deviceId, period } = req.body;
 
+    if (!deviceId) {
+      return res.status(400).json({
+        message: "Device ID is required",
+        success: false
+      });
+    }
 
+    const historyData = await History.find({ deviceId });
+
+    if (!historyData.length) {
+      return res.status(404).json({
+        message: "No history data found for the given device ID",
+        success: false
+      });
+    }
+
+    res.status(200).json({
+      message: "Device report fetched successfully",
+      success: true,
+      deviceId, 
+      data: historyData
+    });
+  } catch (error) {
+    console.error("Error fetching device report:", error);
+    res.status(500).json({
+      message: "Error fetching device report",
+      success: false,
+      error: error.message  
+    });
+  }
+};
