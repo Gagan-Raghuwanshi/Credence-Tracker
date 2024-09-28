@@ -12,7 +12,7 @@ const app = express();
 let deviceStatus = {};
 
 const checkDeviceStatus = (deviceData) => {
-    const { deviceId, attributes: { ignition, speed }, latitude, longitude } = deviceData;
+    const { deviceId, attributes: { ignition, speed, }, latitude, longitude } = deviceData;
 
         const speedLimit = 60;
 
@@ -33,6 +33,18 @@ const checkDeviceStatus = (deviceData) => {
         const alert = createAlert(deviceData, 'Overspeed');
         sendAlert(alert);
     }
+
+    // if (deviceStatus[deviceId].ignition !== ignition) {
+    //     const alert = createAlert(deviceData, 'Ignition');
+    //     sendAlert(alert);
+    // }
+
+    // if (deviceStatus[deviceId].ignition !== ignition) {
+    //     const alert = createAlert(deviceData, 'Ignition');
+    //     sendAlert(alert);
+    // }
+
+
 
     deviceStatus[deviceId].ignition = ignition;
     deviceStatus[deviceId].speed = speed;
@@ -78,8 +90,16 @@ const sendAlert = async (alert) => {
                 password: '123456@'
             }
         });
+        const { data1:deviceData1 } = await axios.get('http://104.251.212.84/api/devices',{
+            auth: {
+                username: 'hbtrack',
+                password: '123456@'
+            }
+        })
+
 
         devicesData.forEach((deviceData) => checkDeviceStatus(deviceData));
+
     } catch (error) {
         console.error('Error fetching data:', error);
     }
