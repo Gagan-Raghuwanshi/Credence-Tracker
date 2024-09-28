@@ -38,18 +38,6 @@ export const getDriversById = async (req, res) => {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
-        // Token Verification
-        // const authorization = req.headers.authorization;
-        // if (!authorization) {
-        //     return res.status(401).json({ error: 'Token Not Found' });
-        // }
-        // const token = authorization.split(' ')[1];
-        // if (!token) {
-        //     return res.status(401).json({ error: 'Unauthorized: Token missing' });
-        // }
-        // const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        // const { id, username } = decoded;
-
         const { id } = req.params;
 
         // Calculate the starting index for the documents
@@ -83,6 +71,9 @@ export const registerDriver = async (req, res) => {
         const { name, phone, email, device, licenseNumber, aadharNumber, address, city, state, pincode } = req.body;
         const createdBy = req.user.id;
         const existingDriver = await Driver.findOne({ phone });
+        if (!name || !phone) {
+            return res.status(400).json({ error: 'Name and phone are required' });
+        }
         if (existingDriver) {
             return res.status(400).json({ error: 'Driver with this phone number already exists' });
         }
