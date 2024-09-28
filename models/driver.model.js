@@ -7,7 +7,6 @@ const driverSchema = new mongoose.Schema({
     },
     phone: {
         type: Number,
-        
         required: true,
     },
     email: {
