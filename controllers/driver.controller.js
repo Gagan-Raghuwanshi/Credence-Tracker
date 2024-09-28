@@ -1,6 +1,6 @@
 import { Driver } from '../models/driver.model.js';
 
-export const getAllDrivers = async (req, res) => {
+export const getDrivers = async (req, res) => {
     try {
         // Get page and limit from query parameters, with default values
         const page = parseInt(req.query.page) || 1;
@@ -9,13 +9,31 @@ export const getAllDrivers = async (req, res) => {
         // Calculate the starting index for the documents
         const skip = (page - 1) * limit;
 
-        // Get total number of drivers for pagination info
-        const totalDrivers = await Driver.countDocuments({});
+        const role = req.user.role;
 
         // Fetch the drivers with pagination
-        const drivers = await Driver.find({})
-            .skip(skip)
-            .limit(limit);
+        let drivers;
+
+        if (role === 'superadmin') {
+            drivers = await Driver.find()
+                .select('-password')
+                .populate('createdBy', 'username _id')
+                .skip(skip)
+                .limit(limit);
+        } else if (role === 'user') {
+            drivers = await Driver.find({ createdBy: req.user.id })
+                .select('-password')
+                .populate('createdBy', 'username _id')
+                .skip(skip)
+                .limit(limit);
+        } else {
+            return res.status(403).json({ message: 'Forbidden: Invalid role' });
+        }
+        drivers = drivers.reverse();
+        const totalDrivers = role === 'superadmin'
+            ? await Driver.countDocuments()
+            : await Driver.countDocuments({ createdBy: req.user.id });
+
 
         // Send response with drivers and pagination info
         res.status(200).json({
