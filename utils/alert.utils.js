@@ -3,7 +3,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import axios from 'axios';
 import moment from 'moment'; // For date formatting
-import Notification from '../models/notification.model.js';
+import {Notification} from '../models/notification.model.js';
 
 const app = express();
 // const server = http.createServer(app);
@@ -57,7 +57,7 @@ const createNotification = (deviceData, type) => {
     }
 
     return {
-        status: type === 'Ignition' ? ignitionStatus : type,
+        type: type === 'Ignition' ? ignitionStatus : type,
         vehicleName: deviceData.deviceId,
         added: formattedDate,
         location: [longitude, latitude],

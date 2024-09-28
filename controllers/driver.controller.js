@@ -80,14 +80,14 @@ export const getDriversById = async (req, res) => {
 
 export const registerDriver = async (req, res) => {
     try {
-        const { name, identifier, attributes } = req.body;
+        const { name, phone, email, device, licenseNumber, aadharNumber, address, city, state, pincode } = req.body;
         const createdBy = req.user.id;
-        const existingDriver = await Driver.findOne({ identifier });
+        const existingDriver = await Driver.findOne({ phone });
         if (existingDriver) {
-            return res.status(400).json({ error: 'Driver with this identifier already exists' });
+            return res.status(400).json({ error: 'Driver with this phone number already exists' });
         }
 
-        const newDriver = new Driver({ name, identifier, attributes, createdBy });
+        const newDriver = new Driver({ name, phone, email, device, licenseNumber, aadharNumber, address, city, state, pincode, createdBy });
         await newDriver.save();
 
         res.status(200).json({ message: 'Driver registered successfully', driver: newDriver });
