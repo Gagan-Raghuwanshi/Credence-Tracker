@@ -14,6 +14,8 @@ let deviceStatus = {};
 const checkDeviceStatus = (deviceData) => {
     const { deviceId, attributes: { ignition, speed }, latitude, longitude } = deviceData;
 
+        const speedLimit = 60;
+
     if (!deviceStatus[deviceId]) {
         deviceStatus[deviceId] = { ignition, speed };
         return;
@@ -27,7 +29,7 @@ const checkDeviceStatus = (deviceData) => {
     if (speed < 5 && deviceStatus[deviceId].speed >= 5) {
         const alert = createAlert(deviceData, 'Idle');
         sendAlert(alert);
-    } else if (speed > 80 && deviceStatus[deviceId].speed <= 80) {
+    } else if (speed > speedLimit && deviceStatus[deviceId].speed <= speedLimit) {
         const alert = createAlert(deviceData, 'Overspeed');
         sendAlert(alert);
     }
@@ -68,7 +70,7 @@ const sendAlert = async (alert) => {
     await savedAlert.save();
 };
 
-setInterval(async () => {
+ export const AlertFetching =   async () => {
     try {
         const { data: devicesData } = await axios.get('http://104.251.212.84/api/positions', {
             auth: {
@@ -81,4 +83,4 @@ setInterval(async () => {
     } catch (error) {
         console.error('Error fetching data:', error);
     }
-}, 10000); 
+}
