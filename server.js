@@ -16,7 +16,7 @@ import { fetchGPSdata } from "./utils/fetchGPSdata.js";
 import geofenceRoute from "./routes/geofence.route.js";
 import modelRoute from "./routes/modelRoute.js"
 import reportRoute from "./routes/reportRoute.js"
-// import './utils/notification.utils.js';
+import './utils/alert.utils.js';
 import categoryRoute from "./routes/category.route.js"
 import  historyRoute  from "./routes/deviceHistory.route.js";
 import alertRoute from "./routes/alert.route.js"
