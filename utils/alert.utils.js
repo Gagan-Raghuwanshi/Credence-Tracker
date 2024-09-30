@@ -68,6 +68,7 @@ const checkDeviceStatus = (deviceData) => {
     deviceStatus[deviceId].status = status;
     deviceStatus[deviceId].deviceSpeed = deviceSpeed;
     deviceStatus[deviceId].alarm = alarm;
+    deviceStatus[deviceId].stopLimit = stopLimit;
 };
 
 // Function to create an alert based on device data
