@@ -2,8 +2,8 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import axios from 'axios';
-import moment from 'moment'; 
-import {Notification} from '../models/notification.model.js';
+import moment from 'moment';
+import { Notification } from '../models/notification.model.js';
 import Alert from '../models/alert.model.js';
 
 const app = express();
@@ -12,13 +12,13 @@ const app = express();
 let deviceStatus = {};
 
 const checkDeviceStatus = (deviceData) => {
-    
-    const { deviceId, attributes: { ignition,}, speed, latitude, longitude,status } = deviceData;
 
-        const speedLimit = 60;
+    const { deviceId, status, attributes: { ignition, }, speed, latitude, longitude } = deviceData;
+
+    const speedLimit = 60;
 
     if (!deviceStatus[deviceId]) {
-        deviceStatus[deviceId] = { ignition, speed };
+        deviceStatus[deviceId] = { ignition, speed, status };
         return;
     }
 
@@ -33,7 +33,7 @@ const checkDeviceStatus = (deviceData) => {
     }
 
     if (deviceStatus[deviceId].status !== status) {
-        const alert = createAlert(deviceData, '');
+        const alert = createAlert(deviceData, status === 'online' ? 'statusOnline' : status === 'offline' ? 'statusOffline' : 'statusUnknown');
         sendAlert(alert);
     }
 
@@ -46,13 +46,14 @@ const checkDeviceStatus = (deviceData) => {
 
     deviceStatus[deviceId].ignition = ignition;
     deviceStatus[deviceId].speed = speed;
+    deviceStatus[deviceId].status = status;
 };
 
 const createAlert = (deviceData, type) => {
-    const { attributes: { ignition, speed }, latitude, longitude } = deviceData;
+    const { attributes: { ignition, speed }, status, latitude, longitude } = deviceData;
     const ignitionStatus = ignition ? 'ignitionOn' : 'ignitionOff';
+    const dataStatus = status === 'online' ? 'statusOnline' : status === 'offline' ? 'statusOffline' : 'statusUnknown';
     const formattedDate = moment().format('DD/MM/YYYY HH:mm:ss');
-
     let message;
     if (type === 'Ignition') {
         message = `Vehicle ${deviceData.deviceId} has ${ignition ? 'started' : 'stopped'}!`;
@@ -60,10 +61,12 @@ const createAlert = (deviceData, type) => {
         message = `Vehicle ${deviceData.deviceId} is idle! Speed: ${speed} km/h`;
     } else if (type === 'Overspeed') {
         message = `Vehicle ${deviceData.deviceId} is overspeeding! Speed: ${speed} km/h`;
+    } else if (type === "statusOnline" ? "statusOnline" : type === "statusOffline" ? "statusOffline" : "statusUnknown") {
+        message = `Status of ${deviceData.deviceId} is ${status === 'online' ? 'online' : status === 'offline' ? 'offline' : 'unknown'}`;
     }
 
     return {
-        type: type === 'Ignition' ? ignitionStatus : type,
+        type: type === 'Ignition' ? ignitionStatus : type || dataStatus,
         deviceId: deviceData.deviceId,
         added: formattedDate,
         location: [longitude, latitude],
@@ -80,7 +83,7 @@ const sendAlert = async (alert) => {
     await savedAlert.save();
 };
 
- export const AlertFetching =   async () => {
+export const AlertFetching = async () => {
     try {
         const { data: PositionApiData } = await axios.get('http://104.251.212.84/api/positions', {
             auth: {
@@ -88,7 +91,7 @@ const sendAlert = async (alert) => {
                 password: '123456@'
             }
         });
-        const resdevice = await axios.get('http://104.251.212.84/api/devices',{
+        const resdevice = await axios.get('http://104.251.212.84/api/devices', {
             auth: {
                 username: 'hbtrack',
                 password: '123456@'
@@ -98,17 +101,17 @@ const sendAlert = async (alert) => {
 
         const deviceApiData = new Map(deviceData.map(item => [item.id, item]))
 
-            PositionApiData.forEach(obj1 => {
-                const match = deviceApiData.get(obj1.deviceId);  
-                if (match) {
-                    obj1.status = match.status;
-                }
-            });
+        PositionApiData.forEach(obj1 => {
+            const match = deviceApiData.get(obj1.deviceId);
+            if (match) {
+                obj1.status = match.status;
+            }
+        });
 
         // console.log("position api data ",PositionApiData);
 
         PositionApiData.forEach((deviceData) => checkDeviceStatus(deviceData));
-        
+
 
     } catch (error) {
         console.error('Error fetching data:', error);

@@ -9,6 +9,4 @@ router.get('/custom',authenticateToken, getCustomReport);
 
 router.get('/summary',authenticateToken, getSummaryReport);
 
-// router.get('/summary',authenticateToken, getSummaryOfDevice);
-
 export default router;
