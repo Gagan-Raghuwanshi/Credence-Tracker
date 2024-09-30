@@ -27,87 +27,57 @@ export const createGroup = async (req, res) => {
     });
   }
 };
-// Get all groups
-export const getAllGroups = async (req, res) => {
 
+        // Get Group by login role
 
-  const cacheKey = 'allGroups';
-
-  const cachedGroups = cache.get(cacheKey);
-  if (cachedGroups) {
-    console.log('Cache hit');
-    return res.status(200).json(cachedGroups);
-  }
-
-
+export const getGroups = async (req, res) => {
+ 
 
   try {
     const { search, page = 1, limit = 10 } = req.query;
     const pageNumber = parseInt(page);
     const limitNumber = parseInt(limit);
     const startIndex = (pageNumber - 1) * limitNumber;
+
+    const role = req.user.role; 
+    const userId = req.user.id; 
+
     let filter = {};
+
     if (search) {
-      filter = { name: { $regex: search, $options: 'i' } };
+      filter.name = { $regex: search, $options: 'i' };
     }
+
+    if (role === 'superadmin') {
+      console.log('Superadmin access');
+    } else if (role === 'user') {
+      filter.createdBy = userId;
+      console.log('User access');
+    } else {
+      return res.status(403).json({ message: 'Forbidden: Invalid role' });
+    }
+
     const totalGroups = await Group.countDocuments(filter);
 
     const groups = await Group.find(filter)
       .skip(startIndex)
       .limit(limitNumber);
 
-    res.status(200).json({
+    return res.status(200).json({
       totalGroups,
       currentPage: pageNumber,
       totalPages: Math.ceil(totalGroups / limitNumber),
       groups,
     });
   } catch (error) {
-    res.status(500).json({
+    return res.status(500).json({
       message: 'Error fetching groups',
       error: error.message,
     });
   }
 };
-// Get groups created by 
-export const getGroupById = async (req, res) => {
-  const  {id}  = req.user;
-  const { page = 1, limit = 10 } = req.query;
-  const pageNumber = parseInt(page);
-  const limitNumber = parseInt(limit);
-  const startIndex = (pageNumber - 1) * limitNumber;
-  try {
-    const groups = await Group.find({ createdBy: id }).sort({ createdAt: -1 })
-      .skip(startIndex)
-      .limit(limitNumber);
-    const totalGroups = await Group.countDocuments({ createdBy: id }).sort({ createdAt: -1 });
-    if (groups.length === 0) {
-      return res.status(404).json({ message: 'Group not found' });
-    }
 
-    
-    const cacheKey = 'getGroupById';
-    const cachedGroups = cache.get(cacheKey);
-    if (cachedGroups) {
-      console.log('Cache hit');
-      return res.status(200).json(cachedGroups);
-    }
-   
-
-    res.status(200).json({
-      totalGroups,
-      currentPage: pageNumber,
-      totalPages: Math.ceil(totalGroups / limitNumber),
-      groups,
-    });
-  } catch (error) {
-    res.status(500).json({
-      message: 'Error fetching group',
-      error: error.message,
-    });
-  }
-};
-// Update group feild 
+        // Update group feild 
 export const updateGroup = async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
@@ -128,7 +98,9 @@ export const updateGroup = async (req, res) => {
     });
   }
 };
-// Delete group by ID
+
+
+        // Delete group by ID
 export const deleteGroup = async (req, res) => {
   const { id } = req.params;
   try {

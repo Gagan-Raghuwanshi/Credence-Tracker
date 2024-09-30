@@ -11,7 +11,8 @@ export const createUser = async (req, res) => {
           stop, trips, geofence,
           maintenance,preferences,combinedReports,
           customReports,history,schedulereports,
-          statistics,alerts ,summary,customCharts,devicelimit } = req.body;
+          statistics,alerts ,summary,customCharts,devicelimit,dataLimit,
+          entriesCount} = req.body;
 
   // Check if the user has permission to create users
   const isAuthorized = req.user.superadmin || req.user.users;
@@ -56,7 +57,9 @@ export const createUser = async (req, res) => {
       alerts:alerts||false ,
       summary:summary||false,
       customCharts : customCharts || false,
-      devicelimit:devicelimit || false
+      devicelimit:devicelimit || false,
+      dataLimit,
+      entriesCount
     });
 
     await user.save();
@@ -81,14 +84,12 @@ export const getUsers = async (req, res) => {
       users = await User.find()
         .select('-password')
         .populate('createdBy', 'username _id')
-        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
     } else if (role === 'user') {
       users = await User.find({ createdBy: req.user.id })
         .select('-password')
         .populate('createdBy', 'username _id')
-        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
     } else {

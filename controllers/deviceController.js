@@ -2,6 +2,7 @@
 //import { Geofence } from "../models/geofence.js";
 import { Device } from '../models/device.model.js';
 import { Devicelist } from '../models/devicelist.model.js';
+import { User } from '../models/usermodel.js';
 import cache from "../utils/cache.js";
 
 //  add a device
@@ -23,8 +24,15 @@ export const addDevice = async (req, res) => {
     extenddate,
   } = req.body;
   const createdBy = req.user.id;
-
+          console.log(createdBy);
+          
   try {
+
+    const user = await User.findById({_id :createdBy});
+
+    if (user.entriesCount >= user.dataLimit) {
+      return res.status(403).json({ message: "Data limit reached. You cannot add more entries." });
+    }
 
         const findUniqueId = await Device.findOne({uniqueId})
         const findbygivenId  = await Devicelist.findOne({uniqueId})
@@ -56,6 +64,9 @@ export const addDevice = async (req, res) => {
 
     await device.save();
 
+    user.entriesCount += 1;    
+      await user.save();
+
     return res.status(201).json({ message: 'Device added successfully', device });
 
 }
@@ -63,6 +74,8 @@ else{
   res.status(409).json({ message: "IMEI Number Is Already Exist" });
 }
   } catch (error) {
+    console.log(error);
+    
     return res.status(500).json({ message: 'Error adding device', error });
   }
 };
@@ -147,11 +160,17 @@ export const updateDeviceById = async (req, res) => {
 
 export const deleteDeviceById = async (req, res) => {
   const { id } = req.params;
+  const createdBy = req.user.id;
+
   try {
+    const user = await User.findById({_id :createdBy});
     const deletedDevice = await Device.findOneAndDelete({ _id:id });
     if (!deletedDevice) {
       return res.status(404).json({ message: 'Device not found' });
     }
+    user.entriesCount -= 1;    
+   const check = await user.save();
+
     res.status(200).json({
       message: 'Device deleted successfully',
       device: deletedDevice,

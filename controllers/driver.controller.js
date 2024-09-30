@@ -1,6 +1,6 @@
 import { Driver } from '../models/driver.model.js';
 
-export const getAllDrivers = async (req, res) => {
+export const getDrivers = async (req, res) => {
     try {
         // Get page and limit from query parameters, with default values
         const page = parseInt(req.query.page) || 1;
@@ -9,59 +9,27 @@ export const getAllDrivers = async (req, res) => {
         // Calculate the starting index for the documents
         const skip = (page - 1) * limit;
 
-        // Get total number of drivers for pagination info
-        const totalDrivers = await Driver.countDocuments({});
+        const role = req.user.role;
 
         // Fetch the drivers with pagination
-        const drivers = await Driver.find({})
-            .skip(skip)
-            .limit(limit);
+        let drivers;
 
-        // Send response with drivers and pagination info
-        res.status(200).json({
-            drivers,
-            pagination: {
-                currentPage: page,
-                totalPages: Math.ceil(totalDrivers / limit),
-                totalDrivers,
-            },
-        });
-    } catch (error) {
-        console.error('Error fetching drivers:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}
+        if (role === 'superadmin') {
+            drivers = await Driver.find()
+                .skip(skip)
+                .limit(limit);
+        } else if (role === 'user') {
+            drivers = await Driver.find({ createdBy: req.user.id })
+                .skip(skip)
+                .limit(limit);
+        } else {
+            return res.status(403).json({ message: 'Forbidden: Invalid role' });
+        }
+        drivers = drivers.reverse();
+        const totalDrivers = role === 'superadmin'
+            ? await Driver.countDocuments()
+            : await Driver.countDocuments({ createdBy: req.user.id });
 
-export const getDriversById = async (req, res) => {
-    try {
-        // Get page and limit from query parameters, with default values
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-
-        // Token Verification
-        // const authorization = req.headers.authorization;
-        // if (!authorization) {
-        //     return res.status(401).json({ error: 'Token Not Found' });
-        // }
-        // const token = authorization.split(' ')[1];
-        // if (!token) {
-        //     return res.status(401).json({ error: 'Unauthorized: Token missing' });
-        // }
-        // const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        // const { id, username } = decoded;
-
-        const { id } = req.params;
-
-        // Calculate the starting index for the documents
-        const skip = (page - 1) * limit;
-
-        // Get total number of drivers for pagination info
-        const totalDrivers = await Driver.countDocuments({ createdBy: id });
-
-        // Fetch the drivers with pagination
-        const drivers = await Driver.find({ createdBy: id })
-            .skip(skip)
-            .limit(limit);
 
         // Send response with drivers and pagination info
         res.status(200).json({
@@ -80,14 +48,17 @@ export const getDriversById = async (req, res) => {
 
 export const registerDriver = async (req, res) => {
     try {
-        const { name, identifier, attributes } = req.body;
+        const { name, phone, email, device, licenseNumber, aadharNumber, address, city, state, pincode } = req.body;
         const createdBy = req.user.id;
-        const existingDriver = await Driver.findOne({ identifier });
+        const existingDriver = await Driver.findOne({ phone });
+        if (!name || !phone) {
+            return res.status(400).json({ error: 'Name and phone are required' });
+        }
         if (existingDriver) {
-            return res.status(400).json({ error: 'Driver with this identifier already exists' });
+            return res.status(400).json({ error: 'Driver with this phone number already exists' });
         }
 
-        const newDriver = new Driver({ name, identifier, attributes, createdBy });
+        const newDriver = new Driver({ name, phone, email, device, licenseNumber, aadharNumber, address, city, state, pincode, createdBy });
         await newDriver.save();
 
         res.status(200).json({ message: 'Driver registered successfully', driver: newDriver });
