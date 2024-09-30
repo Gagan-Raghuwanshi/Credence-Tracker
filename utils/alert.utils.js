@@ -10,6 +10,8 @@ const app = express();
 
 
 let deviceStatus = {};
+const stopLimit = 1;
+let deviceSpeed
 
 const checkDeviceStatus = (deviceData) => {
 
@@ -28,7 +30,7 @@ const checkDeviceStatus = (deviceData) => {
     }
 
     if (speed > speedLimit && deviceStatus[deviceId].speed <= speedLimit) {
-        const alert = createAlert(deviceData, 'Overspeed');
+        const alert = createAlert(deviceData, 'speedLimitExceeded');
         sendAlert(alert);
     }
 
@@ -37,22 +39,27 @@ const checkDeviceStatus = (deviceData) => {
         sendAlert(alert);
     }
 
-    // if (deviceStatus[deviceId].ignition !== ignition) {
-    //     const alert = createAlert(deviceData, 'Ignition');
-    //     sendAlert(alert);
-    // }
+    if (speed <= stopLimit && deviceStatus[deviceId].deviceSpeed <= stopLimit) {
+        const alert = createAlert(deviceData, 'deviceStopped');
+        sendAlert(alert);
+    } else if (speed > stopLimit && deviceStatus[deviceId].deviceSpeed > stopLimit) {
+        const alert = createAlert(deviceData, 'deviceMoving');
+        sendAlert(alert);
+    }
 
 
 
     deviceStatus[deviceId].ignition = ignition;
     deviceStatus[deviceId].speed = speed;
     deviceStatus[deviceId].status = status;
+    deviceStatus[deviceId].deviceSpeed = deviceSpeed;
 };
 
 const createAlert = (deviceData, type) => {
     const { attributes: { ignition, speed }, status, latitude, longitude } = deviceData;
     const ignitionStatus = ignition ? 'ignitionOn' : 'ignitionOff';
-    const dataStatus = status === 'online' ? 'statusOnline' : status === 'offline' ? 'statusOffline' : 'statusUnknown';
+    const vehicleStatus = status === 'online' ? 'statusOnline' : status === 'offline' ? 'statusOffline' : 'statusUnknown';
+    const deviceSpeed = speed <= stopLimit ? 'deviceStopped' : speed > stopLimit ? 'deviceMoving' : 'deviceInactive'
     const formattedDate = moment().format('DD/MM/YYYY HH:mm:ss');
     let message;
     if (type === 'Ignition') {
@@ -63,10 +70,14 @@ const createAlert = (deviceData, type) => {
         message = `Vehicle ${deviceData.deviceId} is overspeeding! Speed: ${speed} km/h`;
     } else if (type === "statusOnline" ? "statusOnline" : type === "statusOffline" ? "statusOffline" : "statusUnknown") {
         message = `Status of ${deviceData.deviceId} is ${status === 'online' ? 'online' : status === 'offline' ? 'offline' : 'unknown'}`;
+    } else if (type === 'deviceMoving') {
+        message = `Device ${deviceData.deviceId} is moving! Speed: ${speed} km/h`;
+    } else if (type === 'deviceStopped') {
+        message = `Device ${deviceData.deviceId} is stopped! Speed: ${speed} km/h`;
     }
 
     return {
-        type: type === 'Ignition' ? ignitionStatus : type || dataStatus,
+        type: type === 'Ignition' ? ignitionStatus : type || vehicleStatus || deviceSpeed,
         deviceId: deviceData.deviceId,
         added: formattedDate,
         location: [longitude, latitude],

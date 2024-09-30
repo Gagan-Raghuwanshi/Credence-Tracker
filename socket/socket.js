@@ -5,7 +5,7 @@ import axios from "axios";
 export const setupSocket = (server) => {
   const io = new Server(server, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: ["http://localhost:5173", "http://localhost:5173"],
       methods: ["GET", "POST"],
       credentials: true,
     },
@@ -17,12 +17,12 @@ export const setupSocket = (server) => {
 
     socket.on("disconnect", (reason) => {
       console.log(`User ${socket.id} disconnected. Reason: ${reason}`);
-    
+
     });
 
-    socket.on("deviceId",(deviceId)=>{
+    socket.on("deviceId", (deviceId) => {
       targetDeviceId = deviceId
-      console.log("data type",typeof deviceId)
+      console.log("data type", typeof deviceId)
     })
 
     // setInterval(() => {
@@ -35,48 +35,48 @@ export const setupSocket = (server) => {
 
     // thid is for single device data start 
     setInterval(() => {
-      
-      if (targetDeviceId != null ) {
+
+      if (targetDeviceId != null) {
 
         // this is for devices start 
-      let devicelist = null;
-      let devicelistFromAPI = {
-        category: "",
-        status: "",
-        lastUpdate: "",
-        name: "",
-      };
-      // setInterval(() => {
-          ;(async function () {
-            const url = "http://104.251.212.84/api/devices";
-            const username = "hbtrack";
-            const password = "123456@";
-    
-            try {
-              const response = await axios.get(url, {
-                auth: { username: username, password: password },
-              });
-              devicelist = response.data;
-              devicelistFromAPI = devicelist.find(
-                (device) => device.id === targetDeviceId
-              );
-    
-              // console.log('API response data:', devicelist);
-            } catch (error) {
-              console.error("Error fetching data from API:", error);
-            }
-          })();
-          console.log("deviceId", typeof targetDeviceId, targetDeviceId)  
-        // }, 10000);
-        // this is for devices end
+        let devicelist = null;
+        let devicelistFromAPI = {
+          category: "",
+          status: "",
+          lastUpdate: "",
+          name: "",
+        };
+        // setInterval(() => {
+        ; (async function () {
+          const url = "http://104.251.212.84/api/devices";
+          const username = "hbtrack";
+          const password = "123456@";
 
-        // in this setinterval i am emiting event 
-        // setInterval(() => {   
-          ;(async function () {
+          try {
+            const response = await axios.get(url, {
+              auth: { username: username, password: password },
+            });
+            devicelist = response.data;
+            devicelistFromAPI = devicelist.find(
+              (device) => device.id === targetDeviceId
+            );
+
+            // console.log('API response data:', devicelist);
+          } catch (error) {
+            console.error("Error fetching data from API:", error);
+          }
+        })();
+        console.log("deviceId", typeof targetDeviceId, targetDeviceId)
+          // }, 10000);
+          // this is for devices end
+
+          // in this setinterval i am emiting event 
+          // setInterval(() => {   
+          ; (async function () {
             const url = "http://104.251.212.84/api/positions";
             const username = "hbtrack";
             const password = "123456@";
-    
+
             try {
               const response = await axios.get(url, {
                 auth: { username: username, password: password },
@@ -84,7 +84,7 @@ export const setupSocket = (server) => {
               const data = response.data;
               // console.log("data from GPS device ",data)
               // console.log("BBBBBBBBBBB")
-    
+
               const device = data.find(
                 (device) => device.deviceId === targetDeviceId
               );
@@ -105,7 +105,7 @@ export const setupSocket = (server) => {
                   status: devicelistFromAPI.status,
                   lastUpdate: devicelistFromAPI.lastUpdate,
                   name: devicelistFromAPI.name,
-                  uniqueId:devicelistFromAPI.uniqueId,
+                  uniqueId: devicelistFromAPI.uniqueId,
                 };
                 console.log("single device data")
                 socket.emit("single device data", dataForSocket);
@@ -119,7 +119,7 @@ export const setupSocket = (server) => {
             }
           })();
         // }, 10000);
-      }    
+      }
     }, 10000);
     // thid is for sinngle device data end 
 
@@ -175,20 +175,20 @@ export const setupSocket = (server) => {
               // distance: obj1.attributes.distance,
               // totalDistance: obj1.attributes.totalDistance,
               // event: obj1.attributes.event,
-              attributes:obj1.attributes,
+              attributes: obj1.attributes,
               category: match ? match.category : null,
               status: match ? match.status : null,
               lastUpdate: match ? match.lastUpdate : null,
               name: match ? match.name : null,
-              uniqueId:match ? match.uniqueId : null,
+              uniqueId: match ? match.uniqueId : null,
 
             };
           });
 
-        // console.log("device",mergedData)
-        console.log("All device data")
-        socket.emit("all device data", mergedData);
-        console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+          // console.log("device",mergedData)
+          console.log("All device data")
+          socket.emit("all device data", mergedData);
+          console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
 
         } catch (error) {
           console.error(

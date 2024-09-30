@@ -65,7 +65,7 @@ app.use("/alerts",alertRoute)
     // }, 10000);
 
 // setInterval(() => {
-    AlertFetching()
+//     AlertFetching()
 //     }, 2000);
 
 const io = setupSocket(server); // Initialize Socket.IO
