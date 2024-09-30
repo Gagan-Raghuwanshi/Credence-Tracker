@@ -1,6 +1,6 @@
 import { Driver } from '../models/driver.model.js';
 
-export const getAllDrivers = async (req, res) => {
+export const getDrivers = async (req, res) => {
     try {
         // Get page and limit from query parameters, with default values
         const page = parseInt(req.query.page) || 1;
@@ -9,47 +9,27 @@ export const getAllDrivers = async (req, res) => {
         // Calculate the starting index for the documents
         const skip = (page - 1) * limit;
 
-        // Get total number of drivers for pagination info
-        const totalDrivers = await Driver.countDocuments({});
+        const role = req.user.role;
 
         // Fetch the drivers with pagination
-        const drivers = await Driver.find({})
-            .skip(skip)
-            .limit(limit);
+        let drivers;
 
-        // Send response with drivers and pagination info
-        res.status(200).json({
-            drivers,
-            pagination: {
-                currentPage: page,
-                totalPages: Math.ceil(totalDrivers / limit),
-                totalDrivers,
-            },
-        });
-    } catch (error) {
-        console.error('Error fetching drivers:', error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-}
+        if (role === 'superadmin') {
+            drivers = await Driver.find()
+                .skip(skip)
+                .limit(limit);
+        } else if (role === 'user') {
+            drivers = await Driver.find({ createdBy: req.user.id })
+                .skip(skip)
+                .limit(limit);
+        } else {
+            return res.status(403).json({ message: 'Forbidden: Invalid role' });
+        }
+        drivers = drivers.reverse();
+        const totalDrivers = role === 'superadmin'
+            ? await Driver.countDocuments()
+            : await Driver.countDocuments({ createdBy: req.user.id });
 
-export const getDriversById = async (req, res) => {
-    try {
-        // Get page and limit from query parameters, with default values
-        const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
-
-        const { id } = req.params;
-
-        // Calculate the starting index for the documents
-        const skip = (page - 1) * limit;
-
-        // Get total number of drivers for pagination info
-        const totalDrivers = await Driver.countDocuments({ createdBy: id });
-
-        // Fetch the drivers with pagination
-        const drivers = await Driver.find({ createdBy: id })
-            .skip(skip)
-            .limit(limit);
 
         // Send response with drivers and pagination info
         res.status(200).json({

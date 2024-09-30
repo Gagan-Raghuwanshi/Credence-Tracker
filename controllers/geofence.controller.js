@@ -1,6 +1,6 @@
 import Geofence from "../models/geofence.model.js";
 
-export const getAllGeofences = async (req, res) => {
+export const getGeofences = async (req, res) => {
     try {
         // Get page and limit from query parameters, with default values
         const page = parseInt(req.query.page) || 1;
@@ -9,22 +9,36 @@ export const getAllGeofences = async (req, res) => {
         // Calculate the starting index for the documents
         const skip = (page - 1) * limit;
 
-        // Get total number of geofences for pagination info
-        const totalGeofences = await Geofence.countDocuments({});
+        const role = req.user.role;
 
-        // Fetch the geofencing data with pagination
-        const geofenceData = await Geofence.find({})
-            .skip(skip)
-            .limit(limit);
+        // Fetch the drivers with pagination
+        let geofences;
+
+        if (role === 'superadmin') {
+            geofences = await Geofence.find()
+                .skip(skip)
+                .limit(limit);
+        } else if (role === 'user') {
+            geofences = await Geofence.find({ createdBy: req.user.id })
+                .skip(skip)
+                .limit(limit);
+        } else {
+            return res.status(403).json({ message: 'Forbidden: Invalid role' });
+        }
+        geofences = geofences.reverse();
+        const totalGeofences = role === 'superadmin'
+            ? await Geofence.countDocuments()
+            : await Geofence.countDocuments({ createdBy: req.user.id });
+
 
         // If no data found
-        if (!geofenceData || geofenceData.length === 0) {
+        if (!geofences || geofences.length === 0) {
             return res.status(404).json({ message: "No geofencing data found" });
         }
 
         // Restructure the response to have deviceId on top with nested geofencing data
         const response = {
-            geofences: geofenceData.map((data) => ({
+            geofences: geofences.map((data) => ({
                 _id: data._id,
                 name: data.name,
                 area: data.area,
@@ -45,39 +59,6 @@ export const getAllGeofences = async (req, res) => {
 
         // Send the response with pagination info
         res.status(200).json(response);
-    } catch (error) {
-        res.status(500).json({ message: "Server error", error: error.message });
-    }
-}
-
-export const getGeofenceById = async (req, res) => {
-    try {
-        const userId = req.user.id;
-        const geofenceData = await Geofence.find({ createdBy: userId });
-
-        if (!geofenceData || geofenceData.length === 0) {
-            return res
-                .status(404)
-                .json({ message: "No geofencing data found for this deviceId" });
-        }
-
-        // Restructure the response to have deviceId on top with nested geofencing data
-        const response = {
-            userId,
-            geofences: geofenceData.map((data) => ({
-                _id: data._id,
-                name: data.name,
-                type: data.type,
-                geofenceCode: data.geofenceCode,
-                transitTime: data.transitTime,
-                assignType: data.assignType,
-                vehicleIds: data.vehicleIds,
-                area: data.area,
-                isCrossed: data.isCrossed,
-            })),
-        };
-
-        res.json(response);
     } catch (error) {
         res.status(500).json({ message: "Server error", error: error.message });
     }

@@ -319,8 +319,8 @@ export const getSummaryReport = async (req, res) => {
                 const curr = sortedHistory[i];
 
                 // Calculate distance between consecutive points
-                totalDistance += calculateDistance(prev.latitude, prev.longitude, curr.latitude, curr.longitude);
-
+                totalDistance += (curr.distance || 0);
+                console.log(curr.distance);
                 // Update max speed
                 maxSpeed = Math.max(maxSpeed, curr.speed || 0);
 
@@ -355,18 +355,10 @@ export const getSummaryReport = async (req, res) => {
             };
         });
 
-        // Helper function to calculate distance between two points
-        function calculateDistance(lat1, lon1, lat2, lon2) {
-            // Implement distance calculation logic here
-            // You can use Haversine formula or any other appropriate method
-            // Return the calculated distance
-        }
-
         // Helper function to calculate fuel consumption between two points
         function calculateFuelConsumption(prevRecord, currRecord) {
-            // Implement fuel consumption calculation logic here
-            // This might depend on your specific requirements and available data
-            // Return the calculated fuel consumption
+            const fuelConsumed = prevRecord.fuel || 0;
+            return fuelConsumed;
         }
 
         res.status(200).json({
