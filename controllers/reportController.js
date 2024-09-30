@@ -306,8 +306,6 @@ export const getSummaryReport = async (req, res) => {
             const firstRecord = sortedHistory[0];
             const lastRecord = sortedHistory[sortedHistory.length - 1];
 
-            console.log();
-            console.log();
 
             let totalDistance = 0;
             let totalSpeed = 0;
@@ -319,7 +317,7 @@ export const getSummaryReport = async (req, res) => {
                 const prev = sortedHistory[i - 1];
 
                 // Calculate distance between consecutive points
-                totalDistance += (curr.attributes.distance || 0) - (prev.attributes.distance || 0);
+                // totalDistance += (curr.attributes.distance || 0) - (prev.attributes.distance || 0);
                 // console.log(sortedHistory[i].attributes.distance);
                 // Update max speed
                 maxSpeed = Math.max(maxSpeed, curr.speed || 0);
@@ -331,12 +329,12 @@ export const getSummaryReport = async (req, res) => {
                 totalFuel += calculateFuelConsumption(prev, curr);
 
                 // Calculate odometer difference
-                // const odometerDiff = (lastRecord?.attributes.odometer || 0) - (firstRecord?.attributes.odometer || 0);
+                const odometerDiff = (lastRecord?.attributes.odometer || 0) - (firstRecord?.attributes.odometer || 0);
 
-                // // If odometer data is available and valid, use it for distance calculation
-                // if (odometerDiff > 0) {
-                //     totalDistance = odometerDiff;
-                // }
+                // If odometer data is available and valid, use it for distance calculation
+                if (odometerDiff > 0) {
+                    totalDistance = odometerDiff;
+                }
             }
 
             return {
