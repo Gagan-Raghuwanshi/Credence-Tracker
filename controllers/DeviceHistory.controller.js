@@ -48,12 +48,12 @@ export const deviceTripsWithRoute = async (req, res) => {
     let ignitionOnValue = [];
 
     for (const ignitiontrue of deviceDataByDateRange) {
-      if (ignitiontrue.ignition === false) {
+      if (ignitiontrue.attributes.ignition === false) {
         if (ignitionOnValue.length > 0) {
           deviceDataByTrips.push([...ignitionOnValue]);
           ignitionOnValue = [];
         }
-      } else if (ignitiontrue.ignition === true) {
+      } else if (ignitiontrue.attributes.ignition === true) {
         ignitionOnValue.push(ignitiontrue);
       }
     }
@@ -100,12 +100,12 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
     let ignitionOnValue = [];
 
     for (const ignitiontrue of deviceDataByDateRange) {
-      if (ignitiontrue.ignition === false) {
+      if (ignitiontrue.attributes.ignition === false) {
         if (ignitionOnValue.length > 0) {
           deviceDataByTrips.push([...ignitionOnValue]);
           ignitionOnValue = [];
         }
-      } else if (ignitiontrue.ignition === true) {
+      } else if (ignitiontrue.attributes.ignition === true) {
         ignitionOnValue.push(ignitiontrue);
       }
     }
@@ -145,7 +145,7 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
         duration:duration,
         startLongitude: index[0].longitude,
         startLatitude: index[0].latitude,
-        totalDistance: index[0].totalDistance,
+        totalDistance: index[0].attributes.totalDistance,
         endLongitude:index.length > 1 ? index[index.length - 1].longitude : "Running",
         endLatitude:index.length > 1 ? index[index.length - 1].latitude : "Running",
         endTime:index.length > 1 ? index[index.length - 1].deviceTime : "Running",         
@@ -192,12 +192,12 @@ export const deviceStopage = async (req, res) => {
     let ignitionOffValue = [];
 
     for (const ignitionFalse of deviceDataByDateRange) {
-      if (ignitionFalse.ignition === true) {
+      if (ignitionFalse.attributes.ignition === true) {
         if (ignitionOffValue.length > 0) {
           deviceDataByStopage.push([...ignitionOffValue]);
           ignitionOffValue = [];
         }
-      } else if (ignitionFalse.ignition === false) {
+      } else if (ignitionFalse.attributes.ignition === false) {
         ignitionOffValue.push(ignitionFalse);
       }
     }
@@ -212,7 +212,7 @@ export const deviceStopage = async (req, res) => {
       const arrivalElement = {
         // _id: index[0]._id,
         speed: index[0].speed,
-        ignition: index[0].ignition,
+        ignition: index[0].attributes.ignition,
         longitude: index[0].longitude,
         latitude: index[0].latitude,
         course: index[0].course,
