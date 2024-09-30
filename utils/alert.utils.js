@@ -12,7 +12,9 @@ const app = express();
 let deviceStatus = {};
 
 const checkDeviceStatus = (deviceData) => {
-    const { deviceId, attributes: { ignition, speed, }, latitude, longitude } = deviceData;
+    console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ",deviceData);
+    
+    const { deviceId, attributes: { ignition,}, speed, latitude, longitude } = deviceData;
 
         const speedLimit = 60;
 
@@ -26,10 +28,7 @@ const checkDeviceStatus = (deviceData) => {
         sendAlert(alert);
     }
 
-    if (speed < 5 && deviceStatus[deviceId].speed >= 5) {
-        const alert = createAlert(deviceData, 'Idle');
-        sendAlert(alert);
-    } else if (speed > speedLimit && deviceStatus[deviceId].speed <= speedLimit) {
+    if (speed > speedLimit && deviceStatus[deviceId].speed <= speedLimit) {
         const alert = createAlert(deviceData, 'Overspeed');
         sendAlert(alert);
     }
@@ -84,21 +83,33 @@ const sendAlert = async (alert) => {
 
  export const AlertFetching =   async () => {
     try {
-        const { data: devicesData } = await axios.get('http://104.251.212.84/api/positions', {
+        const { data: PositionApiData } = await axios.get('http://104.251.212.84/api/positions', {
             auth: {
                 username: 'hbtrack',
                 password: '123456@'
             }
         });
-        const { data1:deviceData1 } = await axios.get('http://104.251.212.84/api/devices',{
+        const resdevice = await axios.get('http://104.251.212.84/api/devices',{
             auth: {
                 username: 'hbtrack',
                 password: '123456@'
             }
         })
+        const deviceData = resdevice.data
 
+        const deviceApiData = new Map(deviceData.map(item => [item.id, item]))
 
-        devicesData.forEach((deviceData) => checkDeviceStatus(deviceData));
+            PositionApiData.forEach(obj1 => {
+                const match = deviceApiData.get(obj1.deviceId);  
+                if (match) {
+                    obj1.status = match.status;
+                }
+            });
+
+        // console.log("position api data ",PositionApiData);
+
+        PositionApiData.forEach((deviceData) => checkDeviceStatus(deviceData));
+        
 
     } catch (error) {
         console.error('Error fetching data:', error);
