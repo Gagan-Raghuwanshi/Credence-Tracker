@@ -12,7 +12,6 @@ const app = express();
 let deviceStatus = {};
 
 const checkDeviceStatus = (deviceData) => {
-    console.log("ZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZZ",deviceData);
     
     const { deviceId, attributes: { ignition,}, speed, latitude, longitude } = deviceData;
 
