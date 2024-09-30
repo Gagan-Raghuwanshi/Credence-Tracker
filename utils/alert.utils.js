@@ -13,7 +13,7 @@ let deviceStatus = {};
 
 const checkDeviceStatus = (deviceData) => {
     
-    const { deviceId, attributes: { ignition,}, speed, latitude, longitude } = deviceData;
+    const { deviceId, attributes: { ignition,}, speed, latitude, longitude,status } = deviceData;
 
         const speedLimit = 60;
 
@@ -32,10 +32,10 @@ const checkDeviceStatus = (deviceData) => {
         sendAlert(alert);
     }
 
-    // if (deviceStatus[deviceId].ignition !== ignition) {
-    //     const alert = createAlert(deviceData, 'Ignition');
-    //     sendAlert(alert);
-    // }
+    if (deviceStatus[deviceId].status !== status) {
+        const alert = createAlert(deviceData, '');
+        sendAlert(alert);
+    }
 
     // if (deviceStatus[deviceId].ignition !== ignition) {
     //     const alert = createAlert(deviceData, 'Ignition');
