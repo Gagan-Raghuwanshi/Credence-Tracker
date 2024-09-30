@@ -1,50 +1,54 @@
 import mongoose from "mongoose";
 
 const historyschema = new mongoose.Schema({
-  speed: {
-    type: Number,
+  id: Number,
+  attributes: {
+    event: Number,
+    sat: Number,
+    pdop: Number,
+    hdop: Number,
+    operator: String,
+    ignition: Boolean,
+    charge: Boolean,
+    power: Number,
+    battery: Number,
+    emergency: Boolean,
+    input: Number,
+    output: Number,
+    odometer: Number,
+    distance: Number,
+    totalDistance: Number,
+    motion: Boolean,
   },
-  ignition: {
-    type: Boolean,
+  deviceId: Number,
+  protocol: String,
+  serverTime: Date,
+  deviceTime: Date,
+  fixTime: Date,
+  outdated: Boolean,
+  valid: Boolean,
+  latitude: Number,
+  longitude: Number,
+  altitude: Number,
+  speed: Number,
+  course: Number,
+  address: String,
+  accuracy: Number,
+  network: {
+    radioType: String,
+    considerIp: Boolean,
+    cellTowers: [
+      {
+        cellId: Number,
+        locationAreaCode: Number,
+        mobileCountryCode: Number,
+        mobileNetworkCode: Number,
+        signalStrength: Number,
+        _id: false,
+      },
+    ],
   },
-  longitude: {
-    type: Number,
-    required: true,
-  },
-  latitude: {
-    type: Number,
-    required: true,
-  },
-  course: {
-    type: Number,
-  },
-  deviceId: {
-    type: Number,
-  },
-  deviceTime: {
-    type: Date,
-  },
-  distance: {
-    type: Number,
-  },
-  totalDistance: {
-    type: Number,
-  },
-  state: {
-    type: String,
-  },
-  satellite: {
-    type: String,
-  },
-  category:{
-    type: String
-  },
-  event:{
-    type: Number
-  }
-},
-{ timestamps: true }
+  geofenceIds: [Number],
+}, { versionKey: false });
 
-);
-
- export const History = mongoose.model("History", historyschema);
+export const History = mongoose.model("History", historyschema);
