@@ -5,15 +5,28 @@ const driverSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    identifier: {
-        type: String,
+    phone: {
+        type: Number,
         required: true,
-        unique: true,
+    },
+    email: {
+        type: String,
+    },
+    device: {
+        type: Number,
+    },
+    licenseNumber: {
+        type: String,
+    },
+    aadharNumber: {
+        type: String,
+    },
+    address: {
+        type: String,
     },
     attributes: [{
         attribute: {
             type: String,
-            required: true,
         },
         type: {
             type: String,
