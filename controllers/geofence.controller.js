@@ -47,7 +47,6 @@ export const getGeofences = async (req, res) => {
                 type: data.type,
                 geofenceCode: data.geofenceCode,
                 transitTime: data.transitTime,
-                assignType: data.assignType,
                 vehicleIds: data.vehicleIds,
             })),
             pagination: {
