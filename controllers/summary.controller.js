@@ -121,6 +121,8 @@ export const getSummaryOfDevice = async (req, res) => {
                 totalDistance,
             },
         });
+
+        
     } catch (error) {
         console.log(error);
         res.status(500).json({
