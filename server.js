@@ -58,6 +58,7 @@ app.use("/reports",reportRoute)
 app.use("/alerts",alertRoute)
 app.use("/notification",notificationRout)
 
+
 // setInterval(() => {
     fetchGPSdata();
 // }, 10000);

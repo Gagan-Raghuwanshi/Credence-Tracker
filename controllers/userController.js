@@ -81,7 +81,6 @@ export const getUsers = async (req, res) => {
       users = await User.find()
         .select('-password')
         .populate('createdBy', 'username _id')
-        .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit);
     } else if (role === 'user') {
