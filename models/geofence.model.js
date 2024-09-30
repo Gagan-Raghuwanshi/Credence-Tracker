@@ -7,7 +7,7 @@ const geofenceSchema = new mongoose.Schema({
   transitTime: { type: Number, required: false }, // Optional field, number of days
   area: { type: Object, required: true }, // Holds geospatial data (coordinates, etc.)
   // assignType: { type: String, required: true, enum: ['all vehicles', 'vehicle'] },
-  // vehicleIds: [{ type: String }], // Only required when assignType is 'vehicle'
+  vehicleIds: [{ type: String }], // Only required when assignType is 'vehicle'
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }
 },
   { timestamps: true },

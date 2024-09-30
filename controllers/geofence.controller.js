@@ -109,8 +109,6 @@ export const addGeofence = async (req, res) => {
             type,
             geofenceCode,
             transitTime,
-            // assignType,
-            // vehicleIds,
             area
         } = req.body;
 
@@ -132,8 +130,6 @@ export const addGeofence = async (req, res) => {
             geofenceCode,
             transitTime,
             area,
-            // assignType,
-            // vehicleIds,
             createdBy,
         });
 
