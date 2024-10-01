@@ -58,7 +58,14 @@ export const getGeofences = async (req, res) => {
                 type: data.type,
                 geofenceCode: data.geofenceCode,
                 transitTime: data.transitTime,
-                deviceIds: data.deviceDetails,
+                deviceIds: data.deviceDetails.map(device => {
+
+                    return {
+                        name: device.name,
+                        id: device.deviceId
+                    }
+                }
+                ),
             })),
             pagination: {
                 currentPage: page,
@@ -119,7 +126,7 @@ export const addGeofence = async (req, res) => {
             type,
             geofenceCode,
             transitTime,
-            vehicleIds,
+            deviceIds,
             area
         } = req.body;
 
@@ -140,7 +147,7 @@ export const addGeofence = async (req, res) => {
             type,
             geofenceCode,
             transitTime,
-            vehicleIds,
+            deviceIds,
             area,
             createdBy,
         });
