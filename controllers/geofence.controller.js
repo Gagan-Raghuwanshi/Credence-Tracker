@@ -137,7 +137,7 @@ export const addGeofence = async (req, res) => {
             return res.status(400).json({ message: 'Name and Type are required.' });
         }
 
-        // if (assignType === 'vehicle' && (!vehicleIds || vehicleIds.length === 0)) {
+        // if (assignType === 'vehicle' && (!deviceIds || deviceIds.length === 0)) {
         //     return res.status(400).json({ message: 'Please select at least one vehicle.' });
         // }
 
@@ -191,8 +191,7 @@ export const updateGeofence = async (req, res) => {
             type,
             geofenceCode,
             transitTime,
-            assignType,
-            vehicleIds,
+            deviceIds,
             area
         } = req.body;
 
@@ -203,17 +202,12 @@ export const updateGeofence = async (req, res) => {
             return res.status(404).json({ message: 'Geofence not found' });
         }
 
-        if (assignType === 'vehicle' && (!vehicleIds || vehicleIds.length === 0)) {
-            return res.status(400).json({ message: 'Please select at least one vehicle.' });
-        }
-
         // Update the geofence fields
         geofence.name = name || geofence.name;
         geofence.type = type || geofence.type;
         geofence.geofenceCode = geofenceCode || geofence.geofenceCode;
         geofence.transitTime = transitTime || geofence.transitTime;
-        geofence.assignType = assignType || geofence.assignType;
-        geofence.vehicleIds = vehicleIds || geofence.vehicleIds;
+        geofence.deviceIds = deviceIds || geofence.deviceIds;
         geofence.area = area || geofence.area;
 
         // Save the updated geofence
