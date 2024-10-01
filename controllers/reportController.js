@@ -4,7 +4,7 @@ import moment from 'moment';
 
 export const getCombinedReport = async (req, res) => {
     try {
-        const { deviceId, period } = req.params;
+        const { deviceId, period } = req.query;
 
         let from;
         let to = new Date(); // Default to current date for 'to'
@@ -110,7 +110,7 @@ export const getCombinedReport = async (req, res) => {
 
 export const getCustomReport = async (req, res) => {
     try {
-        const { deviceId, period } = req.params;
+        const { deviceId, period } = req.query;
         let from;
         let to = new Date(); // Default to current date for 'to'
 
@@ -206,7 +206,7 @@ export const getCustomReport = async (req, res) => {
 
 export const getSummaryReport = async (req, res) => {
     try {
-        const { deviceIds, period } = req.params;
+        const { deviceIds, period } = req.query;
         let from;
         let to = new Date(); // Default to current date for 'to'
 
