@@ -99,19 +99,33 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
     const deviceDataByTrips = [];
     let ignitionOnValue = [];
 
+    // console.log("deviceDataByDateRange",deviceDataByDateRange)
     for (const ignitiontrue of deviceDataByDateRange) {
       if (ignitiontrue.attributes.ignition === false) {
         if (ignitionOnValue.length > 0) {
           deviceDataByTrips.push([...ignitionOnValue]);
           ignitionOnValue = [];
         }
-      } else if (ignitiontrue.attributes.ignition === true) {
-        ignitionOnValue.push(ignitiontrue);
+      } 
+      else if (ignitiontrue.attributes.ignition === true) {
+        const objectData = {
+          deviceId:ignitiontrue.deviceId,
+          deviceTime:ignitiontrue.deviceTime,
+          latitude:ignitiontrue.latitude,
+          longitude:ignitiontrue.longitude,          
+          distance:ignitiontrue.attributes.distance,
+          totalDistance:ignitiontrue.attributes.totalDistance,
+          speed:ignitiontrue.speed,
+        }
+        ignitionOnValue.push(objectData);
       }
     }
+
     if (ignitionOnValue.length > 0) {
       deviceDataByTrips.push([...ignitionOnValue]);
     }
+
+    // console.log("device data by trip",deviceDataByTrips)
     const finalTrip = [];
     for (const index of deviceDataByTrips) {
       const speed = [];
@@ -145,13 +159,15 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
         duration:duration,
         startLongitude: index[0].longitude,
         startLatitude: index[0].latitude,
-        totalDistance: index[0].attributes.totalDistance,
+        distance:index[index.length-1].distance-index[0].distance,
+        totalDistance: index[0].totalDistance,
         endLongitude:index.length > 1 ? index[index.length - 1].longitude : "Running",
         endLatitude:index.length > 1 ? index[index.length - 1].latitude : "Running",
         endTime:index.length > 1 ? index[index.length - 1].deviceTime : "Running",         
       };
       // Update the first object in the index
       finalTrip.push(arrivalElement);
+      speed.length = 0;
     }
 
     return res.status(201).json({
