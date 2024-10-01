@@ -1,3 +1,4 @@
+import { Device } from "../models/device.model.js";
 import Geofence from "../models/geofence.model.js";
 
 export const getGeofences = async (req, res) => {
@@ -18,10 +19,20 @@ export const getGeofences = async (req, res) => {
             geofences = await Geofence.find()
                 .skip(skip)
                 .limit(limit);
+
+            // Manually populate device details
+            for (let geofence of geofences) {
+                geofence.deviceDetails = await Device.find({ deviceId: { $in: geofence.deviceIds } });
+            }
         } else if (role === 'user') {
             geofences = await Geofence.find({ createdBy: req.user.id })
                 .skip(skip)
                 .limit(limit);
+
+            // Manually populate device details
+            for (let geofence of geofences) {
+                geofence.deviceDetails = await Device.find({ deviceId: { $in: geofence.deviceIds } });
+            }
         } else {
             return res.status(403).json({ message: 'Forbidden: Invalid role' });
         }
@@ -47,7 +58,7 @@ export const getGeofences = async (req, res) => {
                 type: data.type,
                 geofenceCode: data.geofenceCode,
                 transitTime: data.transitTime,
-                vehicleIds: data.vehicleIds,
+                deviceIds: data.deviceDetails,
             })),
             pagination: {
                 currentPage: page,
@@ -108,13 +119,14 @@ export const addGeofence = async (req, res) => {
             type,
             geofenceCode,
             transitTime,
+            vehicleIds,
             area
         } = req.body;
 
         const createdBy = req.user.id;
 
         // Validation
-        if (!name || !type ) {
+        if (!name || !type) {
             return res.status(400).json({ message: 'Name and Type are required.' });
         }
 
@@ -128,6 +140,7 @@ export const addGeofence = async (req, res) => {
             type,
             geofenceCode,
             transitTime,
+            vehicleIds,
             area,
             createdBy,
         });

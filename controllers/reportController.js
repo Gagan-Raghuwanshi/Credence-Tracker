@@ -2,9 +2,9 @@ import { History } from "../models/history.model.js"
 import moment from 'moment';
 
 
-export const getDeviceReport = async (req, res) => {
+export const getCombinedReport = async (req, res) => {
     try {
-        const { deviceId, period } = req.body;
+        const { deviceId, period } = req.params;
 
         let from;
         let to = new Date(); // Default to current date for 'to'
@@ -93,7 +93,7 @@ export const getDeviceReport = async (req, res) => {
         });
 
         res.status(200).json({
-            message: "Alert report fetched successfully",
+            message: "Combined report fetched successfully",
             success: true,
             deviceId,
             data: typesOnly
@@ -110,7 +110,7 @@ export const getDeviceReport = async (req, res) => {
 
 export const getCustomReport = async (req, res) => {
     try {
-        const { deviceId, period } = req.body;
+        const { deviceId, period } = req.params;
         let from;
         let to = new Date(); // Default to current date for 'to'
 
@@ -189,7 +189,7 @@ export const getCustomReport = async (req, res) => {
         }
 
         res.status(200).json({
-            message: "Device report fetched successfully",
+            message: "Custom report fetched successfully",
             success: true,
             deviceId,
             data: historyData
@@ -206,7 +206,7 @@ export const getCustomReport = async (req, res) => {
 
 export const getSummaryReport = async (req, res) => {
     try {
-        const { deviceIds, period } = req.body;
+        const { deviceIds, period } = req.params;
         let from;
         let to = new Date(); // Default to current date for 'to'
 

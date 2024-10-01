@@ -1,6 +1,7 @@
 // sockets/socket.js
 import { Server } from "socket.io";
 import axios from "axios";
+import { AlertFetching } from "../utils/alert.utils.js";
 
 export const setupSocket = (server) => {
   const io = new Server(server, {
@@ -28,6 +29,10 @@ export const setupSocket = (server) => {
       targetDeviceId = deviceId;
       console.log("data type", typeof deviceId, deviceId);
     });
+
+
+    // const alerts = AlertFetching();
+    // socket.emit('alerts', alerts)
 
     // setInterval(() => {
     //   // console.log("deviceId", typeof targetDeviceId, targetDeviceId)
@@ -140,26 +145,26 @@ export const setupSocket = (server) => {
         const url = "http://104.251.212.84/api/devices";
         const username = "hbtrack";
         const password = "123456@";
-  
+
         try {
           const response = await axios.get(url, {
             auth: { username: username, password: password },
           });
           deviceListData = response.data;
           // console.log("AAAAAAAAAAAAA",deviceListData)
-  
+
           // console.log('API response data:'/, devicelist);
         } catch (error) {
           console.error("Error fetching data from API:", error);
         }
       })();
-  
+
       setTimeout(() => {
         (async function () {
           const url = "http://104.251.212.84/api/positions";
           const username = "hbtrack";
           const password = "123456@";
-    
+
           try {
             const response = await axios.get(url, {
               auth: { username: username, password: password },
@@ -170,7 +175,7 @@ export const setupSocket = (server) => {
             const deviceListDataMap = new Map(
               deviceListData.map((item) => [item.id, item])
             );
-    
+
             const mergedData = data.map((obj1) => {
               const match = deviceListDataMap.get(obj1.deviceId);
               return {
@@ -192,7 +197,7 @@ export const setupSocket = (server) => {
                 uniqueId: match ? match.uniqueId : null,
               };
             });
-    
+
             // console.log("device",mergedData)
             // console.log("All device data", mergedData);
             socket.emit("all device data", mergedData);
@@ -206,7 +211,7 @@ export const setupSocket = (server) => {
           }
         })();
       }, 1000);
-  
+
     }, 100);
 
 
