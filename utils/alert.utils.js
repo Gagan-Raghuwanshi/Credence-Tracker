@@ -75,18 +75,21 @@ const checkDeviceStatus = (deviceData) => {
 
 // Function to create an alert based on device data
 const createAlert = (deviceData, type) => {
-    const { attributes: { ignition, speed, alarm, motion }, status, latitude, longitude } = deviceData; // Destructuring device data
+    const { attributes: { ignition, speed, alarm }, status, latitude, longitude } = deviceData; // Destructuring device data
     const ignitionStatus = ignition ? 'ignitionOn' : 'ignitionOff'; // Determine ignition status
-    const motionStatus = motion ? 'deviceMoving' : 'deviceStopped'; // Determine motion status
     const vehicleStatus = status === 'online' ? 'statusOnline' : status === 'offline' ? 'statusOffline' : 'statusUnknown'; // Determine vehicle status
     const formattedDate = moment().format('DD/MM/YYYY HH:mm:ss'); // Format current date
     let message; // Variable to hold alert message
 
     // Create message based on alert type
     if (type === 'Ignition') {
-        message = `Vehicle ${deviceData.name} has ${ignition ? 'started' : 'stopped'}!`;
+        message = `Vehicle ${deviceData.deviceId} has ${ignition ? 'started' : 'stopped'}!`;
     } else if (type === 'speedLimitExceeded') {
-        message = `Vehicle ${deviceData.name} is overspeeding! Speed: ${speed} km/h`;
+        message = `Vehicle ${deviceData.deviceId} is overspeeding! Speed: ${speed} km/h`;
+    } else if (type === 'deviceMoving') {
+        message = `Device ${deviceData.deviceId} is moving! Speed: ${speed} km/h`;
+    } else if (type === 'deviceStopped') {
+        message = `Device ${deviceData.deviceId} is stopped! Speed: ${speed} km/h`;
     } else if (type === 'alarm') {
         message = `Alarm for ${deviceData.name} is ${alarm}!`;
     } else if (type === 'deviceMoving' || type === 'deviceStopped') {
@@ -102,7 +105,6 @@ const createAlert = (deviceData, type) => {
         type: type === 'Ignition' ? ignitionStatus : type || vehicleStatus || motionStatus,
         deviceId: deviceData.deviceId,
         added: formattedDate,
-        positionId: deviceData.positionId,
         location: [longitude, latitude],
         data,
         message,
@@ -143,8 +145,6 @@ export const AlertFetching = async () => {
             const match = deviceApiData.get(obj1.deviceId);
             if (match) {
                 obj1.status = match.status; // Update status if a match is found
-                obj1.name = match.name;
-                obj1.positionId = match.positionId;
             }
         });
 
