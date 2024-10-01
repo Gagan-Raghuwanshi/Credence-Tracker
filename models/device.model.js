@@ -25,8 +25,8 @@ const deviceSchema = new mongoose.Schema({
   Driver: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Driver',
-    default: ""
-
+    default: null,
+    set: v => v === "" ? null : v,
   },
   groups: [{
     type: mongoose.Schema.Types.ObjectId,
