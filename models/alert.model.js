@@ -31,6 +31,9 @@ const alertSchema = new mongoose.Schema({
     data: {
         type: String,
     },
+    message: {
+        type: String,
+    },
     eventTime: {
         type: Date,
         required: true,
