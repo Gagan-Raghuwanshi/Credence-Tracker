@@ -48,8 +48,8 @@ export const getCombinedReport = async (req, res) => {
                 to.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                from = req.body.from; // For custom, you should pass the dates from the request
-                to = req.body.to;
+                from = req.query.from; // For custom, you should pass the dates from the request
+                to = req.query.to;
                 break;
             default:
                 return res.status(400).json({
@@ -153,8 +153,8 @@ export const getCustomReport = async (req, res) => {
                 to.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                from = req.body.from; // For custom, you should pass the dates from the request
-                to = req.body.to;
+                from = req.query.from; // For custom, you should pass the dates from the request
+                to = req.query.to;
                 break;
             default:
                 return res.status(400).json({
@@ -249,8 +249,8 @@ export const getSummaryReport = async (req, res) => {
                 to.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                from = req.body.from; // For custom, you should pass the dates from the request
-                to = req.body.to;
+                from = req.query.from; // For custom, you should pass the dates from the request
+                to = req.query.to;
                 break;
             default:
                 return res.status(400).json({
