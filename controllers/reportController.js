@@ -306,20 +306,18 @@ export const getSummaryReport = async (req, res) => {
             const firstRecord = sortedHistory[0];
             const lastRecord = sortedHistory[sortedHistory.length - 1];
 
-            // console.log(firstRecord?.attributes);
 
             let totalDistance = 0;
             let totalSpeed = 0;
             let maxSpeed = 0;
             let totalFuel = 0;
 
-            sortedHistory.forEach((curr, i) => {
-                if (i === 0) return; // Skip the first iteration as there is no previous record
+            for (let i = 1; i < sortedHistory.length; i++) { // Start from 1 to skip the first iteration
+                const curr = sortedHistory[i];
                 const prev = sortedHistory[i - 1];
-                // console.log(curr.attributes);
 
                 // Calculate distance between consecutive points
-                totalDistance += (curr.distance || 0);
+                // totalDistance += (curr.attributes.distance || 0) - (prev.attributes.distance || 0);
                 // console.log(sortedHistory[i].attributes.distance);
                 // Update max speed
                 maxSpeed = Math.max(maxSpeed, curr.speed || 0);
@@ -331,13 +329,13 @@ export const getSummaryReport = async (req, res) => {
                 totalFuel += calculateFuelConsumption(prev, curr);
 
                 // Calculate odometer difference
-                const odometerDiff = (curr.odometer || 0) - (prev.odometer || 0);
+                const odometerDiff = (lastRecord?.attributes.odometer || 0) - (firstRecord?.attributes.odometer || 0);
 
                 // If odometer data is available and valid, use it for distance calculation
                 if (odometerDiff > 0) {
                     totalDistance = odometerDiff;
                 }
-            });
+            }
 
             return {
                 deviceId: deviceId,
@@ -346,8 +344,8 @@ export const getSummaryReport = async (req, res) => {
                 averageSpeed: totalSpeed / (sortedHistory.length - 1),
                 maxSpeed: maxSpeed,
                 spentFuel: totalFuel,
-                startOdometer: firstRecord.odometer || 0,
-                endOdometer: lastRecord.odometer || 0,
+                startOdometer: firstRecord?.attributes.odometer || 0,
+                endOdometer: lastRecord?.attributes.odometer || 0,
                 startTime: firstRecord.deviceTime,
                 endTime: lastRecord.deviceTime,
             };

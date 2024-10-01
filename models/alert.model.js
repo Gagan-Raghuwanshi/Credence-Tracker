@@ -10,8 +10,8 @@ const alertSchema = new mongoose.Schema({
         type: String,
         required: true,
         enum: [
-            "deviceOnline",
-            "deviceOffline",
+            "statusOnline",
+            "statusOffline",
             "statusUnknown",
             "deviceActive",
             "deviceInactive",
@@ -27,6 +27,9 @@ const alertSchema = new mongoose.Schema({
             "alarm",
             "maintenanceRequired"
         ],
+    },
+    data: {
+        type: String,
     },
     eventTime: {
         type: Date,

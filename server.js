@@ -56,6 +56,7 @@ app.use("/history", historyRoute)
 app.use("/reports",reportRoute)
 app.use("/alerts",alertRoute)
 
+
 // setInterval(() => {
     fetchGPSdata();
 // }, 10000);
@@ -65,8 +66,8 @@ app.use("/alerts",alertRoute)
     // }, 10000);
 
 // setInterval(() => {
-    AlertFetching()
-    // }, 2000);
+//     AlertFetching()
+//     }, 2000);
 
 const io = setupSocket(server); // Initialize Socket.IO
 

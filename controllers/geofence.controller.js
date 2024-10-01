@@ -47,7 +47,6 @@ export const getGeofences = async (req, res) => {
                 type: data.type,
                 geofenceCode: data.geofenceCode,
                 transitTime: data.transitTime,
-                assignType: data.assignType,
                 vehicleIds: data.vehicleIds,
             })),
             pagination: {
@@ -109,21 +108,19 @@ export const addGeofence = async (req, res) => {
             type,
             geofenceCode,
             transitTime,
-            assignType,
-            vehicleIds,
             area
         } = req.body;
 
         const createdBy = req.user.id;
 
         // Validation
-        if (!name || !type || !assignType) {
-            return res.status(400).json({ message: 'Name, Type, and Assign Type are required.' });
+        if (!name || !type ) {
+            return res.status(400).json({ message: 'Name and Type are required.' });
         }
 
-        if (assignType === 'vehicle' && (!vehicleIds || vehicleIds.length === 0)) {
-            return res.status(400).json({ message: 'Please select at least one vehicle.' });
-        }
+        // if (assignType === 'vehicle' && (!vehicleIds || vehicleIds.length === 0)) {
+        //     return res.status(400).json({ message: 'Please select at least one vehicle.' });
+        // }
 
         // Create the geofence object
         const geofence = new Geofence({
@@ -132,8 +129,6 @@ export const addGeofence = async (req, res) => {
             geofenceCode,
             transitTime,
             area,
-            assignType,
-            vehicleIds,
             createdBy,
         });
 
