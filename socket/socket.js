@@ -26,7 +26,7 @@ export const setupSocket = (server) => {
 
     socket.on("deviceId", (deviceId) => {
       targetDeviceId = deviceId;
-      console.log("data type", typeof deviceId);
+      console.log("data type", typeof deviceId, deviceId);
     });
 
     // setInterval(() => {
@@ -133,6 +133,86 @@ export const setupSocket = (server) => {
 
     // all device data
     let deviceListData = "";
+
+    // fetch data instant for first time 
+    setTimeout(() => {
+      (async function () {
+        const url = "http://104.251.212.84/api/devices";
+        const username = "hbtrack";
+        const password = "123456@";
+  
+        try {
+          const response = await axios.get(url, {
+            auth: { username: username, password: password },
+          });
+          deviceListData = response.data;
+          // console.log("AAAAAAAAAAAAA",deviceListData)
+  
+          // console.log('API response data:'/, devicelist);
+        } catch (error) {
+          console.error("Error fetching data from API:", error);
+        }
+      })();
+  
+      setTimeout(() => {
+        (async function () {
+          const url = "http://104.251.212.84/api/positions";
+          const username = "hbtrack";
+          const password = "123456@";
+    
+          try {
+            const response = await axios.get(url, {
+              auth: { username: username, password: password },
+            });
+            const data = response.data;
+            // console.log("data from GPS device ",data)
+            // console.log("BBBBBBBBBBB")
+            const deviceListDataMap = new Map(
+              deviceListData.map((item) => [item.id, item])
+            );
+    
+            const mergedData = data.map((obj1) => {
+              const match = deviceListDataMap.get(obj1.deviceId);
+              return {
+                speed: obj1.speed,
+                longitude: obj1.longitude,
+                latitude: obj1.latitude,
+                course: obj1.course,
+                deviceId: obj1.deviceId,
+                deviceTime: obj1.deviceTime,
+                // ignition: obj1.attributes.ignition,
+                // distance: obj1.attributes.distance,
+                // totalDistance: obj1.attributes.totalDistance,
+                // event: obj1.attributes.event,
+                attributes: obj1.attributes,
+                category: match ? match.category : null,
+                status: match ? match.status : null,
+                lastUpdate: match ? match.lastUpdate : null,
+                name: match ? match.name : null,
+                uniqueId: match ? match.uniqueId : null,
+              };
+            });
+    
+            // console.log("device",mergedData)
+            // console.log("All device data", mergedData);
+            socket.emit("all device data", mergedData);
+            console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  first");
+
+          } catch (error) {
+            console.error(
+              "There was a problem with the fetch operation:",
+              error.message
+            );
+          }
+        })();
+      }, 1000);
+  
+    }, 100);
+
+
+
+
+
     allDeviceInterval = setInterval(() => {
       (async function () {
         const url = "http://104.251.212.84/api/devices";
@@ -191,7 +271,7 @@ export const setupSocket = (server) => {
           });
 
           // console.log("device",mergedData)
-          console.log("All device data", mergedData);
+          // console.log("All device data", mergedData);
           socket.emit("all device data", mergedData);
           console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
         } catch (error) {
