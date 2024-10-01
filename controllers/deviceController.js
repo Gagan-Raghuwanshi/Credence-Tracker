@@ -44,6 +44,8 @@ export const addDevice = async (req, res) => {
       name,
     uniqueId,
     deviceId:findbygivenId.deviceId,
+    lastUpdate:findbygivenId.lastUpdate,
+    positionId:findbygivenId.positionId,
     sim,
     groups,   
     users,
@@ -80,17 +82,9 @@ else{
   }
 };
 
-
 export const getDevices = async (req, res) => {
   const role = req.user.role;
-  const userId = req.user.id; 
-  const cacheKey = 'allDevices';
-
-  const cachedDevices = cache.get(cacheKey);
-  if (cachedDevices) {
-    console.log('Cache hit');
-    return res.status(200).json(cachedDevices);
-  }
+  const userId = req.user.id;
 
   try {
     const { search, page = 1, limit = 10 } = req.query;
