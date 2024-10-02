@@ -112,9 +112,9 @@ export const setupSocket = (server) => {
               };
               console.log("single device data");
               socket.emit("single device data", dataForSocket);
-              console.log(
-                "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
-              );
+              // console.log(
+              //   "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
+              // );
             }
           } catch (error) {
             console.error(
@@ -196,7 +196,7 @@ export const setupSocket = (server) => {
             // console.log("device",mergedData)
             // console.log("All device data", mergedData);
             socket.emit("all device data", mergedData);
-            console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  first");
+            // console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  first");
 
           } catch (error) {
             console.error(
