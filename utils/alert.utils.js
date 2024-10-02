@@ -48,7 +48,6 @@ const checkDeviceStatus = (deviceData) => {
     deviceStatus[deviceId].speed = speed;
     deviceStatus[deviceId].status = status;
 };
-
 const createAlert = (deviceData, type) => {
     const { attributes: { ignition, speed }, status, latitude, longitude } = deviceData;
     const ignitionStatus = ignition ? 'ignitionOn' : 'ignitionOff';
@@ -74,15 +73,12 @@ const createAlert = (deviceData, type) => {
         message,
     };
 };
-
-
 const sendAlert = async (alert) => {
 
     console.log('Alert sent:', alert);
     const savedAlert = await new Alert(alert).save();
     await savedAlert.save();
 };
-
 export const AlertFetching = async () => {
     try {
         const { data: PositionApiData } = await axios.get('http://104.251.212.84/api/positions', {

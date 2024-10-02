@@ -306,7 +306,7 @@ export const getSummaryReport = async (req, res) => {
             const firstRecord = sortedHistory[0];
             const lastRecord = sortedHistory[sortedHistory.length - 1];
 
-            // console.log(firstRecord?.attributes);
+            console.log(lastRecord?.attributes);
 
             let totalDistance = 0;
             let totalSpeed = 0;
