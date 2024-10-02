@@ -28,6 +28,12 @@ const alertSchema = new mongoose.Schema({
             "maintenanceRequired"
         ],
     },
+    data: {
+        type: String,
+    },
+    message: {
+        type: String,
+    },
     eventTime: {
         type: Date,
         required: true,

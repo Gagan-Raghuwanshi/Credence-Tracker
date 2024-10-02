@@ -2,9 +2,9 @@ import { History } from "../models/history.model.js"
 import moment from 'moment';
 
 
-export const getDeviceReport = async (req, res) => {
+export const getCombinedReport = async (req, res) => {
     try {
-        const { deviceId, period } = req.body;
+        const { deviceId, period } = req.query;
 
         let from;
         let to = new Date(); // Default to current date for 'to'
@@ -48,8 +48,8 @@ export const getDeviceReport = async (req, res) => {
                 to.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                from = req.body.from; // For custom, you should pass the dates from the request
-                to = req.body.to;
+                from = req.query.from; // For custom, you should pass the dates from the request
+                to = req.query.to;
                 break;
             default:
                 return res.status(400).json({
@@ -93,7 +93,7 @@ export const getDeviceReport = async (req, res) => {
         });
 
         res.status(200).json({
-            message: "Alert report fetched successfully",
+            message: "Combined report fetched successfully",
             success: true,
             deviceId,
             data: typesOnly
@@ -110,7 +110,7 @@ export const getDeviceReport = async (req, res) => {
 
 export const getCustomReport = async (req, res) => {
     try {
-        const { deviceId, period } = req.body;
+        const { deviceId, period } = req.query;
         let from;
         let to = new Date(); // Default to current date for 'to'
 
@@ -153,8 +153,8 @@ export const getCustomReport = async (req, res) => {
                 to.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                from = req.body.from; // For custom, you should pass the dates from the request
-                to = req.body.to;
+                from = req.query.from; // For custom, you should pass the dates from the request
+                to = req.query.to;
                 break;
             default:
                 return res.status(400).json({
@@ -189,7 +189,7 @@ export const getCustomReport = async (req, res) => {
         }
 
         res.status(200).json({
-            message: "Device report fetched successfully",
+            message: "Custom report fetched successfully",
             success: true,
             deviceId,
             data: historyData
@@ -206,7 +206,7 @@ export const getCustomReport = async (req, res) => {
 
 export const getSummaryReport = async (req, res) => {
     try {
-        const { deviceIds, period } = req.body;
+        const { deviceIds, period } = req.query;
         let from;
         let to = new Date(); // Default to current date for 'to'
 
@@ -249,8 +249,8 @@ export const getSummaryReport = async (req, res) => {
                 to.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                from = req.body.from; // For custom, you should pass the dates from the request
-                to = req.body.to;
+                from = req.query.from; // For custom, you should pass the dates from the request
+                to = req.query.to;
                 break;
             default:
                 return res.status(400).json({
@@ -306,20 +306,18 @@ export const getSummaryReport = async (req, res) => {
             const firstRecord = sortedHistory[0];
             const lastRecord = sortedHistory[sortedHistory.length - 1];
 
-            console.log(lastRecord?.attributes);
 
             let totalDistance = 0;
             let totalSpeed = 0;
             let maxSpeed = 0;
             let totalFuel = 0;
 
-            sortedHistory.forEach((curr, i) => {
-                if (i === 0) return; // Skip the first iteration as there is no previous record
+            for (let i = 1; i < sortedHistory.length; i++) { // Start from 1 to skip the first iteration
+                const curr = sortedHistory[i];
                 const prev = sortedHistory[i - 1];
-                // console.log(curr.attributes);
 
                 // Calculate distance between consecutive points
-                totalDistance += (curr.distance || 0);
+                // totalDistance += (curr.attributes.distance || 0) - (prev.attributes.distance || 0);
                 // console.log(sortedHistory[i].attributes.distance);
                 // Update max speed
                 maxSpeed = Math.max(maxSpeed, curr.speed || 0);
@@ -331,13 +329,13 @@ export const getSummaryReport = async (req, res) => {
                 totalFuel += calculateFuelConsumption(prev, curr);
 
                 // Calculate odometer difference
-                const odometerDiff = (curr.odometer || 0) - (prev.odometer || 0);
+                const odometerDiff = (lastRecord?.attributes.odometer || 0) - (firstRecord?.attributes.odometer || 0);
 
                 // If odometer data is available and valid, use it for distance calculation
                 if (odometerDiff > 0) {
                     totalDistance = odometerDiff;
                 }
-            });
+            }
 
             return {
                 deviceId: deviceId,
@@ -346,8 +344,8 @@ export const getSummaryReport = async (req, res) => {
                 averageSpeed: totalSpeed / (sortedHistory.length - 1),
                 maxSpeed: maxSpeed,
                 spentFuel: totalFuel,
-                startOdometer: firstRecord.odometer || 0,
-                endOdometer: lastRecord.odometer || 0,
+                startOdometer: firstRecord?.attributes.odometer || 0,
+                endOdometer: lastRecord?.attributes.odometer || 0,
                 startTime: firstRecord.deviceTime,
                 endTime: lastRecord.deviceTime,
             };

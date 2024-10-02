@@ -1,3 +1,4 @@
+import { Device } from "../models/device.model.js";
 import Geofence from "../models/geofence.model.js";
 
 export const getGeofences = async (req, res) => {
@@ -18,10 +19,20 @@ export const getGeofences = async (req, res) => {
             geofences = await Geofence.find()
                 .skip(skip)
                 .limit(limit);
+
+            // Manually populate device details
+            for (let geofence of geofences) {
+                geofence.deviceDetails = await Device.find({ deviceId: { $in: geofence.deviceIds } });
+            }
         } else if (role === 'user') {
             geofences = await Geofence.find({ createdBy: req.user.id })
                 .skip(skip)
                 .limit(limit);
+
+            // Manually populate device details
+            for (let geofence of geofences) {
+                geofence.deviceDetails = await Device.find({ deviceId: { $in: geofence.deviceIds } });
+            }
         } else {
             return res.status(403).json({ message: 'Forbidden: Invalid role' });
         }
@@ -47,8 +58,14 @@ export const getGeofences = async (req, res) => {
                 type: data.type,
                 geofenceCode: data.geofenceCode,
                 transitTime: data.transitTime,
-                assignType: data.assignType,
-                vehicleIds: data.vehicleIds,
+                deviceIds: data.deviceDetails.map(device => {
+
+                    return {
+                        name: device.name,
+                        id: device.deviceId
+                    }
+                }
+                ),
             })),
             pagination: {
                 currentPage: page,
@@ -109,21 +126,20 @@ export const addGeofence = async (req, res) => {
             type,
             geofenceCode,
             transitTime,
-            assignType,
-            vehicleIds,
+            deviceIds,
             area
         } = req.body;
 
         const createdBy = req.user.id;
 
         // Validation
-        if (!name || !type || !assignType) {
-            return res.status(400).json({ message: 'Name, Type, and Assign Type are required.' });
+        if (!name || !type) {
+            return res.status(400).json({ message: 'Name and Type are required.' });
         }
 
-        if (assignType === 'vehicle' && (!vehicleIds || vehicleIds.length === 0)) {
-            return res.status(400).json({ message: 'Please select at least one vehicle.' });
-        }
+        // if (assignType === 'vehicle' && (!deviceIds || deviceIds.length === 0)) {
+        //     return res.status(400).json({ message: 'Please select at least one vehicle.' });
+        // }
 
         // Create the geofence object
         const geofence = new Geofence({
@@ -131,9 +147,8 @@ export const addGeofence = async (req, res) => {
             type,
             geofenceCode,
             transitTime,
+            deviceIds,
             area,
-            assignType,
-            vehicleIds,
             createdBy,
         });
 
@@ -176,8 +191,7 @@ export const updateGeofence = async (req, res) => {
             type,
             geofenceCode,
             transitTime,
-            assignType,
-            vehicleIds,
+            deviceIds,
             area
         } = req.body;
 
@@ -188,17 +202,12 @@ export const updateGeofence = async (req, res) => {
             return res.status(404).json({ message: 'Geofence not found' });
         }
 
-        if (assignType === 'vehicle' && (!vehicleIds || vehicleIds.length === 0)) {
-            return res.status(400).json({ message: 'Please select at least one vehicle.' });
-        }
-
         // Update the geofence fields
         geofence.name = name || geofence.name;
         geofence.type = type || geofence.type;
         geofence.geofenceCode = geofenceCode || geofence.geofenceCode;
         geofence.transitTime = transitTime || geofence.transitTime;
-        geofence.assignType = assignType || geofence.assignType;
-        geofence.vehicleIds = vehicleIds || geofence.vehicleIds;
+        geofence.deviceIds = deviceIds || geofence.deviceIds;
         geofence.area = area || geofence.area;
 
         // Save the updated geofence
