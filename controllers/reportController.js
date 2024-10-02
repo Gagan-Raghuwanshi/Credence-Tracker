@@ -2,9 +2,9 @@ import { History } from "../models/history.model.js"
 import moment from 'moment';
 
 
-export const getDeviceReport = async (req, res) => {
+export const getCombinedReport = async (req, res) => {
     try {
-        const { deviceId, period } = req.body;
+        const { deviceId, period } = req.query;
 
         let from;
         let to = new Date(); // Default to current date for 'to'
@@ -48,8 +48,8 @@ export const getDeviceReport = async (req, res) => {
                 to.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                from = req.body.from; // For custom, you should pass the dates from the request
-                to = req.body.to;
+                from = req.query.from; // For custom, you should pass the dates from the request
+                to = req.query.to;
                 break;
             default:
                 return res.status(400).json({
@@ -93,7 +93,7 @@ export const getDeviceReport = async (req, res) => {
         });
 
         res.status(200).json({
-            message: "Alert report fetched successfully",
+            message: "Combined report fetched successfully",
             success: true,
             deviceId,
             data: typesOnly
@@ -110,7 +110,7 @@ export const getDeviceReport = async (req, res) => {
 
 export const getCustomReport = async (req, res) => {
     try {
-        const { deviceId, period } = req.body;
+        const { deviceId, period } = req.query;
         let from;
         let to = new Date(); // Default to current date for 'to'
 
@@ -153,8 +153,8 @@ export const getCustomReport = async (req, res) => {
                 to.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                from = req.body.from; // For custom, you should pass the dates from the request
-                to = req.body.to;
+                from = req.query.from; // For custom, you should pass the dates from the request
+                to = req.query.to;
                 break;
             default:
                 return res.status(400).json({
@@ -189,7 +189,7 @@ export const getCustomReport = async (req, res) => {
         }
 
         res.status(200).json({
-            message: "Device report fetched successfully",
+            message: "Custom report fetched successfully",
             success: true,
             deviceId,
             data: historyData
@@ -206,7 +206,7 @@ export const getCustomReport = async (req, res) => {
 
 export const getSummaryReport = async (req, res) => {
     try {
-        const { deviceIds, period } = req.body;
+        const { deviceIds, period } = req.query;
         let from;
         let to = new Date(); // Default to current date for 'to'
 
@@ -249,8 +249,8 @@ export const getSummaryReport = async (req, res) => {
                 to.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                from = req.body.from; // For custom, you should pass the dates from the request
-                to = req.body.to;
+                from = req.query.from; // For custom, you should pass the dates from the request
+                to = req.query.to;
                 break;
             default:
                 return res.status(400).json({

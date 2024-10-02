@@ -11,19 +11,21 @@ const app = express(); // Initializing express app
 // Object to hold the status of devices
 let deviceStatus = {};
 const stopLimit = 1; // Speed limit to consider a device as stopped
-let deviceSpeed; // Variable to hold device speed
 let data = null; // Variable to hold additional data
+
+const inactivityThreshold = 1; // 5 minutes in milliseconds
 
 // Function to check the status of a device
 const checkDeviceStatus = (deviceData) => {
     // Destructuring device data
-    const { deviceId, status, attributes: { ignition, alarm }, speed, latitude, longitude } = deviceData;
+    const { deviceId, status, attributes: { ignition, alarm, motion }, speed, latitude, longitude, lastUpdate } = deviceData;
 
     const speedLimit = 60; // Speed limit for alerts
+    const now = Date.now(); // Current timestamp
 
     // Initialize device status if not already present
     if (!deviceStatus[deviceId]) {
-        deviceStatus[deviceId] = { ignition, speed, status };
+        deviceStatus[deviceId] = { ignition, speed, status, alarm, motion, lastUpdate: now };
         return;
     }
 
@@ -34,14 +36,15 @@ const checkDeviceStatus = (deviceData) => {
     }
 
     // Check for speed limit exceeded
-    if (speed > speedLimit && deviceStatus[deviceId].speed !== speedLimit) {
+    if (speed > speedLimit && deviceStatus[deviceId].speed <= speedLimit) {
         const alert = createAlert(deviceData, 'speedLimitExceeded'); // Create alert for speed limit exceeded
         sendAlert(alert); // Send the alert
     }
 
-    // Check for status change
+    // Check for status change (online, offline, or unknown)
     if (deviceStatus[deviceId].status !== status) {
-        const alert = createAlert(deviceData, status === 'online' ? 'statusOnline' : status === 'offline' ? 'statusOffline' : 'statusUnknown'); // Create alert for status change
+        const alertType = status === 'online' ? 'statusOnline' : status === 'offline' ? 'statusOffline' : 'statusUnknown';
+        const alert = createAlert(deviceData, alertType); // Create alert for status change
         sendAlert(alert); // Send the alert
     }
 
@@ -53,22 +56,21 @@ const checkDeviceStatus = (deviceData) => {
         data = null; // Reset data
     }
 
-    // Check for device stopped status
-    // if (speed <= stopLimit && deviceStatus[deviceId].deviceSpeed !== stopLimit) {
-    //     const alert = createAlert(deviceData, 'deviceStopped'); // Create alert for device stopped
-    //     sendAlert(alert); // Send the alert
-    // } else if (speed > stopLimit && deviceStatus[deviceId].deviceSpeed !== stopLimit) {
-    //     const alert = createAlert(deviceData, 'deviceMoving'); // Create alert for device moving
-    //     sendAlert(alert); // Send the alert
-    // }
+    // Check for device motion status change (moving or stopped)
+    if (ignition && speed > stopLimit && motion !== deviceStatus[deviceId].motion) {
+        const motionAlertType = motion ? 'deviceMoving' : 'deviceStopped';
+        const alert = createAlert(deviceData, motionAlertType); // Create alert for motion change
+        sendAlert(alert); // Send the alert
+    }
+
+    // Check for device inactivity
+    if ((now - new Date(lastUpdate).getTime()) > inactivityThreshold) {
+        const alert = createAlert(deviceData, 'deviceInactive'); // Create alert for device inactivity
+        sendAlert(alert); // Send the alert
+    }
 
     // Update previous state of the device
-    deviceStatus[deviceId].ignition = ignition;
-    deviceStatus[deviceId].speed = speed;
-    deviceStatus[deviceId].status = status;
-    deviceStatus[deviceId].deviceSpeed = deviceSpeed;
-    deviceStatus[deviceId].alarm = alarm;
-    deviceStatus[deviceId].stopLimit = stopLimit;
+    deviceStatus[deviceId] = { ignition, speed, status, alarm, motion, lastUpdate: now };
 };
 
 // Function to create an alert based on device data
@@ -76,7 +78,6 @@ const createAlert = (deviceData, type) => {
     const { attributes: { ignition, speed, alarm }, status, latitude, longitude } = deviceData; // Destructuring device data
     const ignitionStatus = ignition ? 'ignitionOn' : 'ignitionOff'; // Determine ignition status
     const vehicleStatus = status === 'online' ? 'statusOnline' : status === 'offline' ? 'statusOffline' : 'statusUnknown'; // Determine vehicle status
-    const deviceSpeed = speed <= stopLimit ? 'deviceStopped' : speed > stopLimit ? 'deviceMoving' : 'deviceInactive'; // Determine device speed status
     const formattedDate = moment().format('DD/MM/YYYY HH:mm:ss'); // Format current date
     let message; // Variable to hold alert message
 
@@ -90,14 +91,18 @@ const createAlert = (deviceData, type) => {
     } else if (type === 'deviceStopped') {
         message = `Device ${deviceData.deviceId} is stopped! Speed: ${speed} km/h`;
     } else if (type === 'alarm') {
-        message = `Alarm for ${deviceData.deviceId} is ${alarm}!`;
-    } else if (type === "statusOnline" ? "statusOnline" : type === "statusOffline" ? "statusOffline" : "statusUnknown") {
-        message = `Status of ${deviceData.deviceId} is ${status === 'online' ? 'online' : status === 'offline' ? 'offline' : 'unknown'}`;
+        message = `Alarm for ${deviceData.name} is ${alarm}!`;
+    } else if (type === 'deviceMoving' || type === 'deviceStopped') {
+        message = `Device ${deviceData.name} is ${motion ? 'moving' : 'stopped'}!`;
+    } else if (type === 'statusOnline' || type === 'statusOffline' || type === 'statusUnknown') {
+        message = `Status for ${deviceData.name} is ${status}`;
+    } else if (type === 'deviceInactive') {
+        message = `Device ${deviceData.name} has been inactive for over ${inactivityThreshold / (60 * 1000)} minutes!`;
     }
 
     // Return the alert object
     return {
-        type: type === 'Ignition' ? ignitionStatus : type || vehicleStatus || deviceSpeed,
+        type: type === 'Ignition' ? ignitionStatus : type || vehicleStatus || motionStatus,
         deviceId: deviceData.deviceId,
         added: formattedDate,
         location: [longitude, latitude],
@@ -144,9 +149,9 @@ export const AlertFetching = async () => {
         });
 
         // Check the status of each device
-        PositionApiData.forEach((deviceData) => checkDeviceStatus(deviceData));
+        return PositionApiData.forEach((deviceData) => checkDeviceStatus(deviceData));
 
     } catch (error) {
         console.error('Error fetching data:', error); // Log any errors
     }
-}
+};
