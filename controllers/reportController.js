@@ -467,14 +467,14 @@ export const distanceReport = async (req, res) => {
         const totalDistances = calculateTotalDistanceByDeviceId(distanceData);
         
       res.json({
-          message:"got it",
+          message:"Distance report generated successfully",
           data:totalDistances
       })
   
     } catch (error) {
       console.error("Error fetching distance report:", error);
       res.status(500).json({
-        message: "Error fetching distance report",
+        message: "An error occurred while fetching the distance report. Please try again later.",
         success: false,
         error: error.message,
       });
