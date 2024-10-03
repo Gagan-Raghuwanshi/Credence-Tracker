@@ -26,9 +26,14 @@ export const deviceAllHistory = async (req, res) => {
 export const deviceHistoryByTime = async (req, res) => {
   const { deviceId, from, to } = req.query;
 
-  const formattedFromDateStr = from.replace(" ", "+"); 
-  const formattedToDateStr = to.replace(" ", "+"); 
+  const formattedFromDateStr = from.replace(" ", "+");
+  const formattedToDateStr = to.replace(" ", "+");
 
+  if (!deviceId || !from || !to) {
+    return res.status(400).json({
+      message: "All fields are required",
+    });
+  }
   try {
     const deviceHistory = await History.find({
       deviceId,
@@ -110,7 +115,7 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
 ) => {
   const { deviceId, from, to } = req.query;
   const formattedFromDateStr = from.replace(" ", "+");
-  const formattedToDateStr = to.replace(" ", "+"); 
+  const formattedToDateStr = to.replace(" ", "+");
   try {
     const deviceDataByDateRange = await History.find({
       deviceId,
@@ -135,17 +140,16 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
           deviceDataByTrips.push([...ignitionOnValue]);
           ignitionOnValue = [];
         }
-      } 
-      else if (ignitiontrue.attributes.ignition === true) {
+      } else if (ignitiontrue.attributes.ignition === true) {
         const objectData = {
-          deviceId:ignitiontrue.deviceId,
-          deviceTime:ignitiontrue.deviceTime,
-          latitude:ignitiontrue.latitude,
-          longitude:ignitiontrue.longitude,          
-          distance:ignitiontrue.attributes.distance,
-          totalDistance:ignitiontrue.attributes.totalDistance,
-          speed:ignitiontrue.speed,
-        }
+          deviceId: ignitiontrue.deviceId,
+          deviceTime: ignitiontrue.deviceTime,
+          latitude: ignitiontrue.latitude,
+          longitude: ignitiontrue.longitude,
+          distance: ignitiontrue.attributes.distance,
+          totalDistance: ignitiontrue.attributes.totalDistance,
+          speed: ignitiontrue.speed,
+        };
         ignitionOnValue.push(objectData);
       }
     }
@@ -168,31 +172,35 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
           0
         ) / speed.length;
 
-        // here i am calculating AVG Time
-        const startTime = index[0].deviceTime;
-        const endTime = index.length > 1 ? index[index.length - 1].deviceTime : "Running"
-        const start = new Date(startTime);
-        const end = new Date(endTime);
-        const totalTimeMillis = end - start; 
-        const totalMinutes = Math.floor(totalTimeMillis / (1000 * 60));
-        const totalHours = Math.floor(totalMinutes / 60);
-        const remainingMinutes = totalMinutes % 60;
+      // here i am calculating AVG Time
+      const startTime = index[0].deviceTime;
+      const endTime =
+        index.length > 1 ? index[index.length - 1].deviceTime : "Running";
+      const start = new Date(startTime);
+      const end = new Date(endTime);
+      const totalTimeMillis = end - start;
+      const totalMinutes = Math.floor(totalTimeMillis / (1000 * 60));
+      const totalHours = Math.floor(totalMinutes / 60);
+      const remainingMinutes = totalMinutes % 60;
 
-        const duration = `${totalHours}h ${remainingMinutes}m`;
+      const duration = `${totalHours}h ${remainingMinutes}m`;
       // Create a new object to hold only the required fields
       const arrivalElement = {
         deviceId: index[0].deviceId,
-        startTime: index[0].deviceTime, 
+        startTime: index[0].deviceTime,
         maxSpeed: maxSpeed,
         avgSpeed: avgSpeed,
-        duration:duration,
+        duration: duration,
         startLongitude: index[0].longitude,
         startLatitude: index[0].latitude,
-        distance:index[index.length-1].distance-index[0].distance,
+        distance: index[index.length - 1].distance - index[0].distance,
         totalDistance: index[0].totalDistance,
-        endLongitude:index.length > 1 ? index[index.length - 1].longitude : "Running",
-        endLatitude:index.length > 1 ? index[index.length - 1].latitude : "Running",
-        endTime:index.length > 1 ? index[index.length - 1].deviceTime : "Running",         
+        endLongitude:
+          index.length > 1 ? index[index.length - 1].longitude : "Running",
+        endLatitude:
+          index.length > 1 ? index[index.length - 1].latitude : "Running",
+        endTime:
+          index.length > 1 ? index[index.length - 1].deviceTime : "Running",
       };
       // Update the first object in the index
       finalTrip.push(arrivalElement);
