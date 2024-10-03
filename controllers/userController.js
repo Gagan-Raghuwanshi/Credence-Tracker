@@ -8,10 +8,10 @@ export const createUser = async (req, res) => {
           mobile, users, notification,
           devices, driver,groups,
           category, model, report,
-          stop, trips, geofence,
-          maintenance,preferences,combinedReports,
-          customReports,history,schedulereports,
-          statistics,alerts ,summary,customCharts,devicelimit,dataLimit,
+          stop, travel, geofence,
+          maintenance,preferences,status,
+          distance,history,sensor,
+          idle,alerts ,vehicle,devicelimit,dataLimit,
           entriesCount} = req.body;
 
   // Check if the user has permission to create users
@@ -45,17 +45,17 @@ export const createUser = async (req, res) => {
       users: users || false,
       report: report || false,
       stop: stop || false,
-      trips: trips || false,
+      travel: travel || false,
       geofence: geofence || false,
       maintenance:maintenance || false,
       preferences:preferences||false,
-      combinedReports:combinedReports||false,
-      customReports:customReports||false,
+      status:status||false,
+      distance:distance||false,
       history:history||false,
-      schedulereports:schedulereports||false,
-      statistics:statistics||false,
+      sensor:sensor||false,
+      idle:idle||false,
       alerts:alerts||false ,
-      summary:summary||false,
+      vehicle:vehicle||false,
       customCharts : customCharts || false,
       devicelimit:devicelimit || false,
       dataLimit,
@@ -188,10 +188,10 @@ export const updateUser = async (req, res) => {
     email, password, username, mobile,
     notification, devices, driver, groups,
     category, model, users, report, stop,
-    trips, geofence, maintenance, preferences,
-    combinedReports, customReports, history,
-    schedulereports, statistics, alerts,
-    summary, customCharts,devicelimit
+    travel, geofence, maintenance, preferences,
+    status, distance, history,
+    sensor, idle, alerts,
+    vehicle, devicelimit
   } = req.body;
 
   try {
@@ -214,18 +214,17 @@ export const updateUser = async (req, res) => {
     user.users = users !== undefined ? users : user.users;
     user.report = report !== undefined ? report : user.report;
     user.stop = stop !== undefined ? stop : user.stop;
-    user.trips = trips !== undefined ? trips : user.trips;
+    user.travel = travel !== undefined ? travel : user.travel;
     user.geofence = geofence !== undefined ? geofence : user.geofence;
     user.maintenance = maintenance !== undefined ? maintenance : user.maintenance;
     user.preferences = preferences !== undefined ? preferences : user.preferences;
-    user.combinedReports = combinedReports !== undefined ? combinedReports : user.combinedReports;
-    user.customReports = customReports !== undefined ? customReports : user.customReports;
+    user.status = status !== undefined ? status : user.status;
+    user.distance = distance !== undefined ? distance : user.distance;
     user.history = history !== undefined ? history : user.history;
-    user.schedulereports = schedulereports !== undefined ? schedulereports : user.schedulereports;
-    user.statistics = statistics !== undefined ? statistics : user.statistics;
+    user.sensor = sensor !== undefined ? sensor : user.sensor;
+    user.idle = idle !== undefined ? idle : user.idle;
     user.alerts = alerts !== undefined ? alerts : user.alerts;
-    user.summary = summary !== undefined ? summary : user.summary;
-    user.customCharts = customCharts !== undefined ? customCharts : user.customCharts;
+    user.vehicle = vehicle !== undefined ? vehicle : user.vehicle;
     user.devicelimit = devicelimit !== undefined ? devicelimit : user.devicelimit;
     await user.save();
 

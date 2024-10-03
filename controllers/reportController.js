@@ -4,7 +4,7 @@ import moment from 'moment';
 
 export const getStatusReport = async (req, res) => {
     try {
-        const { deviceId, period, page = 1, limit = 20 } = req.body;
+        const { deviceId, period, page = 1, limit = 20 } = req.query;
 
         let from;
         let to = new Date();
@@ -76,10 +76,22 @@ export const getStatusReport = async (req, res) => {
         let totalSpeed = 0; // Variable to accumulate speed for average calculation
         let speedCount = 0; // Variable to count the number of speed entries for average calculation
 
-        for (const item of historyData) {
+        // Initialize variables for the report
+        let totalDistance = 0; // Total distance covered
+        let startTime = null; // To store the start time for the duration calculation
+        let duration = 0;
+
+
+        for (let i = 0; i < historyData.length; i++) {
+
+            const item = historyData[i];
+            const prevItem = historyData[i - 1];
+
+            totalDistance = item.attributes.totalDistance ? item.attributes.totalDistance - (prevItem ? prevItem.attributes.totalDistance : 0) : 0;
+            console.log(totalDistance)
+
             let type;
-            console.log(item.attributes);
-            // Determine the vehicle status based on conditions from the frontend
+
             if (item.attributes.ignition) {
                 if (item.speed > 60) {
                     type = "Overspeed";
@@ -94,13 +106,22 @@ export const getStatusReport = async (req, res) => {
 
             // Only push to typesOnly if the type has changed
             if (type !== previousType) {
-                const previousOdometer = typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].totalKm : item.attributes.odometer || 0;
-                const currentOdometer = item.attributes.odometer || 0;
 
-                // Update total speed and count for average speed calculation
+                // const previousOdometer = prevItem ? prevItem.attributes.odometer : 0; // Get odometer from previous item
+                // const currentOdometer = item.attributes.odometer || 0; // Current odometer reading
+                // const distance = currentOdometer - previousOdometer; // Calculate the distance traveled
+
+                // console.log(previousOdometer, currentOdometer);
+
                 if (item.speed > 0) {
                     totalSpeed += item.speed;
                     speedCount++;
+                }
+
+                if (!startTime) {
+                    startTime = item.deviceTime; // Set start time
+                } else {
+                    duration = Math.round((item.deviceTime - startTime) / 1000); // Duration in seconds
                 }
 
                 const averageSpeed = speedCount > 0 ? totalSpeed / speedCount : 0; // Calculate average speed
@@ -113,8 +134,9 @@ export const getStatusReport = async (req, res) => {
                 typesOnly.push({
                     ouid: item._id,
                     vehicleStatus: type,
-                    time: typesOnly.length > 0 ? (new Date(item.deviceTime).getTime() - new Date(historyData[typesOnly.length - 1].deviceTime).getTime()) / 1000 : 0, // time in seconds
-                    distance: currentOdometer - previousOdometer,
+                    time: formatDuration(duration), // time in seconds
+                    // time: typesOnly.length > 0 ? (new Date(item.deviceTime).getTime() - new Date(historyData[typesOnly.length - 1].deviceTime).getTime()) / 1000 : 0, // time in seconds
+                    distance: totalDistance,
                     maxSpeed: maxSpeed,
                     averageSpeed: averageSpeed,
                     startLocation: `${typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].endLocation.split(', ')[0] : item.latitude || 0}, ${typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].endLocation.split(', ')[1] : item.longitude || 0}`,
@@ -135,8 +157,18 @@ export const getStatusReport = async (req, res) => {
                 });
 
                 previousType = type; // Update previousType to the current type
+                startTime = item.deviceTime; // Set the new start time for the next entry
+                totalDistance = 0; // Reset distance for the next report entry
             }
         }
+
+        function formatDuration(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            seconds = seconds % 60;
+            return `${hours}H ${minutes}M ${seconds}S`;
+        }
+
 
         const totalCount = typesOnly.length;
 
