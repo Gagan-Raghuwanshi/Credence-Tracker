@@ -429,3 +429,706 @@ export const getSummaryReport = async (req, res) => {
         });
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// export const getIdleReports = async (req, res) => {
+//     try {
+//         const { deviceId, period, page = 1, limit = 20 } = req.body;
+
+//         let from;
+//         let to = new Date();
+
+//         switch (period) {
+//             case "Today":
+//                 from = new Date();
+//                 from.setHours(0, 0, 0, 0);
+//                 break;
+//             case "Yesterday":
+//                 from = new Date();
+//                 from.setDate(from.getDate() - 1);
+//                 from.setHours(0, 0, 0, 0);
+//                 to.setHours(0, 0, 0, 0);
+//                 break;
+//             case "This Week":
+//                 from = new Date();
+//                 from.setDate(from.getDate() - from.getDay());
+//                 from.setHours(0, 0, 0, 0);
+//                 break;
+//             case "Previous Week":
+//                 from = new Date();
+//                 const dayOfWeek = from.getDay();
+//                 from.setDate(from.getDate() - dayOfWeek - 7);
+//                 from.setHours(0, 0, 0, 0);
+//                 to.setDate(from.getDate() + 6);
+//                 to.setHours(23, 59, 59, 999);
+//                 break;
+//             case "This Month":
+//                 from = new Date();
+//                 from.setDate(1);
+//                 from.setHours(0, 0, 0, 0);
+//                 break;
+//             case "Previous Month":
+//                 from = new Date();
+//                 from.setMonth(from.getMonth() - 1);
+//                 from.setDate(1);
+//                 from.setHours(0, 0, 0, 0);
+//                 to = new Date(from.getFullYear(), from.getMonth() + 1, 0);
+//                 to.setHours(23, 59, 59, 999);
+//                 break;
+//             case "Custom":
+//                 from = req.query.from;
+//                 to = req.query.to;
+//                 break;
+//             default:
+//                 return res.status(400).json({
+//                     message: "Invalid period selection",
+//                     success: false
+//                 });
+//         }
+
+//         const formattedFromDateStr = from.toISOString();
+//         const formattedToDateStr = to.toISOString();
+
+//         const historyData = await History.find({
+//             deviceId,
+//             deviceTime: {
+//                 $gte: formattedFromDateStr,
+//                 $lte: formattedToDateStr,
+//             },
+//         })
+//             .skip((page - 1) * limit)
+//             .limit(parseInt(limit));
+
+//         const typesOnly = [];
+//         let previousType = null; 
+
+//         for (const item of historyData) {
+//             let type;                   
+            
+//             console.log("check",item);
+            
+
+//             console.log(item.attributes);
+
+//             if (item.attributes.ignition) {
+//                 if (item.speed > 60) {
+//                     type = "Overspeed";
+//                 } else if (item.speed > 0) {
+//                     type = "Ignition On";
+//                 } else {
+//                     type = "Idle";
+//                 }
+//             } else {
+//                 type = "Ignition Off";
+//             }
+
+
+
+//                 if (type !== previousType) {
+//                     const previousOdometer = typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].totalKm : 0;
+//                     const currentOdometer = item.attributes.odometer || 0;
+    
+//                     if(  type === "Idle"||  type === "Ignition Off"){
+//                         typesOnly.push({
+//                             ouid: item._id,
+//                             vehicleStatus: type,
+//                             durationSeconds: typesOnly.length > 0 ? (new Date(item.deviceTime).getTime() - new Date(historyData[typesOnly.length - 1].deviceTime).getTime()) / 1000 : 0, // time in seconds
+//                             distance: currentOdometer - previousOdometer,
+//                             maxSpeed: Math.max(...historyData.map(h => h.speed || 0)),
+//                             averageSpeed: (item.speed + (typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].averageSpeed || 0 : 0)) / 2 || 0,
+//                             startLocation: `${(typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.latitude : item.latitude) || 0}, ${(typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.longitude : item.longitude) || 0}`,
+//                             endLocation: `${item.latitude || 0}, ${item.longitude || 0}`,
+//                             startAddress: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.address || null : null,
+//                             endAddress: item.address || null,
+//                             sPoi: item.geofenceIds || null,
+//                             ePoi: item.ePoi || null,
+//                             arrivalTime: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.deviceTime || item.deviceTime : item.deviceTime,
+//                             departureTime: item.deviceTime || null,
+//                             totalKm: item.attributes.totalDistance || 0,
+//                             duration: null,
+//                             consumption: null,
+//                             initialFuelLevel: null,
+//                             finalFuelLevel: null,
+//                             kmpl: null,
+//                             driverInfos: null,
+//                         });
+//                     }
+    
+//                     previousType = type; 
+    
+//                 }
+
+            
+           
+//         }
+
+                
+
+
+//         const totalCount = typesOnly.length
+//         res.status(200).json({
+//             message: "Status report fetched successfully",
+//             success: true,
+//             deviceId,
+//             data: typesOnly,
+//             pagination: {
+//                 total: totalCount,
+//                 page: parseInt(page),
+//                 limit: parseInt(limit),
+//                 totalPages: Math.ceil(totalCount / limit),
+//             }
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({
+//             message: "Error fetching alert report",
+//             success: false,
+//             error: error.message
+//         });
+//     }
+// };
+
+
+
+
+// export const getIdleReports = async (req, res) => {
+//     try {
+//         const { deviceIds, period, page = 1, limit = 20 } = req.body;
+
+//         let from;
+//         let to = new Date();
+
+//         switch (period) {
+//             case "Today":
+//                 from = new Date();
+//                 from.setHours(0, 0, 0, 0);
+//                 break;
+//             case "Yesterday":
+//                 from = new Date();
+//                 from.setDate(from.getDate() - 1);
+//                 from.setHours(0, 0, 0, 0);
+//                 to.setHours(0, 0, 0, 0);
+//                 break;
+//             case "This Week":
+//                 from = new Date();
+//                 from.setDate(from.getDate() - from.getDay());
+//                 from.setHours(0, 0, 0, 0);
+//                 break;
+//             case "Previous Week":
+//                 from = new Date();
+//                 const dayOfWeek = from.getDay();
+//                 from.setDate(from.getDate() - dayOfWeek - 7);
+//                 from.setHours(0, 0, 0, 0);
+//                 to.setDate(from.getDate() + 6);
+//                 to.setHours(23, 59, 59, 999);
+//                 break;
+//             case "This Month":
+//                 from = new Date();
+//                 from.setDate(1);
+//                 from.setHours(0, 0, 0, 0);
+//                 break;
+//             case "Previous Month":
+//                 from = new Date();
+//                 from.setMonth(from.getMonth() - 1);
+//                 from.setDate(1);
+//                 from.setHours(0, 0, 0, 0);
+//                 to = new Date(from.getFullYear(), from.getMonth() + 1, 0);
+//                 to.setHours(23, 59, 59, 999);
+//                 break;
+//             case "Custom":
+//                 from = req.query.from;
+//                 to = req.query.to;
+//                 break;
+//             default:
+//                 return res.status(400).json({
+//                     message: "Invalid period selection",
+//                     success: false
+//                 });
+//         }
+
+//         const formattedFromDateStr = from.toISOString();
+//         const formattedToDateStr = to.toISOString();
+
+//         // Use Promise.all to fetch data for all devices
+//         const deviceReports = await Promise.all(
+//             deviceIds.map(async (deviceId) => {
+//                 const historyData = await History.find({
+//                     deviceId,
+//                     deviceTime: {
+//                         $gte: formattedFromDateStr,
+//                         $lte: formattedToDateStr,
+//                     },
+//                 })
+//                     .skip((page - 1) * limit)
+//                     .limit(parseInt(limit));
+
+//                 const typesOnly = [];
+//                 let previousType = null;
+
+//                 for (const item of historyData) {
+//                     let type;
+
+//                     if (item.attributes.ignition) {
+//                         if (item.speed > 60) {
+//                             type = "Overspeed";
+//                         } else if (item.speed > 0) {
+//                             type = "Ignition On";
+//                         } else {
+//                             type = "Idle";
+//                         }
+//                     } else {
+//                         type = "Ignition Off";
+//                     }
+
+//                     if (type !== previousType) {
+//                         const previousOdometer = typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].totalKm : 0;
+//                         const currentOdometer = item.attributes.odometer || 0;
+
+//                         if (type === "Idle" || type === "Ignition Off") {
+//                             typesOnly.push({
+//                                 ouid: item._id,
+//                                 vehicleStatus: type,
+//                                 durationSeconds: typesOnly.length > 0 ? (new Date(item.deviceTime).getTime() - new Date(historyData[typesOnly.length - 1].deviceTime).getTime()) / 1000 : 0,
+//                                 distance: currentOdometer - previousOdometer,
+//                                 maxSpeed: Math.max(...historyData.map(h => h.speed || 0)),
+//                                 averageSpeed: (item.speed + (typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].averageSpeed || 0 : 0)) / 2 || 0,
+//                                 startLocation: `${(typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.latitude : item.latitude) || 0}, ${(typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.longitude : item.longitude) || 0}`,
+//                                 endLocation: `${item.latitude || 0}, ${item.longitude || 0}`,
+//                                 startAddress: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.address || null : null,
+//                                 endAddress: item.address || null,
+//                                 sPoi: item.geofenceIds || null,
+//                                 ePoi: item.ePoi || null,
+//                                 arrivalTime: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.deviceTime || item.deviceTime : item.deviceTime,
+//                                 departureTime: item.deviceTime || null,
+//                                 totalKm: item.attributes.totalDistance || 0,
+//                                 duration: null,
+//                                 consumption: null,
+//                                 initialFuelLevel: null,
+//                                 finalFuelLevel: null,
+//                                 kmpl: null,
+//                                 driverInfos: null,
+//                             });
+//                         }
+
+//                         previousType = type;
+//                     }
+//                 }
+
+//                 return {
+//                     deviceId,
+//                     data: typesOnly,
+//                     pagination: {
+//                         total: typesOnly.length,
+//                         page: parseInt(page),
+//                         limit: parseInt(limit),
+//                         totalPages: Math.ceil(typesOnly.length / limit),
+//                     },
+//                 };
+//             })
+//         );
+
+//         res.status(200).json({
+//             message: "Status report fetched successfully",
+//             success: true,
+//             data: deviceReports,
+//         });
+//     } catch (error) {
+//         console.log(error);
+//         res.status(500).json({
+//             message: "Error fetching alert report",
+//             success: false,
+//             error: error.message,
+//         });
+//     }
+// };
+
+
+
+
+export const getIdleReports = async (req, res) => {
+    try {
+        const { deviceIds, period, page = 1, limit = 20 } = req.body;
+
+        let from;
+        let to = new Date();
+
+        switch (period) {
+            case "Today":
+                from = new Date();
+                from.setHours(0, 0, 0, 0);
+                break;
+            case "Yesterday":
+                from = new Date();
+                from.setDate(from.getDate() - 1);
+                from.setHours(0, 0, 0, 0);
+                to.setHours(0, 0, 0, 0);
+                break;
+            case "This Week":
+                from = new Date();
+                from.setDate(from.getDate() - from.getDay());
+                from.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Week":
+                from = new Date();
+                const dayOfWeek = from.getDay();
+                from.setDate(from.getDate() - dayOfWeek - 7);
+                from.setHours(0, 0, 0, 0);
+                to.setDate(from.getDate() + 6);
+                to.setHours(23, 59, 59, 999);
+                break;
+            case "This Month":
+                from = new Date();
+                from.setDate(1);
+                from.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Month":
+                from = new Date();
+                from.setMonth(from.getMonth() - 1);
+                from.setDate(1);
+                from.setHours(0, 0, 0, 0);
+                to = new Date(from.getFullYear(), from.getMonth() + 1, 0);
+                to.setHours(23, 59, 59, 999);
+                break;
+            case "Custom":
+                from = req.query.from;
+                to = req.query.to;
+                break;
+            default:
+                return res.status(400).json({
+                    message: "Invalid period selection",
+                    success: false
+                });
+        }
+
+        const formattedFromDateStr = from.toISOString();
+        const formattedToDateStr = to.toISOString();
+
+        // Use Promise.all to fetch data for all devices
+        const deviceReports = await Promise.all(
+            deviceIds.map(async (deviceId) => {
+                const historyData = await History.find({
+                    deviceId,
+                    deviceTime: {
+                        $gte: formattedFromDateStr,
+                        $lte: formattedToDateStr,
+                    },
+                })
+                    .skip((page - 1) * limit)
+                    .limit(parseInt(limit));
+
+                const typesOnly = [];
+                let previousType = null;
+                let totalDurationSeconds = 0;  // Initialize totalDurationSeconds for this device
+
+                for (const item of historyData) {
+                    let type;
+
+                    if (item.attributes.ignition) {
+                        if (item.speed > 60) {
+                            type = "Overspeed";
+                        } else if (item.speed > 0) {
+                            type = "Ignition On";
+                        } else {
+                            type = "Idle";
+                        }
+                    } else {
+                        type = "Ignition Off";
+                    }
+
+                    if (type !== previousType) {
+                        const previousOdometer = typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].totalKm : 0;
+                        const currentOdometer = item.attributes.odometer || 0;
+
+                        if (type === "Idle" || type === "Ignition Off") {
+                            const durationSeconds = typesOnly.length > 0
+                                ? (new Date(item.deviceTime).getTime() - new Date(historyData[typesOnly.length - 1].deviceTime).getTime()) / 1000
+                                : 0;
+
+                            // Add durationSeconds to totalDurationSeconds
+                            totalDurationSeconds += durationSeconds;
+
+                            typesOnly.push({
+                                ouid: item._id,
+                                vehicleStatus: type,
+                                durationSeconds: durationSeconds,  // Add this duration to the current object
+                                // distance: currentOdometer - previousOdometer,
+                                location: `${item.latitude || 0}, ${item.longitude || 0}`,
+                                // startAddress: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.address || null : null,
+                                address: item.address || null,
+                                
+                                arrivalTime: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.deviceTime || item.deviceTime : item.deviceTime,
+                                departureTime: item.deviceTime || null,
+                                
+                            });
+                        }
+
+                        previousType = type;
+                    }
+                }
+
+                return {
+                    deviceId,
+                    data: typesOnly,
+                    totalDurationSeconds,  // Add the totalDurationSeconds for this device
+                    pagination: {
+                        total: typesOnly.length,
+                        page: parseInt(page),
+                        limit: parseInt(limit),
+                        totalPages: Math.ceil(typesOnly.length / limit),
+                    },
+                };
+            })
+        );
+
+        res.status(200).json({
+            message: "Status report fetched successfully",
+            success: true,
+            data: deviceReports,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Error fetching alert report",
+            success: false,
+            error: error.message,
+        });
+    }
+};

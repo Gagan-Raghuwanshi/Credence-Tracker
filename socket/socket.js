@@ -30,10 +30,6 @@ export const setupSocket = (server) => {
       console.log("data type", typeof deviceId, deviceId);
     });
 
-
-    AlertFetching(socket);
-    // socket.emit('alerts', alerts)
-
             
 
     // setInterval(() => {
