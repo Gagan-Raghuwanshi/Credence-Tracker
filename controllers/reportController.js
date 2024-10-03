@@ -4,7 +4,7 @@ import moment from 'moment';
 
 export const getStatusReport = async (req, res) => {
     try {
-        const { deviceId, period, page = 1, limit = 20 } = req.query;
+        const { deviceId, period, page = 1, limit = 20 } = req.body;
 
         let from;
         let to = new Date();
@@ -47,8 +47,8 @@ export const getStatusReport = async (req, res) => {
                 to.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                from = req.query.from;
-                to = req.query.to;
+                from = new Date(req.query.from);
+                to = new Date(req.query.to);
                 break;
             default:
                 return res.status(400).json({
@@ -71,27 +71,29 @@ export const getStatusReport = async (req, res) => {
             .limit(parseInt(limit));
 
         const typesOnly = [];
-        let previousType = null; // Variable to track the previous type
+        let previousType = null;
 
-        let totalSpeed = 0; // Variable to accumulate speed for average calculation
-        let speedCount = 0; // Variable to count the number of speed entries for average calculation
-
-        // Initialize variables for the report
-        let totalDistance = 0; // Total distance covered
-        let startTime = null; // To store the start time for the duration calculation
-        let duration = 0;
-
+        let totalDistance = 0;
+        let totalSpeed = 0;
+        let speedCount = 0;
+        let maxSpeed = 0;
+        let startTime = null;
+        let totalDuration = 0;
 
         for (let i = 0; i < historyData.length; i++) {
-
             const item = historyData[i];
             const prevItem = historyData[i - 1];
 
-            totalDistance = item.attributes.totalDistance ? item.attributes.totalDistance - (prevItem ? prevItem.attributes.totalDistance : 0) : 0;
-            console.log(totalDistance)
+            // Calculate distance
+            if (i > 0 && item.attributes.totalDistance) {
+                // Calculate distance only if there is a previous item
+                totalDistance += item.attributes.totalDistance - (prevItem?.attributes?.totalDistance || 0);
+            } else {
+                totalDistance = 0; // Set to 0 for the first item
+            }
 
+            // Determine the status type
             let type;
-
             if (item.attributes.ignition) {
                 if (item.speed > 60) {
                     type = "Overspeed";
@@ -104,62 +106,91 @@ export const getStatusReport = async (req, res) => {
                 type = "Ignition Off";
             }
 
-            // Only push to typesOnly if the type has changed
+            // Add data only if the type has changed
             if (type !== previousType) {
-
-                // const previousOdometer = prevItem ? prevItem.attributes.odometer : 0; // Get odometer from previous item
-                // const currentOdometer = item.attributes.odometer || 0; // Current odometer reading
-                // const distance = currentOdometer - previousOdometer; // Calculate the distance traveled
-
-                // console.log(previousOdometer, currentOdometer);
-
-                if (item.speed > 0) {
-                    totalSpeed += item.speed;
-                    speedCount++;
-                }
-
                 if (!startTime) {
-                    startTime = item.deviceTime; // Set start time
+                    startTime = item.deviceTime;
                 } else {
-                    duration = Math.round((item.deviceTime - startTime) / 1000); // Duration in seconds
+                    const endTime = item.deviceTime;
+                    // Calculate duration and prevent negative values
+                    let duration = Math.floor((new Date(endTime) - new Date(startTime)) / 1000);
+                    if (duration < 0) duration = 0; // Prevent negative time
+
+                    totalDuration += duration;
+
+                    // Calculate average speed
+                    const averageSpeed = speedCount > 0 ? totalSpeed / speedCount : 0;
+
+                    // Push report entry for the previous type
+                    typesOnly.push({
+                        ouid: item._id,
+                        vehicleStatus: previousType || type,
+                        time: formatDuration(duration),
+                        distance: previousType === 'Ignition Off' ? 0 : totalDistance,
+                        maxSpeed: maxSpeed,
+                        averageSpeed: averageSpeed,
+                        startLocation: `${prevItem?.latitude || 0}, ${prevItem?.longitude || 0}`,
+                        endLocation: `${item.latitude || 0}, ${item.longitude || 0}`,
+                        startAddress: prevItem?.address || null,
+                        endAddress: item.address || null,
+                        startDateTime: startTime,
+                        endDateTime: endTime,
+                        totalKm: item.attributes.totalDistance || 0,
+                        duration: duration,
+                        consumption: null,
+                        initialFuelLevel: prevItem?.attributes?.fuel || null,
+                        finalFuelLevel: item.attributes?.fuel || null,
+                        kmpl: null,
+                        driverInfos: null,
+                    });
+
+                    // Reset accumulators for the next type block
+                    totalDistance = 0;
+                    totalSpeed = 0;
+                    speedCount = 0;
+                    maxSpeed = 0;
+                    startTime = item.deviceTime;
                 }
-
-                const averageSpeed = speedCount > 0 ? totalSpeed / speedCount : 0; // Calculate average speed
-
-                // Calculate max speed by comparing with previous item speed
-                const maxSpeed = typesOnly.length > 0
-                    ? Math.max(typesOnly[typesOnly.length - 1].maxSpeed, item.speed)
-                    : item.speed;
-
-                typesOnly.push({
-                    ouid: item._id,
-                    vehicleStatus: type,
-                    time: formatDuration(duration), // time in seconds
-                    // time: typesOnly.length > 0 ? (new Date(item.deviceTime).getTime() - new Date(historyData[typesOnly.length - 1].deviceTime).getTime()) / 1000 : 0, // time in seconds
-                    distance: totalDistance,
-                    maxSpeed: maxSpeed,
-                    averageSpeed: averageSpeed,
-                    startLocation: `${typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].endLocation.split(', ')[0] : item.latitude || 0}, ${typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].endLocation.split(', ')[1] : item.longitude || 0}`,
-                    endLocation: `${item.latitude || 0}, ${item.longitude || 0}`,
-                    startAddress: typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].endAddress || null : null,
-                    endAddress: item.address || null,
-                    sPoi: item.geofenceIds || null,
-                    ePoi: item.ePoi || null,
-                    startDateTime: typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].endDateTime : item.deviceTime,
-                    endDateTime: item.deviceTime || null,
-                    totalKm: item.attributes.totalDistance || 0,
-                    duration: null,
-                    consumption: null,
-                    initialFuelLevel: null,
-                    finalFuelLevel: null,
-                    kmpl: null,
-                    driverInfos: null,
-                });
-
-                previousType = type; // Update previousType to the current type
-                startTime = item.deviceTime; // Set the new start time for the next entry
-                totalDistance = 0; // Reset distance for the next report entry
             }
+
+            // Update accumulators for the next iteration
+            if (item.speed > 0) {
+                totalSpeed += item.speed;
+                speedCount++;
+                maxSpeed = Math.max(maxSpeed, item.speed);
+            }
+
+            previousType = type; // Update previousType to the current type
+        }
+
+        // Final type entry for the last record
+        if (previousType && startTime) {
+            const lastItem = historyData[historyData.length - 1];
+            const duration = Math.floor((new Date(lastItem.deviceTime) - new Date(startTime)) / 1000);
+            const finalDuration = duration < 0 ? 0 : duration; // Prevent negative time
+
+            const averageSpeed = speedCount > 0 ? totalSpeed / speedCount : 0;
+            typesOnly.push({
+                ouid: lastItem._id,
+                vehicleStatus: previousType,
+                time: formatDuration(finalDuration),
+                distance: previousType === 'Ignition Off' ? 0 : totalDistance,
+                maxSpeed: maxSpeed,
+                averageSpeed: averageSpeed,
+                startLocation: `${historyData[historyData.length - 2]?.latitude || 0}, ${historyData[historyData.length - 2]?.longitude || 0}`,
+                endLocation: `${lastItem.latitude || 0}, ${lastItem.longitude || 0}`,
+                startAddress: historyData[historyData.length - 2]?.address || null,
+                endAddress: lastItem.address || null,
+                startDateTime: startTime,
+                endDateTime: lastItem.deviceTime,
+                totalKm: lastItem.attributes.totalDistance || 0,
+                duration: finalDuration,
+                consumption: null,
+                initialFuelLevel: historyData[historyData.length - 2]?.attributes.fuel || null,
+                finalFuelLevel: lastItem.attributes.fuel || null,
+                kmpl: null,
+                driverInfos: null,
+            });
         }
 
         function formatDuration(seconds) {
@@ -168,7 +199,6 @@ export const getStatusReport = async (req, res) => {
             seconds = seconds % 60;
             return `${hours}H ${minutes}M ${seconds}S`;
         }
-
 
         const totalCount = typesOnly.length;
 
@@ -189,10 +219,13 @@ export const getStatusReport = async (req, res) => {
         res.status(500).json({
             message: "Error fetching alert report",
             success: false,
-            error: error.message
+            error: error.message,
         });
     }
 };
+
+
+
 
 export const getCustomReport = async (req, res) => {
     try {
@@ -474,42 +507,41 @@ export const getSummaryReport = async (req, res) => {
 
 export const distanceReport = async (req, res) => {
     try {
-      const { deviceIds, startDate, endDate } = req.body; 
-      console.log("data",req.body)
-      const distanceData = await History.find({
-          deviceId:{ $in: deviceIds },
-          deviceTime: {
-            $gte: startDate,
-            $lte: endDate,
-          },
+        const { deviceIds, startDate, endDate } = req.body;
+        console.log("data", req.body)
+        const distanceData = await History.find({
+            deviceId: { $in: deviceIds },
+            deviceTime: {
+                $gte: startDate,
+                $lte: endDate,
+            },
         })
-  
+
         function calculateTotalDistanceByDeviceId(distanceData) {
-          const grouped = {};
-          distanceData.forEach(item => {
-            if (!grouped[item.deviceId]) {
-              grouped[item.deviceId] = 0;
-            }
-            grouped[item.deviceId] += item.attributes.distance;
-          });
-        
-          return grouped;
+            const grouped = {};
+            distanceData.forEach(item => {
+                if (!grouped[item.deviceId]) {
+                    grouped[item.deviceId] = 0;
+                }
+                grouped[item.deviceId] += item.attributes.distance;
+            });
+
+            return grouped;
         }
-        
+
         const totalDistances = calculateTotalDistanceByDeviceId(distanceData);
-        
-      res.json({
-          message:"Distance report generated successfully",
-          data:totalDistances
-      })
-  
+
+        res.json({
+            message: "Distance report generated successfully",
+            data: totalDistances
+        })
+
     } catch (error) {
-      console.error("Error fetching distance report:", error);
-      res.status(500).json({
-        message: "An error occurred while fetching the distance report. Please try again later.",
-        success: false,
-        error: error.message,
-      });
+        console.error("Error fetching distance report:", error);
+        res.status(500).json({
+            message: "An error occurred while fetching the distance report. Please try again later.",
+            success: false,
+            error: error.message,
+        });
     }
-  };
-  
+};
