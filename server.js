@@ -57,9 +57,9 @@ app.use("/reports", reportRoute)
 app.use("/alerts", alertRoute)
 
 
-setInterval(() => {
+// setInterval(() => {
 fetchGPSdata();
-}, 10000);
+// }, 10000);
 
 // setInterval(() => {
 fetchdevicedata()
