@@ -70,7 +70,6 @@ const checkDeviceStatus = (io,deviceData) => {
     deviceStatus[deviceId].alarm = alarm;
     deviceStatus[deviceId].stopLimit = stopLimit;
 };
-
 const createAlert = (deviceData, type) => {
     const { attributes: { ignition, speed, alarm }, status, latitude, longitude } = deviceData; // Destructuring device data
     const ignitionStatus = ignition ? 'ignitionOn' : 'ignitionOff'; // Determine ignition status
