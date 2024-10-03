@@ -985,7 +985,7 @@ export const getSummaryReport = async (req, res) => {
 
 export const getIdleReports = async (req, res) => {
     try {
-        const { deviceIds, period, page = 1, limit = 20 } = req.body;
+        const { deviceIds, period, page = 1, limit = 20 } = req.query;
 
         let from;
         let to = new Date();
