@@ -56,7 +56,6 @@ export const createUser = async (req, res) => {
       idle:idle||false,
       alerts:alerts||false ,
       vehicle:vehicle||false,
-      customCharts : customCharts || false,
       devicelimit:devicelimit || false,
       dataLimit,
       entriesCount
