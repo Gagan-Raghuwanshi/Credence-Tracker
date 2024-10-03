@@ -114,7 +114,7 @@ const createAlert = (deviceData, type) => {
 // Function to send an alert
 const sendAlert = async (alert) => {
     console.log('Alert sent:', alert); // Log the alert
-    const savedAlert = await new Alert(alert).save(); // Save the alert to the database
+    const savedAlert = new Alert(alert); // Save the alert to the database
     await savedAlert.save(); // Ensure the alert is saved
 };
 
