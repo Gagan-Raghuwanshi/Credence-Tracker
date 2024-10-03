@@ -30,15 +30,7 @@ export const setupSocket = (server) => {
       console.log("data type", typeof deviceId, deviceId);
     });
 
-            
 
-    // setInterval(() => {
-    //   // console.log("deviceId", typeof targetDeviceId, targetDeviceId)
-    // }, 3000);
-
-    // setInterval(() => {
-    //   socket.emit("user", `welcome back ${socket.id}`);
-    // }, 1000);
 
     // single device data
     singleDeviceInterval = setInterval(() => {
@@ -130,14 +122,10 @@ export const setupSocket = (server) => {
       }
     }, 10000);
 
-    // allDeviceInterval = setInterval(() => {
-
-    // }, 10000);
-
     // all device data
     let deviceListData = "";
 
-    // fetch data instant for first time 
+    // fetch all device data instant for first time 
     setTimeout(() => {
       (async function () {
         const url = "http://104.251.212.84/api/devices";
@@ -211,9 +199,6 @@ export const setupSocket = (server) => {
       }, 1000);
 
     }, 100);
-
-
-
 
 
     allDeviceInterval = setInterval(() => {
