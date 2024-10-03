@@ -4,7 +4,7 @@ import moment from 'moment';
 
 export const getStatusReport = async (req, res) => {
     try {
-        const { deviceId, period, page = 1, limit = 20 } = req.body;
+        const { deviceId, period, page = 1, limit = 20 } = req.query;
 
         let from;
         let to = new Date();
