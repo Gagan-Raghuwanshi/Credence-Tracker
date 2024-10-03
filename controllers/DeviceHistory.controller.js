@@ -23,6 +23,35 @@ export const deviceAllHistory = async (req, res) => {
   }
 };
 
+export const deviceHistoryByTime = async (req, res) => {
+  const { deviceId, from, to } = req.query;
+
+  const formattedFromDateStr = from.replace(" ", "+"); 
+  const formattedToDateStr = to.replace(" ", "+"); 
+
+  try {
+    const deviceHistory = await History.find({
+      deviceId,
+      deviceTime: {
+        $gte: formattedFromDateStr, // From date (greater than or equal)
+        $lte: formattedToDateStr, // To date (less than or equal)
+      },
+    });
+    // console.log("devicce data", deviceHistory);
+
+    return res.status(201).json({
+      message: "See your device history",
+      success: true,
+      deviceHistory,
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error",
+      error: error.message,
+    });
+  }
+};
+
 export const deviceTripsWithRoute = async (req, res) => {
   const { deviceId, from, to } = req.query;
   //   console.log("query parameters", deviceId, from, to);
