@@ -16,7 +16,7 @@ export const fetchGPSdata = async () => {
 
     const savePromises = data.map(dataItem => {
       const dataDoc = new History(dataItem);
-      return dataDoc.save();
+      // return dataDoc.save();
     });
 
     await Promise.all(savePromises);

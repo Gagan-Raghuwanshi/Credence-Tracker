@@ -1,9 +1,9 @@
 import express from 'express';
 const router = express.Router();
-import { getCombinedReport, getCustomReport, getSummaryReport, } from '../controllers/reportController.js';
+import {  getCustomReport, getStatusReport, getSummaryReport, } from '../controllers/reportController.js';
 import { authenticateToken } from '../middleware/authMiddleware.js';
 
-router.get('/combined', authenticateToken, getCombinedReport);
+router.get('/combined', authenticateToken, getStatusReport);
 
 router.get('/custom', authenticateToken, getCustomReport);
 
