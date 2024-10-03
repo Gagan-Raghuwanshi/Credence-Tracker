@@ -471,3 +471,45 @@ export const getSummaryReport = async (req, res) => {
         });
     }
 };
+
+export const distanceReport = async (req, res) => {
+    try {
+      const { deviceIds, startDate, endDate } = req.body; 
+      console.log("data",req.body)
+      const distanceData = await History.find({
+          deviceId:{ $in: deviceIds },
+          deviceTime: {
+            $gte: startDate,
+            $lte: endDate,
+          },
+        })
+  
+        function calculateTotalDistanceByDeviceId(distanceData) {
+          const grouped = {};
+          distanceData.forEach(item => {
+            if (!grouped[item.deviceId]) {
+              grouped[item.deviceId] = 0;
+            }
+            grouped[item.deviceId] += item.attributes.distance;
+          });
+        
+          return grouped;
+        }
+        
+        const totalDistances = calculateTotalDistanceByDeviceId(distanceData);
+        
+      res.json({
+          message:"Distance report generated successfully",
+          data:totalDistances
+      })
+  
+    } catch (error) {
+      console.error("Error fetching distance report:", error);
+      res.status(500).json({
+        message: "An error occurred while fetching the distance report. Please try again later.",
+        success: false,
+        error: error.message,
+      });
+    }
+  };
+  
