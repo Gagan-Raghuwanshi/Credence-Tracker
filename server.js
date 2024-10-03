@@ -65,11 +65,16 @@ fetchGPSdata();
 fetchdevicedata()
 // }, 10000);
 
-// setInterval(() => {
-//     AlertFetching()
-//     }, 10000);
+
 
 const io = setupSocket(server); // Initialize Socket.IO
+
+
+
+// setInterval(() => {
+    AlertFetching(io)
+    // }, 10000);
+
 
 
 // import './utils/notification.utils.js';

@@ -31,8 +31,10 @@ export const setupSocket = (server) => {
     });
 
 
-    // const alerts = AlertFetching();
+    AlertFetching(socket);
     // socket.emit('alerts', alerts)
+
+            
 
     // setInterval(() => {
     //   // console.log("deviceId", typeof targetDeviceId, targetDeviceId)
@@ -117,9 +119,9 @@ export const setupSocket = (server) => {
               };
               console.log("single device data");
               socket.emit("single device data", dataForSocket);
-              console.log(
-                "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
-              );
+              // console.log(
+              //   "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
+              // );
             }
           } catch (error) {
             console.error(
@@ -201,7 +203,7 @@ export const setupSocket = (server) => {
             // console.log("device",mergedData)
             // console.log("All device data", mergedData);
             socket.emit("all device data", mergedData);
-            console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  first");
+            // console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  first");
 
           } catch (error) {
             console.error(
@@ -278,7 +280,7 @@ export const setupSocket = (server) => {
           // console.log("device",mergedData)
           // console.log("All device data", mergedData);
           socket.emit("all device data", mergedData);
-          console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA");
+          // console.log("Gagan Raghuwanshi");
         } catch (error) {
           console.error(
             "There was a problem with the fetch operation:",
