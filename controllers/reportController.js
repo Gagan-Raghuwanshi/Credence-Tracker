@@ -73,6 +73,9 @@ export const getStatusReport = async (req, res) => {
         const typesOnly = [];
         let previousType = null; // Variable to track the previous type
 
+        let totalSpeed = 0; // Variable to accumulate speed for average calculation
+        let speedCount = 0; // Variable to count the number of speed entries for average calculation
+
         for (const item of historyData) {
             let type;
             console.log(item.attributes);
@@ -91,23 +94,36 @@ export const getStatusReport = async (req, res) => {
 
             // Only push to typesOnly if the type has changed
             if (type !== previousType) {
-                const previousOdometer = typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].totalKm : 0;
+                const previousOdometer = typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].totalKm : item.attributes.odometer || 0;
                 const currentOdometer = item.attributes.odometer || 0;
+
+                // Update total speed and count for average speed calculation
+                if (item.speed > 0) {
+                    totalSpeed += item.speed;
+                    speedCount++;
+                }
+
+                const averageSpeed = speedCount > 0 ? totalSpeed / speedCount : 0; // Calculate average speed
+
+                // Calculate max speed by comparing with previous item speed
+                const maxSpeed = typesOnly.length > 0
+                    ? Math.max(typesOnly[typesOnly.length - 1].maxSpeed, item.speed)
+                    : item.speed;
 
                 typesOnly.push({
                     ouid: item._id,
                     vehicleStatus: type,
                     time: typesOnly.length > 0 ? (new Date(item.deviceTime).getTime() - new Date(historyData[typesOnly.length - 1].deviceTime).getTime()) / 1000 : 0, // time in seconds
                     distance: currentOdometer - previousOdometer,
-                    maxSpeed: Math.max(...historyData.map(h => h.speed || 0)),
-                    averageSpeed: (item.speed + (typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].averageSpeed || 0 : 0)) / 2 || 0,
-                    startLocation: `${(typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.latitude : item.latitude) || 0}, ${(typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.longitude : item.longitude) || 0}`,
+                    maxSpeed: maxSpeed,
+                    averageSpeed: averageSpeed,
+                    startLocation: `${typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].endLocation.split(', ')[0] : item.latitude || 0}, ${typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].endLocation.split(', ')[1] : item.longitude || 0}`,
                     endLocation: `${item.latitude || 0}, ${item.longitude || 0}`,
-                    startAddress: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.address || null : null,
+                    startAddress: typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].endAddress || null : null,
                     endAddress: item.address || null,
                     sPoi: item.geofenceIds || null,
                     ePoi: item.ePoi || null,
-                    startDateTime: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.deviceTime || item.deviceTime : item.deviceTime,
+                    startDateTime: typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].endDateTime : item.deviceTime,
                     endDateTime: item.deviceTime || null,
                     totalKm: item.attributes.totalDistance || 0,
                     duration: null,
@@ -122,13 +138,7 @@ export const getStatusReport = async (req, res) => {
             }
         }
 
-        const totalCount = await History.countDocuments({
-            deviceId,
-            deviceTime: {
-                $gte: formattedFromDateStr,
-                $lte: formattedToDateStr,
-            },
-        });
+        const totalCount = typesOnly.length;
 
         res.status(200).json({
             message: "Status report fetched successfully",
