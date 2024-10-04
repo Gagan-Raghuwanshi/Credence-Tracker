@@ -12,7 +12,7 @@ export const createUser = async (req, res) => {
           maintenance,preferences,status,
           distance,history,sensor,
           idle,alerts ,vehicle,devicelimit,dataLimit,
-          entriesCount} = req.body;
+          entriesCount, geofenceReport} = req.body;
 
   // Check if the user has permission to create users
   const isAuthorized = req.user.superadmin || req.user.users;
@@ -56,6 +56,7 @@ export const createUser = async (req, res) => {
       idle:idle||false,
       alerts:alerts||false ,
       vehicle:vehicle||false,
+      geofenceReport: geofenceReport|| false,
       devicelimit:devicelimit || false,
       dataLimit,
       entriesCount
@@ -190,7 +191,7 @@ export const updateUser = async (req, res) => {
     travel, geofence, maintenance, preferences,
     status, distance, history,
     sensor, idle, alerts,
-    vehicle, devicelimit
+    vehicle, devicelimit,geofenceReport
   } = req.body;
 
   try {
@@ -224,6 +225,7 @@ export const updateUser = async (req, res) => {
     user.idle = idle !== undefined ? idle : user.idle;
     user.alerts = alerts !== undefined ? alerts : user.alerts;
     user.vehicle = vehicle !== undefined ? vehicle : user.vehicle;
+    user.geofenceReport = geofenceReport !== undefined ? geofenceReport : user.geofenceReport;
     user.devicelimit = devicelimit !== undefined ? devicelimit : user.devicelimit;
     await user.save();
 
