@@ -9,7 +9,7 @@ export const fetchGPSdata = async () => {
 
   try {
     // Make the fetch request
-    console.log("first")
+    console.log("fetching position API data... function...........................")
     const response = await axios.get(url, {auth: { username: username, password: password },});
     const data = response.data;
 
