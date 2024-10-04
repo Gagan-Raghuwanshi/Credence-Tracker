@@ -71,9 +71,9 @@ const io = setupSocket(server); // Initialize Socket.IO
 
 
 
-// setInterval(() => {
+setInterval(() => {
     AlertFetching(io)
-    // }, 10000);
+    }, 10000);
 
 
 
