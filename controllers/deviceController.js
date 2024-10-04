@@ -178,4 +178,36 @@ export const deleteDeviceById = async (req, res) => {
 };
 
 
+export const getDeviceByGroup = async (req, res) => {
+  try {
+      const { groupId } = req.params;
+
+      console.log(groupId);
+      
+
+      const devices = await Device.find({
+        groups: { $in: [groupId] }
+    }).select('name deviceId'); 
+
+      if (!devices || devices.length === 0) {
+          return res.status(404).json({
+              success: false,
+              message: `No devices found for the groupId: ${groupId}`,
+          });
+      }
+
+      res.status(200).json({
+          success: true,
+          message: `Devices found for groupId: ${groupId}`,
+          data: devices,
+      });
+  } catch (error) {
+      console.error('Error fetching devices by groupId:', error);
+      res.status(500).json({
+          success: false,
+          message: 'Server error fetching devices by groupId',
+          error: error.message,
+      });
+  }
+};
 
