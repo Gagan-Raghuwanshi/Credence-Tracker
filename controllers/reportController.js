@@ -1,3 +1,4 @@
+import { Device } from "../models/device.model.js";
 import { History } from "../models/history.model.js"
 import moment from 'moment';
 
@@ -551,7 +552,7 @@ export const distanceReport = async (req, res) => {
 
 export const getIdleReports = async (req, res) => {
     try {
-        const {  period, page = 1, limit = 20 } = req.query;
+        const { period, page = 1, limit = 20 } = req.query;
         const deviceIds = req.query.deviceIds.split(',').map(Number);
         let from;
         let to = new Date();
@@ -659,10 +660,10 @@ export const getIdleReports = async (req, res) => {
                                 location: `${item.latitude || 0}, ${item.longitude || 0}`,
                                 // startAddress: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.address || null : null,
                                 address: item.address || null,
-                                
+
                                 arrivalTime: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.deviceTime || item.deviceTime : item.deviceTime,
                                 departureTime: item.deviceTime || null,
-                                
+
                             });
                         }
 
@@ -674,12 +675,12 @@ export const getIdleReports = async (req, res) => {
                     deviceId,
                     data: typesOnly,
                     totalDurationSeconds,  // Add the totalDurationSeconds for this device
-                    pagination: {
-                        total: typesOnly.length,
-                        page: parseInt(page),
-                        limit: parseInt(limit),
-                        totalPages: Math.ceil(typesOnly.length / limit),
-                    },
+                    // pagination: {
+                    //     total: typesOnly.length,
+                    //     page: parseInt(page),
+                    //     limit: parseInt(limit),
+                    //     totalPages: Math.ceil(typesOnly.length / limit),
+                    // },
                 };
             })
         );
@@ -694,6 +695,95 @@ export const getIdleReports = async (req, res) => {
         res.status(500).json({
             message: "Error fetching alert report",
             success: false,
+            error: error.message,
+        });
+    }
+};
+
+
+
+
+// export const getDevicesByUser = async (req, res) => {
+//     try {
+//         const userId = req.user.id;
+
+//         const devices = await Device.find({ createdBy: userId });
+
+//         if (!devices || devices.length === 0) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'No devices found for this user',
+//             });
+//         }
+
+//         res.status(200).json({
+//             success: true,
+//             message: 'Devices fetched successfully',
+//             data: devices,
+//         });
+//     } catch (error) {
+//         console.error('Error fetching devices:', error);
+//         res.status(500).json({
+//             success: false,
+//             message: 'Server error fetching devices',
+//             error: error.message,
+//         });
+//     }
+// };
+
+
+
+
+export const vehiclelog = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { subscription } = req.query;
+        console.log("subscription", subscription);
+
+
+        if (subscription == "Subscription") {
+            const devices = await Device.find({
+                createdBy: userId,
+                updatedAt: { $exists: true }
+            });                
+            
+            const sendDeviceData = devices.map(device => ({
+                ouid:device._id,
+                Imei:device.uniqueId,
+                sim:device.sim,
+                model:device.model,
+                installationdate:device.installationdate,
+             expirationdate:device.expirationdate,
+             deviceId:device.deviceId,
+             extenddate:device.extenddate
+              }));
+
+
+            if (!devices || devices.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No devices found for this user with an updatedAt field',
+                });
+            }
+
+
+            res.status(200).json({
+                success: true,
+                message: 'Devices with updatedAt field fetched successfully',
+                data: sendDeviceData,
+            });
+        }
+        else {
+            return res.status(403).json({
+                success: false,
+                message: 'Please Select Proper feild',
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching devices:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error fetching devices',
             error: error.message,
         });
     }
