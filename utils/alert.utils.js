@@ -111,7 +111,6 @@ const sendAlert = async (io,alert) => {
 
     // await savedAlert.save(); 
 };
-
 export const AlertFetching = async (io) => {
     try {
         const { data: PositionApiData } = await axios.get('http://104.251.212.84/api/positions', {
@@ -142,7 +141,7 @@ export const AlertFetching = async (io) => {
         io.emit("Alerts",alertsArray);
         alertsArray = [];
 
-                console.log("pavan check");
+                console.log("pavan check\ngagan check\nyash check\nprachi check");
                 
 
     } catch (error) {

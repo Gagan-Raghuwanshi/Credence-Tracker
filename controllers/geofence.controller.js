@@ -80,7 +80,6 @@ export const getGeofences = async (req, res) => {
         res.status(500).json({ message: "Server error", error: error.message });
     }
 }
-
 export const isCrossed = async (req, res) => {
     try {
         const deviceId = req.query.deviceId;

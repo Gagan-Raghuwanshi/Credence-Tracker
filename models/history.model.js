@@ -9,6 +9,7 @@ const historyschema = new mongoose.Schema({
     hdop: Number,
     operator: String,
     ignition: Boolean,
+    alarm: String,
     charge: Boolean,
     power: Number,
     battery: Number,
