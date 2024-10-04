@@ -19,6 +19,7 @@ const userSchema = new mongoose.Schema({
   stop: { type: Boolean ,default:false},
   travel: { type: Boolean,default:false},
   geofence: { type: Boolean,default:false},
+  geofenceReport: { type: Boolean,default:false},
   maintenance: { type: Boolean,default:false},
   preferences: { type: Boolean,default:false},
   status: { type: Boolean,default:false},

@@ -1,3 +1,4 @@
+import { Device } from "../models/device.model.js";
 import { History } from "../models/history.model.js"
 import moment from 'moment';
 
@@ -541,6 +542,248 @@ export const distanceReport = async (req, res) => {
         res.status(500).json({
             message: "An error occurred while fetching the distance report. Please try again later.",
             success: false,
+            error: error.message,
+        });
+    }
+};
+
+
+
+
+export const getIdleReports = async (req, res) => {
+    try {
+        const { period, page = 1, limit = 20 } = req.query;
+        const deviceIds = req.query.deviceIds.split(',').map(Number);
+        let from;
+        let to = new Date();
+
+        switch (period) {
+            case "Today":
+                from = new Date();
+                from.setHours(0, 0, 0, 0);
+                break;
+            case "Yesterday":
+                from = new Date();
+                from.setDate(from.getDate() - 1);
+                from.setHours(0, 0, 0, 0);
+                to.setHours(0, 0, 0, 0);
+                break;
+            case "This Week":
+                from = new Date();
+                from.setDate(from.getDate() - from.getDay());
+                from.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Week":
+                from = new Date();
+                const dayOfWeek = from.getDay();
+                from.setDate(from.getDate() - dayOfWeek - 7);
+                from.setHours(0, 0, 0, 0);
+                to.setDate(from.getDate() + 6);
+                to.setHours(23, 59, 59, 999);
+                break;
+            case "This Month":
+                from = new Date();
+                from.setDate(1);
+                from.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Month":
+                from = new Date();
+                from.setMonth(from.getMonth() - 1);
+                from.setDate(1);
+                from.setHours(0, 0, 0, 0);
+                to = new Date(from.getFullYear(), from.getMonth() + 1, 0);
+                to.setHours(23, 59, 59, 999);
+                break;
+            case "Custom":
+                from = req.query.from;
+                to = req.query.to;
+                break;
+            default:
+                return res.status(400).json({
+                    message: "Invalid period selection",
+                    success: false
+                });
+        }
+
+        const formattedFromDateStr = from.toISOString();
+        const formattedToDateStr = to.toISOString();
+
+        // Use Promise.all to fetch data for all devices
+        const deviceReports = await Promise.all(
+            deviceIds.map(async (deviceId) => {
+                const historyData = await History.find({
+                    deviceId,
+                    deviceTime: {
+                        $gte: formattedFromDateStr,
+                        $lte: formattedToDateStr,
+                    },
+                })
+                    .skip((page - 1) * limit)
+                    .limit(parseInt(limit));
+
+                const typesOnly = [];
+                let previousType = null;
+                let totalDurationSeconds = 0;  // Initialize totalDurationSeconds for this device
+
+                for (const item of historyData) {
+                    let type;
+
+                    if (item.attributes.ignition) {
+                        if (item.speed > 60) {
+                            type = "Overspeed";
+                        } else if (item.speed > 0) {
+                            type = "Ignition On";
+                        } else {
+                            type = "Idle";
+                        }
+                    } else {
+                        type = "Ignition Off";
+                    }
+
+                    if (type !== previousType) {
+                        const previousOdometer = typesOnly.length > 0 ? typesOnly[typesOnly.length - 1].totalKm : 0;
+                        const currentOdometer = item.attributes.odometer || 0;
+
+                        if (type === "Idle" || type === "Ignition Off") {
+                            const durationSeconds = typesOnly.length > 0
+                                ? (new Date(item.deviceTime).getTime() - new Date(historyData[typesOnly.length - 1].deviceTime).getTime()) / 1000
+                                : 0;
+
+                            // Add durationSeconds to totalDurationSeconds
+                            totalDurationSeconds += durationSeconds;
+
+                            typesOnly.push({
+                                ouid: item._id,
+                                vehicleStatus: type,
+                                durationSeconds: durationSeconds,  // Add this duration to the current object
+                                // distance: currentOdometer - previousOdometer,
+                                location: `${item.latitude || 0}, ${item.longitude || 0}`,
+                                // startAddress: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.address || null : null,
+                                address: item.address || null,
+
+                                arrivalTime: typesOnly.length > 0 ? historyData[typesOnly.length - 1]?.deviceTime || item.deviceTime : item.deviceTime,
+                                departureTime: item.deviceTime || null,
+
+                            });
+                        }
+
+                        previousType = type;
+                    }
+                }
+
+                return {
+                    deviceId,
+                    data: typesOnly,
+                    totalDurationSeconds,  // Add the totalDurationSeconds for this device
+                    // pagination: {
+                    //     total: typesOnly.length,
+                    //     page: parseInt(page),
+                    //     limit: parseInt(limit),
+                    //     totalPages: Math.ceil(typesOnly.length / limit),
+                    // },
+                };
+            })
+        );
+
+        res.status(200).json({
+            message: "Status report fetched successfully",
+            success: true,
+            data: deviceReports,
+        });
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Error fetching alert report",
+            success: false,
+            error: error.message,
+        });
+    }
+};
+
+
+
+
+// export const getDevicesByUser = async (req, res) => {
+//     try {
+//         const userId = req.user.id;
+
+//         const devices = await Device.find({ createdBy: userId });
+
+//         if (!devices || devices.length === 0) {
+//             return res.status(404).json({
+//                 success: false,
+//                 message: 'No devices found for this user',
+//             });
+//         }
+
+//         res.status(200).json({
+//             success: true,
+//             message: 'Devices fetched successfully',
+//             data: devices,
+//         });
+//     } catch (error) {
+//         console.error('Error fetching devices:', error);
+//         res.status(500).json({
+//             success: false,
+//             message: 'Server error fetching devices',
+//             error: error.message,
+//         });
+//     }
+// };
+
+
+
+
+export const vehiclelog = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const { subscription } = req.query;
+        console.log("subscription", subscription);
+
+
+        if (subscription == "Subscription") {
+            const devices = await Device.find({
+                createdBy: userId,
+                updatedAt: { $exists: true }
+            });                
+            
+            const sendDeviceData = devices.map(device => ({
+                ouid:device._id,
+                Imei:device.uniqueId,
+                sim:device.sim,
+                model:device.model,
+                installationdate:device.installationdate,
+             expirationdate:device.expirationdate,
+             deviceId:device.deviceId,
+             extenddate:device.extenddate
+              }));
+
+
+            if (!devices || devices.length === 0) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No devices found for this user with an updatedAt field',
+                });
+            }
+
+
+            res.status(200).json({
+                success: true,
+                message: 'Devices with updatedAt field fetched successfully',
+                data: sendDeviceData,
+            });
+        }
+        else {
+            return res.status(403).json({
+                success: false,
+                message: 'Please Select Proper feild',
+            });
+        }
+    } catch (error) {
+        console.error('Error fetching devices:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error fetching devices',
             error: error.message,
         });
     }
