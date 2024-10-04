@@ -551,8 +551,8 @@ export const distanceReport = async (req, res) => {
 
 export const getIdleReports = async (req, res) => {
     try {
-        const { deviceIds, period, page = 1, limit = 20 } = req.query;
-
+        const {  period, page = 1, limit = 20 } = req.query;
+        const deviceIds = req.query.deviceIds.split(',').map(Number);
         let from;
         let to = new Date();
 
