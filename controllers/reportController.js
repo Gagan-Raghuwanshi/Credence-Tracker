@@ -788,3 +788,515 @@ export const vehiclelog = async (req, res) => {
         });
     }
 };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getGeofenceReport = async (req, res) => {
+    try {
+        const { deviceIds, period, limit = 10, page = 1 } = req.query;
+        const parsedDeviceIds = deviceIds.split(',').map(Number);
+        let from;
+        let to = new Date(); // Default to current date for 'to'
+
+        // Define 'from' and 'to' based on the selected period
+        switch (period) {
+            case "Today":
+                from = new Date();
+                from.setHours(0, 0, 0, 0); // Start of today
+                break;
+            case "Yesterday":
+                from = new Date();
+                from.setDate(from.getDate() - 1); // Yesterday's date
+                from.setHours(0, 0, 0, 0); // Start of yesterday
+                to.setHours(0, 0, 0, 0); // End of yesterday
+                break;
+            case "This Week":
+                from = new Date();
+                from.setDate(from.getDate() - from.getDay()); // Set to start of the week (Sunday)
+                from.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Week":
+                from = new Date();
+                const dayOfWeek = from.getDay();
+                from.setDate(from.getDate() - dayOfWeek - 7); // Start of the previous week
+                from.setHours(0, 0, 0, 0);
+                to.setDate(from.getDate() + 6); // End of the previous week
+                to.setHours(23, 59, 59, 999);
+                break;
+            case "This Month":
+                from = new Date();
+                from.setDate(1); // Start of the month
+                from.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Month":
+                from = new Date();
+                from.setMonth(from.getMonth() - 1); // Previous month
+                from.setDate(1); // Start of the previous month
+                from.setHours(0, 0, 0, 0);
+                to = new Date(from.getFullYear(), from.getMonth() + 1, 0); // End of the previous month
+                to.setHours(23, 59, 59, 999);
+                break;
+            case "Custom":
+                from = new Date(req.query.from); // For custom, you should pass the dates from the request
+                to = new Date(req.query.to);
+                break;
+            default:
+                return res.status(400).json({
+                    message: "Invalid period selection",
+                    success: false
+                });
+        }
+
+        const query = {
+            deviceId: { $in: parsedDeviceIds },
+            deviceTime: {
+                $gte: from, // Ensure the date is in Date format
+                $lte: to,   // Ensure the date is in Date format
+            },
+            'attributes.alarm': { $in: ['geofenceEnter', 'geofenceExit'] }
+        };
+
+        const historyData = await History.find(query)
+            .sort({ deviceTime: 1 });
+
+        const geofenceReports = {};
+        const lastSeenEvents = {}; // Store the last seen events by deviceId and alarm type
+
+        // Initialize reports for all devices in the deviceIds array
+        parsedDeviceIds.forEach(deviceId => {
+            geofenceReports[deviceId] = {
+                name: deviceId,
+                events: [], // Array to store geofenceEnter and geofenceExit pairs
+            };
+        });
+
+        // Helper function to calculate halt time
+        const calculateHaltTime = (inTime, outTime) => {
+            const duration = (new Date(outTime) - new Date(inTime)) / 1000; // duration in seconds
+            return new Date(duration * 1000).toISOString().substr(11, 8); // Format to "HH:mm:ss"
+        };
+
+        // Iterate through the history data and process geofence entries and exits
+        historyData.forEach(entry => {
+            const { deviceId, deviceTime, attributes, _id } = entry;
+            const alarmType = attributes.alarm;
+            const report = geofenceReports[deviceId];
+
+            const eventKey = `${deviceId}-${alarmType}-${deviceTime}`; // Unique key to track duplicates
+
+            // Check if this event is a duplicate
+            if (lastSeenEvents[eventKey]) {
+                // Skip duplicate entry
+                return;
+            }
+
+            // Mark the current event as the last seen for this device and alarm type
+            lastSeenEvents[eventKey] = true;
+
+            if (alarmType === 'geofenceEnter') {
+                // Store the 'geofenceEnter' event
+                report.events.push({
+                    name: deviceId,
+                    ouid: _id,
+                    inTime: deviceTime.toLocaleString(),
+                    inLoc: [entry.longitude, entry.latitude], // Assuming these attributes exist
+                    outTime: null,
+                    outLoc: [],
+                    haltTime: "0:00:00",
+                    distance: 0,
+                });
+            } else if (alarmType === 'geofenceExit') {
+                // Find the latest 'geofenceEnter' without a corresponding 'geofenceExit'
+                const lastEvent = report.events.find(e => e.outTime === null);
+                // console.log(entry)
+                if (lastEvent) {
+                    // Update the event with 'geofenceExit' details
+                    lastEvent.outTime = deviceTime.toLocaleString();
+                    lastEvent.outLoc = [entry.longitude, entry.latitude]; // Assuming these attributes exist
+                    lastEvent.haltTime = calculateHaltTime(lastEvent.inTime, deviceTime);
+                    lastEvent.distance += attributes.distance || 0; // Assuming distance is stored in attributes
+                } else {
+                    console.warn(`No matching 'geofenceEnter' found for deviceId: ${deviceId} at time: ${deviceTime.toLocaleString()}`);
+                }
+            }
+        });
+
+        // Convert reports to array and paginate the results
+        const reportsArray = Object.values(geofenceReports).flatMap(report => report.events);
+        const totalReports = reportsArray.length;
+        const paginatedReports = reportsArray.slice((page - 1) * limit, page * limit);
+
+        res.status(200).json({
+            message: "Geofence report fetched successfully",
+            success: true,
+            data: {
+                reports: paginatedReports,
+                pagination: {
+                    total: totalReports,
+                    page: parseInt(page),
+                    limit: parseInt(limit),
+                    totalPages: Math.ceil(totalReports / limit),
+                }
+            }
+        });
+    } catch (error) {
+        console.error("Error fetching geofence report:", error);
+        res.status(500).json({
+            message: "Error fetching geofence report",
+            success: false,
+            error: error.message
+        });
+    }
+};
+
+
+
