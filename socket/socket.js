@@ -14,8 +14,9 @@ export const setupSocket = (server) => {
 
   io.on("connection", (socket) => {
     console.log("A new user connected", socket.id);
+
     let targetDeviceId = null;
-    let singleDeviceInterval, allDeviceInterval;
+    let singleDeviceInterval, allDeviceInterval, userr, pass,deviceListData = "";
 
     socket.on("disconnect", (reason) => {
       console.log(`User ${socket.id} disconnected. Reason: ${reason}`);
@@ -25,15 +26,17 @@ export const setupSocket = (server) => {
       clearInterval(allDeviceInterval);
     });
 
+
+    socket.on("credentials", (credentials) => {
+      userr = credentials.username;
+      pass = credentials.password;
+      // console.log("credentials", userr, pass);
+    });
+
+    // single device data
     socket.on("deviceId", (deviceId) => {
       targetDeviceId = deviceId;
       console.log("data type", typeof deviceId, deviceId);
-    });
-
-
-
-    // single device data
-    singleDeviceInterval = setInterval(() => {
       if (targetDeviceId != null) {
         // this is for devices start
         let devicelist = null;
@@ -46,8 +49,8 @@ export const setupSocket = (server) => {
         // setInterval(() => {
         (async function () {
           const url = "http://104.251.212.84/api/devices";
-          const username = "hbtrack";
-          const password = "123456@";
+          const username = userr;
+          const password = pass;
 
           try {
             const response = await axios.get(url, {
@@ -71,8 +74,8 @@ export const setupSocket = (server) => {
         // setInterval(() => {
         (async function () {
           const url = "http://104.251.212.84/api/positions";
-          const username = "hbtrack";
-          const password = "123456@";
+          const username = userr;
+          const password = pass;
 
           try {
             const response = await axios.get(url, {
@@ -105,8 +108,8 @@ export const setupSocket = (server) => {
                 name: devicelistFromAPI.name,
                 uniqueId: devicelistFromAPI.uniqueId,
               };
-              console.log("single device data");
               socket.emit("single device data", dataForSocket);
+              console.log("single device data");
               // console.log(
               //   "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
               // );
@@ -120,17 +123,110 @@ export const setupSocket = (server) => {
         })();
         // }, 10000);
       }
-    }, 10000);
+
+
+      
+        singleDeviceInterval = setInterval(() => {
+        if (targetDeviceId != null) {
+          // this is for devices start
+          let devicelist = null;
+          let devicelistFromAPI = {
+            category: "",
+            status: "",
+            lastUpdate: "",
+            name: "",
+          };
+          // setInterval(() => {
+          (async function () {
+            const url = "http://104.251.212.84/api/devices";
+            const username = userr;
+            const password = pass;
+  
+            try {
+              const response = await axios.get(url, {
+                auth: { username: username, password: password },
+              });
+              devicelist = response.data;
+              devicelistFromAPI = devicelist.find(
+                (device) => device.id === targetDeviceId
+              );
+  
+              // console.log('API response data:', devicelist);
+            } catch (error) {
+              console.error("Error fetching data from API:", error);
+            }
+          })();
+          // console.log("deviceId", typeof targetDeviceId, targetDeviceId)
+          // }, 10000);
+          // this is for devices end
+  
+          // in this setinterval i am emiting event
+          // setInterval(() => {
+          (async function () {
+            const url = "http://104.251.212.84/api/positions";
+            const username = userr;
+            const password = pass;
+  
+            try {
+              const response = await axios.get(url, {
+                auth: { username: username, password: password },
+              });
+              const data = response.data;
+              // console.log("data from GPS device ",data)
+              // console.log("BBBBBBBBBBB")
+  
+              const device = data.find(
+                (device) => device.deviceId === targetDeviceId
+              );
+              // console.log("device",device)
+              if (device) {
+                const dataForSocket = {
+                  speed: device.speed,
+                  longitude: device.longitude,
+                  latitude: device.latitude,
+                  course: device.course,
+                  deviceId: device.deviceId,
+                  deviceTime: device.deviceTime,
+                  // ignition: device.attributes.ignition,
+                  // distance: device.attributes.distance,
+                  // totalDistance: device.attributes.totalDistance,
+                  // event: device.attributes.event,
+                  attributes: device.attributes,
+                  category: devicelistFromAPI.category,
+                  status: devicelistFromAPI.status,
+                  lastUpdate: devicelistFromAPI.lastUpdate,
+                  name: devicelistFromAPI.name,
+                  uniqueId: devicelistFromAPI.uniqueId,
+                };
+                console.log("single device data");
+                socket.emit("single device data", dataForSocket);
+                // console.log(
+                //   "SSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSSS"
+                // );
+              }
+            } catch (error) {
+              console.error(
+                "There was a problem with the fetch operation:",
+                error.message
+              );
+            }
+          })();
+          // }, 10000);
+        }
+      }, 10000);
+  
+
+    });
+
 
     // all device data
-    let deviceListData = "";
 
-    // fetch all device data instant for first time 
+    // fetch all device data instant for first time
     setTimeout(() => {
       (async function () {
         const url = "http://104.251.212.84/api/devices";
-        const username = "hbtrack";
-        const password = "123456@";
+        const username = userr;
+        const password = pass;
 
         try {
           const response = await axios.get(url, {
@@ -148,8 +244,8 @@ export const setupSocket = (server) => {
       setTimeout(() => {
         (async function () {
           const url = "http://104.251.212.84/api/positions";
-          const username = "hbtrack";
-          const password = "123456@";
+          const username = userr;
+          const password = pass;
 
           try {
             const response = await axios.get(url, {
@@ -188,7 +284,6 @@ export const setupSocket = (server) => {
             // console.log("All device data", mergedData);
             socket.emit("all device data", mergedData);
             // console.log("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA  first");
-
           } catch (error) {
             console.error(
               "There was a problem with the fetch operation:",
@@ -197,15 +292,13 @@ export const setupSocket = (server) => {
           }
         })();
       }, 1000);
-
     }, 100);
-
 
     allDeviceInterval = setInterval(() => {
       (async function () {
         const url = "http://104.251.212.84/api/devices";
-        const username = "hbtrack";
-        const password = "123456@";
+        const username = userr;
+        const password = pass;
 
         try {
           const response = await axios.get(url, {
@@ -222,8 +315,8 @@ export const setupSocket = (server) => {
 
       (async function () {
         const url = "http://104.251.212.84/api/positions";
-        const username = "hbtrack";
-        const password = "123456@";
+        const username = userr;
+        const password = pass;
 
         try {
           const response = await axios.get(url, {
