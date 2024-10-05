@@ -701,26 +701,51 @@ export const getIdleReports = async (req, res) => {
 };
 
 
-
-
-// export const getDevicesByUser = async (req, res) => {
+// export const vehiclelog = async (req, res) => {
 //     try {
 //         const userId = req.user.id;
+//         const { subscription } = req.query;
+//         console.log("subscription", subscription);
 
-//         const devices = await Device.find({ createdBy: userId });
 
-//         if (!devices || devices.length === 0) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'No devices found for this user',
+//         if (subscription == "Subscription") {
+//             const devices = await Device.find({
+//                 createdBy: userId,
+//                 updatedAt: { $exists: true }
+//             });                
+            
+//             const sendDeviceData = devices.map(device => ({
+//                 ouid:device._id,
+//                 Imei:device.uniqueId,
+//                 sim:device.sim,
+//                 model:device.model,
+//                 installationdate:device.installationdate,
+//              expirationdate:device.expirationdate,
+//              deviceId:device.deviceId,
+//              extenddate:device.extenddate
+//               }));
+
+
+//             if (!devices || devices.length === 0) {
+//                 return res.status(404).json({
+//                     success: false,
+//                     message: 'No devices found for this user with an updatedAt field',
+//                 });
+//             }
+
+
+//             res.status(200).json({
+//                 success: true,
+//                 message: 'Devices with updatedAt field fetched successfully',
+//                 data: sendDeviceData,
 //             });
 //         }
-
-//         res.status(200).json({
-//             success: true,
-//             message: 'Devices fetched successfully',
-//             data: devices,
-//         });
+//         else {
+//             return res.status(403).json({
+//                 success: false,
+//                 message: 'Please Select Proper feild',
+//             });
+//         }
 //     } catch (error) {
 //         console.error('Error fetching devices:', error);
 //         res.status(500).json({
@@ -733,50 +758,102 @@ export const getIdleReports = async (req, res) => {
 
 
 
-
 export const vehiclelog = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { subscription } = req.query;
-        console.log("subscription", subscription);
+        const { attribute, period, from, to } = req.query; 
 
+        let fromDate, toDate = new Date(); 
 
-        if (subscription == "Subscription") {
+        switch (period) {
+            case "Today":
+                fromDate = new Date();
+                fromDate.setHours(0, 0, 0, 0);
+                break;
+            case "Yesterday":
+                fromDate = new Date();
+                fromDate.setDate(fromDate.getDate() - 1);
+                fromDate.setHours(0, 0, 0, 0);
+                toDate.setHours(0, 0, 0, 0);
+                break;
+            case "This Week":
+                fromDate = new Date();
+                fromDate.setDate(fromDate.getDate() - fromDate.getDay());
+                fromDate.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Week":
+                fromDate = new Date();
+                const dayOfWeek = fromDate.getDay();
+                fromDate.setDate(fromDate.getDate() - dayOfWeek - 7);
+                fromDate.setHours(0, 0, 0, 0);
+                toDate.setDate(fromDate.getDate() + 6);
+                toDate.setHours(23, 59, 59, 999);
+                break;
+            case "This Month":
+                fromDate = new Date();
+                fromDate.setDate(1);
+                fromDate.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Month":
+                fromDate = new Date();
+                fromDate.setMonth(fromDate.getMonth() - 1);
+                fromDate.setDate(1);
+                fromDate.setHours(0, 0, 0, 0);
+                toDate = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0);
+                toDate.setHours(23, 59, 59, 999);
+                break;
+            case "Custom":
+                fromDate = new Date(from); 
+                toDate = new Date(to);      
+                break;
+            default:
+                return res.status(400).json({
+                    message: "Invalid period selection",
+                    success: false
+                });
+        }
+
+        const formattedFromDateStr = fromDate.toISOString();
+        const formattedToDateStr = toDate.toISOString();
+
+        if (attribute == "Subscription") {
+
             const devices = await Device.find({
                 createdBy: userId,
-                updatedAt: { $exists: true }
+                updatedAt: { 
+                    $exists: true, 
+                    $gte: formattedFromDateStr, 
+                    $lte: formattedToDateStr 
+                }
             });                
-            
-            const sendDeviceData = devices.map(device => ({
-                ouid:device._id,
-                Imei:device.uniqueId,
-                sim:device.sim,
-                model:device.model,
-                installationdate:device.installationdate,
-             expirationdate:device.expirationdate,
-             deviceId:device.deviceId,
-             extenddate:device.extenddate
-              }));
 
+            const sendDeviceData = devices.map(device => ({
+                ouid: device._id,
+                Imei: device.uniqueId,
+                sim: device.sim,
+                model: device.model,
+                installationdate: device.installationdate,
+                expirationdate: device.expirationdate,
+                deviceId: device.deviceId,
+                extenddate: device.extenddate
+            }));
 
             if (!devices || devices.length === 0) {
                 return res.status(404).json({
                     success: false,
-                    message: 'No devices found for this user with an updatedAt field',
+                    message: 'No devices found for this user within the selected period',
                 });
             }
 
-
             res.status(200).json({
                 success: true,
-                message: 'Devices with updatedAt field fetched successfully',
+                message: 'Devices fetched successfully for the selected period',
                 data: sendDeviceData,
             });
-        }
-        else {
+        } else {
             return res.status(403).json({
                 success: false,
-                message: 'Please Select Proper feild',
+                message: 'Please select a proper field',
             });
         }
     } catch (error) {
@@ -788,7 +865,6 @@ export const vehiclelog = async (req, res) => {
         });
     }
 };
-
 
 
 
