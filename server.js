@@ -19,6 +19,7 @@ import reportRoute from "./routes/reportRoute.js"
 import categoryRoute from "./routes/category.route.js"
 import historyRoute from "./routes/deviceHistory.route.js";
 import alertRoute from "./routes/alert.route.js"
+import notificationRoute from "./routes/notification.route.js"
 import { fetchdevicedata } from "./utils/devicelistfunction.js";
 import { AlertFetching } from "./utils/alert.utils.js";
 dotenv.config();
@@ -55,6 +56,7 @@ app.use("/geofence", geofenceRoute)
 app.use("/history", historyRoute)
 app.use("/reports", reportRoute)
 app.use("/alerts", alertRoute)
+app.use("/notifications",notificationRoute )
 
 
 // setInterval(() => {
@@ -67,7 +69,7 @@ fetchdevicedata()
 
 
 
-const io = setupSocket(server); // Initialize Socket.IO
+const io = setupSocket(server); 
 
 
 
