@@ -9,11 +9,11 @@ router.get('/custom', authenticateToken, getCustomReport);
 
 router.get('/summary', authenticateToken, getSummaryReport);
 
-router.post('/distance', distanceReport);
-router.get('/vehiclelog',authenticateToken, vehiclelog);
+router.post('/distance', authenticateToken, distanceReport);
+router.get('/vehiclelog', authenticateToken, vehiclelog);
 
 
-router.get('/geofence', getGeofenceReport);
+router.get('/geofence', authenticateToken, getGeofenceReport);
 
 
 router.get('/idleSummary', authenticateToken, getIdleReports);

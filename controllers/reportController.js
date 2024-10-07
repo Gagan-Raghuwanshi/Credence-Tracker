@@ -713,7 +713,7 @@ export const getIdleReports = async (req, res) => {
 //                 createdBy: userId,
 //                 updatedAt: { $exists: true }
 //             });                
-            
+
 //             const sendDeviceData = devices.map(device => ({
 //                 ouid:device._id,
 //                 Imei:device.uniqueId,
@@ -761,9 +761,9 @@ export const getIdleReports = async (req, res) => {
 export const vehiclelog = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { attribute, period, from, to } = req.query; 
+        const { attribute, period, from, to } = req.query;
 
-        let fromDate, toDate = new Date(); 
+        let fromDate, toDate = new Date();
 
         switch (period) {
             case "Today":
@@ -803,8 +803,8 @@ export const vehiclelog = async (req, res) => {
                 toDate.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                fromDate = new Date(from); 
-                toDate = new Date(to);      
+                fromDate = new Date(from);
+                toDate = new Date(to);
                 break;
             default:
                 return res.status(400).json({
@@ -820,12 +820,12 @@ export const vehiclelog = async (req, res) => {
 
             const devices = await Device.find({
                 createdBy: userId,
-                updatedAt: { 
-                    $exists: true, 
-                    $gte: formattedFromDateStr, 
-                    $lte: formattedToDateStr 
+                updatedAt: {
+                    $exists: true,
+                    $gte: formattedFromDateStr,
+                    $lte: formattedToDateStr
                 }
-            });                
+            });
 
             const sendDeviceData = devices.map(device => ({
                 ouid: device._id,
@@ -867,410 +867,61 @@ export const vehiclelog = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const getGeofenceReport = async (req, res) => {
     try {
-        const { deviceIds, FromDate, ToDate, limit = 10, page = 1 } = req.query;
+        const { deviceIds, FromDate, ToDate, period, limit = 10, page = 1 } = req.query;
         const parsedDeviceIds = deviceIds.split(',').map(Number);
-        // let from;
-        // let to = new Date(); // Default to current date for 'to'
+        let from;
+        let to = new Date(); // Default to current date for 'to'
 
         // Define 'from' and 'to' based on the selected period
-        // switch (period) {
-        //     case "Today":
-        //         from = new Date();
-        //         from.setHours(0, 0, 0, 0); // Start of today
-        //         break;
-        //     case "Yesterday":
-        //         from = new Date();
-        //         from.setDate(from.getDate() - 1); // Yesterday's date
-        //         from.setHours(0, 0, 0, 0); // Start of yesterday
-        //         to.setHours(0, 0, 0, 0); // End of yesterday
-        //         break;
-        //     case "This Week":
-        //         from = new Date();
-        //         from.setDate(from.getDate() - from.getDay()); // Set to start of the week (Sunday)
-        //         from.setHours(0, 0, 0, 0);
-        //         break;
-        //     case "Previous Week":
-        //         from = new Date();
-        //         const dayOfWeek = from.getDay();
-        //         from.setDate(from.getDate() - dayOfWeek - 7); // Start of the previous week
-        //         from.setHours(0, 0, 0, 0);
-        //         to.setDate(from.getDate() + 6); // End of the previous week
-        //         to.setHours(23, 59, 59, 999);
-        //         break;
-        //     case "This Month":
-        //         from = new Date();
-        //         from.setDate(1); // Start of the month
-        //         from.setHours(0, 0, 0, 0);
-        //         break;
-        //     case "Previous Month":
-        //         from = new Date();
-        //         from.setMonth(from.getMonth() - 1); // Previous month
-        //         from.setDate(1); // Start of the previous month
-        //         from.setHours(0, 0, 0, 0);
-        //         to = new Date(from.getFullYear(), from.getMonth() + 1, 0); // End of the previous month
-        //         to.setHours(23, 59, 59, 999);
-        //         break;
-        //     case "Custom":
-        //         from = new Date(req.query.from); // For custom, you should pass the dates from the request
-        //         to = new Date(req.query.to);
-        //         break;
-        //     default:
-        //         return res.status(400).json({
-        //             message: "Invalid period selection",
-        //             success: false
-        //         });
-        // }
+        switch (period) {
+            case "Today":
+                from = new Date();
+                from.setHours(0, 0, 0, 0); // Start of today
+                break;
+            case "Yesterday":
+                from = new Date();
+                from.setDate(from.getDate() - 1); // Yesterday's date
+                from.setHours(0, 0, 0, 0); // Start of yesterday
+                to.setHours(0, 0, 0, 0); // End of yesterday
+                break;
+            case "This Week":
+                from = new Date();
+                from.setDate(from.getDate() - from.getDay()); // Set to start of the week (Sunday)
+                from.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Week":
+                from = new Date();
+                const dayOfWeek = from.getDay();
+                from.setDate(from.getDate() - dayOfWeek - 7); // Start of the previous week
+                from.setHours(0, 0, 0, 0);
+                to.setDate(from.getDate() + 6); // End of the previous week
+                to.setHours(23, 59, 59, 999);
+                break;
+            case "This Month":
+                from = new Date();
+                from.setDate(1); // Start of the month
+                from.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Month":
+                from = new Date();
+                from.setMonth(from.getMonth() - 1); // Previous month
+                from.setDate(1); // Start of the previous month
+                from.setHours(0, 0, 0, 0);
+                to = new Date(from.getFullYear(), from.getMonth() + 1, 0); // End of the previous month
+                to.setHours(23, 59, 59, 999);
+                break;
+            case "Custom":
+                from = new Date(req.query.from); // For custom, you should pass the dates from the request
+                to = new Date(req.query.to);
+                break;
+            default:
+                return res.status(400).json({
+                    message: "Invalid period selection",
+                    success: false
+                });
+        }
 
         const query = {
             deviceId: { $in: parsedDeviceIds },
@@ -1318,6 +969,7 @@ export const getGeofenceReport = async (req, res) => {
         historyData.forEach(entry => {
             const { deviceId, deviceTime, attributes, _id } = entry;
             const alarmType = attributes.alarm;
+            let previousTotalDistance;
             const report = geofenceReports[deviceId];
 
             const eventKey = `${deviceId}-${alarmType}-${deviceTime}`; // Unique key to track duplicates
@@ -1332,6 +984,9 @@ export const getGeofenceReport = async (req, res) => {
             lastSeenEvents[eventKey] = true;
 
             if (alarmType === 'geofenceEnter') {
+                // console.log(entry.attributes.totalDistance);
+                previousTotalDistance = entry.attributes.totalDistance;
+                // console.log(previousTotalDistance);
                 // Store the 'geofenceEnter' event
                 report.events.push({
                     name: report.name, // Use the device name from the report
@@ -1342,25 +997,20 @@ export const getGeofenceReport = async (req, res) => {
                     outLoc: null, // Initially set to null, will be updated on corresponding geofenceExit
                     haltTime: "0:00:00",
                     distance: 0,
+                    totalDistance: entry.attributes.totalDistance
                 });
             } else if (alarmType === 'geofenceExit') {
                 // Find the latest 'geofenceEnter' without a corresponding 'geofenceExit'
-                // const lastEvent = report.events.slice().reverse().find(e => e.outTime === null);
-                const lastEvent = report.events.filter(e => e.outTime === null);
-                console.log('Last Event:', lastEvent); // Log the last event for debugging
+                const lastEvent = report.events.slice().reverse().find(e => e.outTime === null);
+                // console.log('Last Event:', lastEvent); // Log the last event for debugging
                 if (lastEvent) {
                     // Update the event with 'geofenceExit' details
                     lastEvent.outTime = new Date(deviceTime).toLocaleString(); // Ensure deviceTime is a Date object
                     lastEvent.outLoc = [entry.longitude, entry.latitude]; // Assuming these attributes exist
                     const inTime = new Date(lastEvent.inTime);
                     const outTime = new Date(deviceTime);
-                    if (isNaN(inTime.getTime()) || isNaN(outTime.getTime())) {
-                        console.error("Invalid date values for inTime or outTime", { inTime, outTime });
-                        lastEvent.haltTime = "0:00:00"; // Default value in case of error
-                    } else {
-                        lastEvent.haltTime = calculateHaltTime(inTime, outTime);
-                    }
-                    lastEvent.distance += attributes.distance || 0; // Assuming distance is stored in attributes
+                    lastEvent.haltTime = calculateHaltTime(inTime, outTime);
+                    lastEvent.distance = entry.attributes.totalDistance - lastEvent.totalDistance; // Calculate distance based on current totalDistance and previous one
                 } else {
                     console.warn(`No matching 'geofenceEnter' found for deviceId: ${deviceId} at time: ${deviceTime}`);
                 }
@@ -1368,7 +1018,9 @@ export const getGeofenceReport = async (req, res) => {
         });
 
         // Convert reports to array and paginate the results
-        const reportsArray = Object.values(geofenceReports).flatMap(report => report.events);
+        const reportsArray = Object.values(geofenceReports).flatMap(report =>
+            report.events.map(({ totalDistance, ...event }) => event) // to remove totalDistance property from event object
+        );
         const totalReports = reportsArray.length;
         const paginatedReports = reportsArray.slice((page - 1) * limit, page * limit);
 
