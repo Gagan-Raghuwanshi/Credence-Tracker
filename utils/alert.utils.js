@@ -132,6 +132,9 @@ const sendAlert = async (io, alert) => {
     // await savedAlert.save(); 
 };
 
+// Example array of selected deviceIds
+const selectedDeviceIds = ['2636', '2661', '2652']; // Replace with actual selected deviceIds
+
 export const AlertFetching = async (io) => {
     try {
         const { data: PositionApiData } = await axios.get('http://104.251.212.84/api/positions', {
@@ -150,17 +153,21 @@ export const AlertFetching = async (io) => {
 
         const deviceApiData = new Map(deviceData.map(item => [item.id, item]));
 
-        PositionApiData.forEach(obj1 => {
+        // Filter the PositionApiData for selected deviceIds
+        const filteredDevices = PositionApiData.filter(obj => selectedDeviceIds.includes(obj.deviceId));
+
+        filteredDevices.forEach(obj1 => {
             const match = deviceApiData.get(obj1.deviceId);
             if (match) {
                 obj1.status = match.status;
             }
         });
 
-        PositionApiData.forEach((deviceData) => checkDeviceStatus(io, deviceData));
+        // Process the filtered device data
+        filteredDevices.forEach((deviceData) => checkDeviceStatus(io, deviceData));
 
-        io.emit("Alerts", alertsArray);
-        alertsArray = [];
+        io.emit("Alerts", alertsArray); // Send only relevant alerts
+        alertsArray = []; // Reset the alertsArray after sending
 
         console.log("pavan check\ngagan check\nyash check\nprachi check");
     } catch (error) {
