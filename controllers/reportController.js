@@ -713,7 +713,7 @@ export const getIdleReports = async (req, res) => {
 //                 createdBy: userId,
 //                 updatedAt: { $exists: true }
 //             });                
-            
+
 //             const sendDeviceData = devices.map(device => ({
 //                 ouid:device._id,
 //                 Imei:device.uniqueId,
@@ -761,9 +761,9 @@ export const getIdleReports = async (req, res) => {
 export const vehiclelog = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { attribute, period, from, to } = req.query; 
+        const { attribute, period, from, to } = req.query;
 
-        let fromDate, toDate = new Date(); 
+        let fromDate, toDate = new Date();
 
         switch (period) {
             case "Today":
@@ -803,8 +803,8 @@ export const vehiclelog = async (req, res) => {
                 toDate.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                fromDate = new Date(from); 
-                toDate = new Date(to);      
+                fromDate = new Date(from);
+                toDate = new Date(to);
                 break;
             default:
                 return res.status(400).json({
@@ -820,12 +820,12 @@ export const vehiclelog = async (req, res) => {
 
             const devices = await Device.find({
                 createdBy: userId,
-                updatedAt: { 
-                    $exists: true, 
-                    $gte: formattedFromDateStr, 
-                    $lte: formattedToDateStr 
+                updatedAt: {
+                    $exists: true,
+                    $gte: formattedFromDateStr,
+                    $lte: formattedToDateStr
                 }
-            });                
+            });
 
             const sendDeviceData = devices.map(device => ({
                 ouid: device._id,
@@ -865,355 +865,6 @@ export const vehiclelog = async (req, res) => {
         });
     }
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 export const getGeofenceReport = async (req, res) => {
@@ -1318,6 +969,7 @@ export const getGeofenceReport = async (req, res) => {
         historyData.forEach(entry => {
             const { deviceId, deviceTime, attributes, _id } = entry;
             const alarmType = attributes.alarm;
+            let previousTotalDistance;
             const report = geofenceReports[deviceId];
 
             const eventKey = `${deviceId}-${alarmType}-${deviceTime}`; // Unique key to track duplicates
@@ -1332,6 +984,9 @@ export const getGeofenceReport = async (req, res) => {
             lastSeenEvents[eventKey] = true;
 
             if (alarmType === 'geofenceEnter') {
+                // console.log(entry.attributes.totalDistance);
+                previousTotalDistance = entry.attributes.totalDistance;
+                // console.log(previousTotalDistance);
                 // Store the 'geofenceEnter' event
                 report.events.push({
                     name: report.name, // Use the device name from the report
@@ -1342,11 +997,12 @@ export const getGeofenceReport = async (req, res) => {
                     outLoc: null, // Initially set to null, will be updated on corresponding geofenceExit
                     haltTime: "0:00:00",
                     distance: 0,
+                    totalDistance: entry.attributes.totalDistance
                 });
             } else if (alarmType === 'geofenceExit') {
                 // Find the latest 'geofenceEnter' without a corresponding 'geofenceExit'
                 const lastEvent = report.events.slice().reverse().find(e => e.outTime === null);
-                console.log('Last Event:', lastEvent); // Log the last event for debugging
+                // console.log('Last Event:', lastEvent); // Log the last event for debugging
                 if (lastEvent) {
                     // Update the event with 'geofenceExit' details
                     lastEvent.outTime = new Date(deviceTime).toLocaleString(); // Ensure deviceTime is a Date object
@@ -1354,7 +1010,7 @@ export const getGeofenceReport = async (req, res) => {
                     const inTime = new Date(lastEvent.inTime);
                     const outTime = new Date(deviceTime);
                     lastEvent.haltTime = calculateHaltTime(inTime, outTime);
-                    lastEvent.distance += attributes.distance || 0; // Assuming distance is stored in attributes
+                    lastEvent.distance = entry.attributes.totalDistance - lastEvent.totalDistance; // Calculate distance based on current totalDistance and previous one
                 } else {
                     console.warn(`No matching 'geofenceEnter' found for deviceId: ${deviceId} at time: ${deviceTime}`);
                 }
@@ -1362,7 +1018,9 @@ export const getGeofenceReport = async (req, res) => {
         });
 
         // Convert reports to array and paginate the results
-        const reportsArray = Object.values(geofenceReports).flatMap(report => report.events);
+        const reportsArray = Object.values(geofenceReports).flatMap(report =>
+            report.events.map(({ totalDistance, ...event }) => event) // to remove totalDistance property from event object
+        );
         const totalReports = reportsArray.length;
         const paginatedReports = reportsArray.slice((page - 1) * limit, page * limit);
 
