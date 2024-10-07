@@ -133,7 +133,27 @@ const sendAlert = async (io, alert) => {
 };
 
 // Example array of selected deviceIds
-const selectedDeviceIds = ['2636', '2661', '2652']; // Replace with actual selected deviceIds
+// const selectedDeviceIds = [2636, 2661, 2652, 3667, 2992]; // Replace with actual selected deviceIds
+const selectedDeviceIds = []; // Replace with actual selected deviceIds
+
+
+const addDeviceToSelectedIds = async () => {
+    const notifications = await Notification.find().populate('Devices');
+    // console.log("Number of Notifications:", notifications, notifications.length);
+
+    notifications.forEach(notification => {
+        notification.Devices.forEach(device => {
+            if (device.deviceId) { // Check if the device has a deviceId property
+                selectedDeviceIds.push(Number(device.deviceId));
+                // console.log(selectedDeviceIds);
+            } else {
+                console.log(`Notification ${notification._id} has no devices or devices not populated.`);
+            }
+        });
+    });
+}
+addDeviceToSelectedIds();
+
 
 export const AlertFetching = async (io) => {
     try {
@@ -170,6 +190,9 @@ export const AlertFetching = async (io) => {
         alertsArray = []; // Reset the alertsArray after sending
 
         console.log("pavan check\ngagan check\nyash check\nprachi check");
+
+        console.log('All Device IDs:', Array.from(selectedDeviceIds));
+
     } catch (error) {
         console.error('Error fetching data:', error);
     }
