@@ -701,26 +701,51 @@ export const getIdleReports = async (req, res) => {
 };
 
 
-
-
-// export const getDevicesByUser = async (req, res) => {
+// export const vehiclelog = async (req, res) => {
 //     try {
 //         const userId = req.user.id;
+//         const { subscription } = req.query;
+//         console.log("subscription", subscription);
 
-//         const devices = await Device.find({ createdBy: userId });
 
-//         if (!devices || devices.length === 0) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'No devices found for this user',
+//         if (subscription == "Subscription") {
+//             const devices = await Device.find({
+//                 createdBy: userId,
+//                 updatedAt: { $exists: true }
+//             });                
+
+//             const sendDeviceData = devices.map(device => ({
+//                 ouid:device._id,
+//                 Imei:device.uniqueId,
+//                 sim:device.sim,
+//                 model:device.model,
+//                 installationdate:device.installationdate,
+//              expirationdate:device.expirationdate,
+//              deviceId:device.deviceId,
+//              extenddate:device.extenddate
+//               }));
+
+
+//             if (!devices || devices.length === 0) {
+//                 return res.status(404).json({
+//                     success: false,
+//                     message: 'No devices found for this user with an updatedAt field',
+//                 });
+//             }
+
+
+//             res.status(200).json({
+//                 success: true,
+//                 message: 'Devices with updatedAt field fetched successfully',
+//                 data: sendDeviceData,
 //             });
 //         }
-
-//         res.status(200).json({
-//             success: true,
-//             message: 'Devices fetched successfully',
-//             data: devices,
-//         });
+//         else {
+//             return res.status(403).json({
+//                 success: false,
+//                 message: 'Please Select Proper feild',
+//             });
+//         }
 //     } catch (error) {
 //         console.error('Error fetching devices:', error);
 //         res.status(500).json({
@@ -733,50 +758,102 @@ export const getIdleReports = async (req, res) => {
 
 
 
-
 export const vehiclelog = async (req, res) => {
     try {
         const userId = req.user.id;
-        const { subscription } = req.query;
-        console.log("subscription", subscription);
+        const { attribute, period, from, to } = req.query;
 
+        let fromDate, toDate = new Date();
 
-        if (subscription == "Subscription") {
+        switch (period) {
+            case "Today":
+                fromDate = new Date();
+                fromDate.setHours(0, 0, 0, 0);
+                break;
+            case "Yesterday":
+                fromDate = new Date();
+                fromDate.setDate(fromDate.getDate() - 1);
+                fromDate.setHours(0, 0, 0, 0);
+                toDate.setHours(0, 0, 0, 0);
+                break;
+            case "This Week":
+                fromDate = new Date();
+                fromDate.setDate(fromDate.getDate() - fromDate.getDay());
+                fromDate.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Week":
+                fromDate = new Date();
+                const dayOfWeek = fromDate.getDay();
+                fromDate.setDate(fromDate.getDate() - dayOfWeek - 7);
+                fromDate.setHours(0, 0, 0, 0);
+                toDate.setDate(fromDate.getDate() + 6);
+                toDate.setHours(23, 59, 59, 999);
+                break;
+            case "This Month":
+                fromDate = new Date();
+                fromDate.setDate(1);
+                fromDate.setHours(0, 0, 0, 0);
+                break;
+            case "Previous Month":
+                fromDate = new Date();
+                fromDate.setMonth(fromDate.getMonth() - 1);
+                fromDate.setDate(1);
+                fromDate.setHours(0, 0, 0, 0);
+                toDate = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0);
+                toDate.setHours(23, 59, 59, 999);
+                break;
+            case "Custom":
+                fromDate = new Date(from);
+                toDate = new Date(to);
+                break;
+            default:
+                return res.status(400).json({
+                    message: "Invalid period selection",
+                    success: false
+                });
+        }
+
+        const formattedFromDateStr = fromDate.toISOString();
+        const formattedToDateStr = toDate.toISOString();
+
+        if (attribute == "Subscription") {
+
             const devices = await Device.find({
                 createdBy: userId,
-                updatedAt: { $exists: true }
-            });                
-            
-            const sendDeviceData = devices.map(device => ({
-                ouid:device._id,
-                Imei:device.uniqueId,
-                sim:device.sim,
-                model:device.model,
-                installationdate:device.installationdate,
-             expirationdate:device.expirationdate,
-             deviceId:device.deviceId,
-             extenddate:device.extenddate
-              }));
+                updatedAt: {
+                    $exists: true,
+                    $gte: formattedFromDateStr,
+                    $lte: formattedToDateStr
+                }
+            });
 
+            const sendDeviceData = devices.map(device => ({
+                ouid: device._id,
+                Imei: device.uniqueId,
+                sim: device.sim,
+                model: device.model,
+                installationdate: device.installationdate,
+                expirationdate: device.expirationdate,
+                deviceId: device.deviceId,
+                extenddate: device.extenddate
+            }));
 
             if (!devices || devices.length === 0) {
                 return res.status(404).json({
                     success: false,
-                    message: 'No devices found for this user with an updatedAt field',
+                    message: 'No devices found for this user within the selected period',
                 });
             }
 
-
             res.status(200).json({
                 success: true,
-                message: 'Devices with updatedAt field fetched successfully',
+                message: 'Devices fetched successfully for the selected period',
                 data: sendDeviceData,
             });
-        }
-        else {
+        } else {
             return res.status(403).json({
                 success: false,
-                message: 'Please Select Proper feild',
+                message: 'Please select a proper field',
             });
         }
     } catch (error) {
@@ -790,359 +867,9 @@ export const vehiclelog = async (req, res) => {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export const getGeofenceReport = async (req, res) => {
     try {
-        const { deviceIds, period, limit = 10, page = 1 } = req.query;
+        const { deviceIds, FromDate, ToDate, period, limit = 10, page = 1 } = req.query;
         const parsedDeviceIds = deviceIds.split(',').map(Number);
         let from;
         let to = new Date(); // Default to current date for 'to'
@@ -1199,8 +926,8 @@ export const getGeofenceReport = async (req, res) => {
         const query = {
             deviceId: { $in: parsedDeviceIds },
             deviceTime: {
-                $gte: from, // Ensure the date is in Date format
-                $lte: to,   // Ensure the date is in Date format
+                $gte: FromDate, // Ensure the date is in Date format
+                $lte: ToDate,   // Ensure the date is in Date format
             },
             'attributes.alarm': { $in: ['geofenceEnter', 'geofenceExit'] }
         };
@@ -1211,17 +938,30 @@ export const getGeofenceReport = async (req, res) => {
         const geofenceReports = {};
         const lastSeenEvents = {}; // Store the last seen events by deviceId and alarm type
 
+        // Fetch device names for the corresponding deviceIds
+        const devices = await Device.find({ deviceId: { $in: parsedDeviceIds } });
+        // console.log(devices)
+        const deviceMap = devices.reduce((acc, device) => {
+            acc[device.deviceId] = device.name; // Map deviceId to device name
+            return acc;
+        }, {});
+
         // Initialize reports for all devices in the deviceIds array
         parsedDeviceIds.forEach(deviceId => {
             geofenceReports[deviceId] = {
-                name: deviceId,
+                name: deviceMap[deviceId] || deviceId, // Use device name if available, otherwise fallback to deviceId
                 events: [], // Array to store geofenceEnter and geofenceExit pairs
             };
         });
 
         // Helper function to calculate halt time
         const calculateHaltTime = (inTime, outTime) => {
-            const duration = (new Date(outTime) - new Date(inTime)) / 1000; // duration in seconds
+            const inDate = new Date(inTime);
+            const outDate = new Date(outTime);
+            if (isNaN(inDate) || isNaN(outDate)) {
+                throw new Error("Invalid date values provided for inTime or outTime");
+            }
+            const duration = (outDate - inDate) / 1000; // duration in seconds
             return new Date(duration * 1000).toISOString().substr(11, 8); // Format to "HH:mm:ss"
         };
 
@@ -1229,6 +969,7 @@ export const getGeofenceReport = async (req, res) => {
         historyData.forEach(entry => {
             const { deviceId, deviceTime, attributes, _id } = entry;
             const alarmType = attributes.alarm;
+            let previousTotalDistance;
             const report = geofenceReports[deviceId];
 
             const eventKey = `${deviceId}-${alarmType}-${deviceTime}`; // Unique key to track duplicates
@@ -1243,35 +984,43 @@ export const getGeofenceReport = async (req, res) => {
             lastSeenEvents[eventKey] = true;
 
             if (alarmType === 'geofenceEnter') {
+                // console.log(entry.attributes.totalDistance);
+                previousTotalDistance = entry.attributes.totalDistance;
+                // console.log(previousTotalDistance);
                 // Store the 'geofenceEnter' event
                 report.events.push({
-                    name: deviceId,
+                    name: report.name, // Use the device name from the report
                     ouid: _id,
                     inTime: deviceTime.toLocaleString(),
                     inLoc: [entry.longitude, entry.latitude], // Assuming these attributes exist
-                    outTime: null,
-                    outLoc: [],
+                    outTime: null, // Initially set to null, will be updated on corresponding geofenceExit
+                    outLoc: null, // Initially set to null, will be updated on corresponding geofenceExit
                     haltTime: "0:00:00",
                     distance: 0,
+                    totalDistance: entry.attributes.totalDistance
                 });
             } else if (alarmType === 'geofenceExit') {
                 // Find the latest 'geofenceEnter' without a corresponding 'geofenceExit'
-                const lastEvent = report.events.find(e => e.outTime === null);
-                // console.log(entry)
+                const lastEvent = report.events.slice().reverse().find(e => e.outTime === null);
+                // console.log('Last Event:', lastEvent); // Log the last event for debugging
                 if (lastEvent) {
                     // Update the event with 'geofenceExit' details
-                    lastEvent.outTime = deviceTime.toLocaleString();
+                    lastEvent.outTime = new Date(deviceTime).toLocaleString(); // Ensure deviceTime is a Date object
                     lastEvent.outLoc = [entry.longitude, entry.latitude]; // Assuming these attributes exist
-                    lastEvent.haltTime = calculateHaltTime(lastEvent.inTime, deviceTime);
-                    lastEvent.distance += attributes.distance || 0; // Assuming distance is stored in attributes
+                    const inTime = new Date(lastEvent.inTime);
+                    const outTime = new Date(deviceTime);
+                    lastEvent.haltTime = calculateHaltTime(inTime, outTime);
+                    lastEvent.distance = entry.attributes.totalDistance - lastEvent.totalDistance; // Calculate distance based on current totalDistance and previous one
                 } else {
-                    console.warn(`No matching 'geofenceEnter' found for deviceId: ${deviceId} at time: ${deviceTime.toLocaleString()}`);
+                    console.warn(`No matching 'geofenceEnter' found for deviceId: ${deviceId} at time: ${deviceTime}`);
                 }
             }
         });
 
         // Convert reports to array and paginate the results
-        const reportsArray = Object.values(geofenceReports).flatMap(report => report.events);
+        const reportsArray = Object.values(geofenceReports).flatMap(report =>
+            report.events.map(({ totalDistance, ...event }) => event) // to remove totalDistance property from event object
+        );
         const totalReports = reportsArray.length;
         const paginatedReports = reportsArray.slice((page - 1) * limit, page * limit);
 
@@ -1297,6 +1046,5 @@ export const getGeofenceReport = async (req, res) => {
         });
     }
 };
-
 
 
