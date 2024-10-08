@@ -144,7 +144,9 @@ const addDeviceToSelectedIds = async () => {
     notifications.forEach(notification => {
         notification.Devices.forEach(device => {
             if (device.deviceId) { // Check if the device has a deviceId property
-                selectedDeviceIds.push(Number(device.deviceId));
+                if (!selectedDeviceIds.includes(Number(device.deviceId))) {
+                    selectedDeviceIds.push(Number(device.deviceId));
+                }
                 // console.log(selectedDeviceIds);
             } else {
                 console.log(`Notification ${notification._id} has no devices or devices not populated.`);
@@ -152,7 +154,7 @@ const addDeviceToSelectedIds = async () => {
         });
     });
 }
-addDeviceToSelectedIds();
+// addDeviceToSelectedIds();
 
 
 export const AlertFetching = async (io) => {
@@ -172,6 +174,8 @@ export const AlertFetching = async (io) => {
         const deviceData = resdevice.data;
 
         const deviceApiData = new Map(deviceData.map(item => [item.id, item]));
+
+        addDeviceToSelectedIds();
 
         // Filter the PositionApiData for selected deviceIds
         const filteredDevices = PositionApiData.filter(obj => selectedDeviceIds.includes(obj.deviceId));
