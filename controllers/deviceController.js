@@ -116,7 +116,8 @@ export const getDevices = async (req, res) => {
       .limit(limitNumber)
       .populate("Driver", "name")
       .populate("groups", "name")
-      .populate("users", "username");
+      .populate("users", "username")
+      .populate("geofences", "name");
 
     res.status(200).json({
       totalDevices,
