@@ -162,9 +162,13 @@ export const updateDeviceById = async (req, res) => {
 export const deleteDeviceById = async (req, res) => {
   const { id } = req.params;
   const createdBy = req.user.id;
-
+  let user;
   try {
-    const user = await User.findById({ _id: createdBy });
+    if (req.user.role === 'superadmin') {
+      user = await SuperAdmin.findById({ _id: createdBy });
+    } else {
+      user = await User.findById({ _id: createdBy });
+    }
     const deletedDevice = await Device.findOneAndDelete({ _id: id });
     if (!deletedDevice) {
       return res.status(404).json({ message: "Device not found" });
