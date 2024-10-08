@@ -5,6 +5,8 @@ import { AlertFetching } from "../utils/alert.utils.js";
 import { ShareDevice } from "../models/shareDevice.model.js";
 import jwt from "jsonwebtoken";
 
+
+
 export const setupSocket = (server) => {
   const io = new Server(server, {
     cors: {
@@ -16,8 +18,9 @@ export const setupSocket = (server) => {
 
   io.on("connection", (socket) => {
     console.log("A new user connected", socket.id);
-
     let singleDeviceInterval, allDeviceInterval;
+
+    
 
     socket.on("disconnect", (reason) => {
       console.log(`User ${socket.id} disconnected. Reason: ${reason}`);
@@ -26,6 +29,7 @@ export const setupSocket = (server) => {
       clearInterval(singleDeviceInterval);
       clearInterval(allDeviceInterval);
     });
+
 
     socket.on("credentials", (credentials) => {
       const userr = credentials.username;
