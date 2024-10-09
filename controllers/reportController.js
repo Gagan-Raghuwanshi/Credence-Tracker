@@ -49,7 +49,7 @@ export const getStatusReport = async (req, res) => {
                 break;
             case "Custom":
                 fromDate = new Date(req.query.fromDate);
-                toDate = new Date(req.query.to);
+                toDate = new Date(req.query.toDate);
                 break;
             default:
                 return res.status(400).json({
