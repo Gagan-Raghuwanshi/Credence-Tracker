@@ -139,6 +139,8 @@ const selectedDeviceIds = []; // Replace with actual selected deviceIds
 
 const addDeviceToSelectedIds = async () => {
     const notifications = await Notification.find().populate('Devices');
+    const types = await notifications.map(notification => notification.type);
+    console.log(types);
     // console.log("Number of Notifications:", notifications, notifications.length);
 
     notifications.forEach(notification => {
