@@ -1061,7 +1061,6 @@ export const vehiclelog = async (req, res) => {
 
         let fromDate, toDate = new Date();
 
-        // Set date ranges based on the selected period
         switch (period) {
             case "Today":
                 fromDate = new Date();
