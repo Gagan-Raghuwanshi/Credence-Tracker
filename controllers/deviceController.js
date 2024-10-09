@@ -151,6 +151,17 @@ export const updateDeviceById = async (req, res) => {
       return res.status(404).json({ message: "Device not found" });
     }
     res.status(200).json(updatedDevice);
+
+
+        console.log("pavan updates",updates);
+        
+
+
+
+
+
+
+
   } catch (error) {
     res.status(500).json({
       message: "Error updating Device",

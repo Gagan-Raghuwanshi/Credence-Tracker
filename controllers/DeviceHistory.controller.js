@@ -1,4 +1,6 @@
+import axios from "axios";
 import { History } from "../models/history.model.js";
+import { Device } from "../models/device.model.js";
 
 export const deviceAllHistory = async (req, res) => {
   const { deviceId } = req.params;
@@ -124,6 +126,7 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
         $lte: formattedToDateStr, // To date (less than or equal)
       },
     });
+    const vehicleNumber = await Device.findOne({deviceId}).select('name -_id');
     if (deviceDataByDateRange.length === 0) {
       return res.status(404).json({
         message: "No Trip Found",
@@ -187,6 +190,7 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
       // Create a new object to hold only the required fields
       const arrivalElement = {
         deviceId: index[0].deviceId,
+        name:vehicleNumber.name,
         startTime: index[0].deviceTime,
         maxSpeed: maxSpeed,
         avgSpeed: avgSpeed,
@@ -300,4 +304,84 @@ export const deviceStopage = async (req, res) => {
       error: error.message,
     });
   }
+};
+
+export const liveData = async (req, res) => {
+  const { userr, pass } = req.body;
+  console.log(userr, pass);
+  let deviceListData;
+  (async function () {
+    try {
+      const url = "http://104.251.212.84/api/devices";
+      const username = userr;
+      const password = pass;
+
+      const response = await axios.get(url, {
+        auth: { username: username, password: password },
+      });
+      deviceListData = response.data;
+      // console.log("AAAAAAAAAAAAA",deviceListData)
+      // console.log('API response data:', devicelist);
+    } catch (error) {
+      console.error("Error fetching devices from devices API:", error);
+      return res.status(401).json({
+        message: "Error fetching devices from devices API:",
+        error,
+      });
+    }
+  })();
+  
+  (async function () {
+    try {
+      const url = "http://104.251.212.84/api/positions";
+      const username = userr;
+      const password = pass;
+
+      const response = await axios.get(url, {
+        auth: { username: username, password: password },
+      });
+      const data = response.data;
+      // console.log("data from GPS device ",data)
+      const deviceListDataMap = new Map(
+        deviceListData.map((item) => [item.id, item])
+      );
+
+      const mergedData = data.map((obj1) => {
+        const match = deviceListDataMap.get(obj1.deviceId);
+        return {
+          speed: obj1.speed,
+          longitude: obj1.longitude,
+          latitude: obj1.latitude,
+          course: obj1.course,
+          deviceId: obj1.deviceId,
+          deviceTime: obj1.deviceTime,
+          attributes: obj1.attributes,
+          category: match ? match.category : null,
+          status: match ? match.status : null,
+          lastUpdate: match ? match.lastUpdate : null,
+          name: match ? match.name : null,
+          uniqueId: match ? match.uniqueId : null,
+        };
+      });
+
+      // console.log("device",mergedData)
+      // console.log("All device data", mergedData);
+      // socket.emit("all device data", mergedData);
+      console.log("all device data");
+      return res.status(201).json({
+        message: "Live Devices Data",
+        success: true,
+        data: mergedData,
+      });
+    } catch (error) {
+      console.error(
+        "There was a problem with the fetch operation:",
+        error.message
+      );
+      return res.status(401).json({
+        message: "Error fetching devices from devices API:",
+        error,
+      });
+    }
+  })();
 };
