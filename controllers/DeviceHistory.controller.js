@@ -127,8 +127,6 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
       },
     });
     const vehicleNumber = await Device.findOne({deviceId}).select('name -_id');
-    console.log("vehicleNumber",vehicleNumber)
-
     if (deviceDataByDateRange.length === 0) {
       return res.status(404).json({
         message: "No Trip Found",
