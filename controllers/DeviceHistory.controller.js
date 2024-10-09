@@ -1,5 +1,6 @@
 import axios from "axios";
 import { History } from "../models/history.model.js";
+import { Device } from "../models/device.model.js";
 
 export const deviceAllHistory = async (req, res) => {
   const { deviceId } = req.params;
@@ -125,6 +126,9 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
         $lte: formattedToDateStr, // To date (less than or equal)
       },
     });
+    const vehicleNumber = await Device.findOne({deviceId}).select('name -_id');
+    console.log("vehicleNumber",vehicleNumber)
+
     if (deviceDataByDateRange.length === 0) {
       return res.status(404).json({
         message: "No Trip Found",
@@ -188,6 +192,7 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
       // Create a new object to hold only the required fields
       const arrivalElement = {
         deviceId: index[0].deviceId,
+        name:vehicleNumber.name,
         startTime: index[0].deviceTime,
         maxSpeed: maxSpeed,
         avgSpeed: avgSpeed,
