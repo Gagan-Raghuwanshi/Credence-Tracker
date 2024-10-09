@@ -5,6 +5,7 @@ import { Device } from "../models/device.model.js";
 import { Devicelist } from "../models/devicelist.model.js";
 import { ShareDevice } from "../models/shareDevice.model.js";
 import { User } from "../models/usermodel.js";
+import { SuperAdmin } from "../models/superadminModel.js";
 import cache from "../utils/cache.js";
 
 //  add a device
@@ -27,14 +28,18 @@ export const addDevice = async (req, res) => {
   } = req.body;
   const createdBy = req.user.id;
   console.log(createdBy);
-
+  let user;
   try {
-    const user = await User.findById({ _id: createdBy });
 
-    if (user.entriesCount >= user.dataLimit) {
-      return res
-        .status(403)
-        .json({ message: "Data limit reached. You cannot add more entries." });
+    if (req.user.role === 'superadmin') {
+      user = await SuperAdmin.findById({ _id: createdBy });
+    } else {
+      user = await User.findById({ _id: createdBy });
+      if (user.entriesCount >= user.dataLimit) {
+        return res
+          .status(403)
+          .json({ message: "Data limit reached. You cannot add more entries." });
+      }
     }
 
     const findUniqueId = await Device.findOne({ uniqueId });
@@ -116,7 +121,8 @@ export const getDevices = async (req, res) => {
       .limit(limitNumber)
       .populate("Driver", "name")
       .populate("groups", "name")
-      .populate("users", "username");
+      .populate("users", "username")
+      .populate("geofences", "name");
 
     res.status(200).json({
       totalDevices,
@@ -156,9 +162,13 @@ export const updateDeviceById = async (req, res) => {
 export const deleteDeviceById = async (req, res) => {
   const { id } = req.params;
   const createdBy = req.user.id;
-
+  let user;
   try {
-    const user = await User.findById({ _id: createdBy });
+    if (req.user.role === 'superadmin') {
+      user = await SuperAdmin.findById({ _id: createdBy });
+    } else {
+      user = await User.findById({ _id: createdBy });
+    }
     const deletedDevice = await Device.findOneAndDelete({ _id: id });
     if (!deletedDevice) {
       return res.status(404).json({ message: "Device not found" });
@@ -213,9 +223,9 @@ export const getDeviceByGroup = async (req, res) => {
 export const createShareDevice = async (req, res) => {
   try {
     const { username, password, deviceId, expiration } = req.body;
-    
+
     // console.log(username, password, deviceId, expiration);
-    
+
     // Check if device with the same deviceId already exists
     const existingDevice = await ShareDevice.findOne({ deviceId });
     // const decryptedPassword = existingDevice.decryptPassword(); // Decrypt the password    
@@ -230,25 +240,25 @@ export const createShareDevice = async (req, res) => {
           expiration: existingDevice.expiration,
         },
         process.env.JWT_SECRET,
-        { expiresIn: expirationTimestamp - Math.floor(Date.now() / 1000) } 
+        { expiresIn: expirationTimestamp - Math.floor(Date.now() / 1000) }
       );
       // console.log(token)
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       console.log(decoded)
-      
+
       return res.status(409).json({
         message: "Device with this ID already exists. See your URL.",
         success: true,
-        url: `http://104.251.212.84?token=${token}`  
+        url: `http://104.251.212.84?token=${token}`
       });
     }
 
     const createDeviceForShare = await ShareDevice.create({
       username,
-      password, 
+      password,
       deviceId,
-      expiration: new Date(expiration)  
+      expiration: new Date(expiration)
     });
     // console.log(createDeviceForShare)
 
@@ -260,14 +270,14 @@ export const createShareDevice = async (req, res) => {
         expiration: createDeviceForShare.expiration,
       },
       process.env.JWT_SECRET,
-      { expiresIn: expirationTimestamp - Math.floor(Date.now() / 1000) } 
+      { expiresIn: expirationTimestamp - Math.floor(Date.now() / 1000) }
     );
     // console.log(token)
 
     res.status(201).json({
       message: "Device successfully created. See your URL.",
       success: true,
-      url: `http://104.251.212.84?token=${token}`  
+      url: `http://104.251.212.84?token=${token}`
     });
 
   } catch (error) {

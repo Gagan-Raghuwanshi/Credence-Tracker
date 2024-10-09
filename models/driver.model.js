@@ -12,7 +12,7 @@ const driverSchema = new mongoose.Schema({
     email: {
         type: String,
     },
-    device: {
+    deviceId: {
         type: Number,
     },
     licenseNumber: {
