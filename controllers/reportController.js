@@ -8,49 +8,49 @@ export const getStatusReport = async (req, res) => {
     try {
         const { deviceId, period, page = 1, limit = 20 } = req.query;
 
-        let from;
-        let to = new Date();
+        let fromDate;
+        let toDate = new Date();
 
         switch (period) {
             case "Today":
-                from = new Date();
-                from.setHours(0, 0, 0, 0);
+                fromDate = new Date();
+                fromDate.setHours(0, 0, 0, 0);
                 break;
             case "Yesterday":
-                from = new Date();
-                from.setDate(from.getDate() - 1);
-                from.setHours(0, 0, 0, 0);
-                to.setHours(0, 0, 0, 0);
+                fromDate = new Date();
+                fromDate.setDate(fromDate.getDate() - 1);
+                fromDate.setHours(0, 0, 0, 0);
+                toDate.setHours(0, 0, 0, 0);
                 break;
             case "This Week":
-                from = new Date();
-                from.setDate(from.getDate() - from.getDay());
-                from.setHours(0, 0, 0, 0);
+                fromDate = new Date();
+                fromDate.setDate(fromDate.getDate() - fromDate.getDay());
+                fromDate.setHours(0, 0, 0, 0);
                 break;
             case "Previous Week":
-                from = new Date();
-                const dayOfWeek = from.getDay();
-                from.setDate(from.getDate() - dayOfWeek - 7);
-                from.setHours(0, 0, 0, 0);
-                to.setDate(from.getDate() + 6);
-                to.setHours(23, 59, 59, 999);
+                fromDate = new Date();
+                const dayOfWeek = fromDate.getDay();
+                fromDate.setDate(fromDate.getDate() - dayOfWeek - 7);
+                fromDate.setHours(0, 0, 0, 0);
+                toDate.setDate(fromDate.getDate() + 6);
+                toDate.setHours(23, 59, 59, 999);
                 break;
             case "This Month":
-                from = new Date();
-                from.setDate(1);
-                from.setHours(0, 0, 0, 0);
+                fromDate = new Date();
+                fromDate.setDate(1);
+                fromDate.setHours(0, 0, 0, 0);
                 break;
             case "Previous Month":
-                from = new Date();
-                from.setMonth(from.getMonth() - 1);
-                from.setDate(1);
-                from.setHours(0, 0, 0, 0);
-                to = new Date(from.getFullYear(), from.getMonth() + 1, 0);
-                to.setHours(23, 59, 59, 999);
+                fromDate = new Date();
+                fromDate.setMonth(fromDate.getMonth() - 1);
+                fromDate.setDate(1);
+                fromDate.setHours(0, 0, 0, 0);
+                toDate = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0);
+                toDate.setHours(23, 59, 59, 999);
                 break;
             case "Custom":
-                from = new Date(req.query.from);
-                to = new Date(req.query.to);
+                fromDate = new Date(req.query.fromDate);
+                toDate = new Date(req.query.toDate);
                 break;
             default:
                 return res.status(400).json({
@@ -59,8 +59,8 @@ export const getStatusReport = async (req, res) => {
                 });
         }
 
-        const formattedFromDateStr = from.toISOString();
-        const formattedToDateStr = to.toISOString();
+        const formattedFromDateStr = fromDate.toISOString();
+        const formattedToDateStr = toDate.toISOString();
 
         const historyData = await History.find({
             deviceId,
