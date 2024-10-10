@@ -81,7 +81,7 @@ export const getNotification = async (req, res) => {
        const notifications = await Notification.find(filter)
          .skip(startIndex)
          .limit(limitNumber)
-         .populate('Devices','name')
+         .populate('deviceId','name')
 
    
        res.status(200).json({
