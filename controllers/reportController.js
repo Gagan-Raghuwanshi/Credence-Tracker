@@ -1054,167 +1054,54 @@ export const getGeofenceReport = async (req, res) => {
 
 
 
-// export const vehiclelog = async (req, res) => {
-//     try {
-//         const userId = req.user.id;
-//         const { attribute, period, from, to } = req.query;
-
-//         let fromDate, toDate = new Date();      
-
-//         switch (period) {
-//             case "Today":
-//                 fromDate = new Date();
-//                 fromDate.setHours(0, 0, 0, 0);
-//                 break;
-//             case "Yesterday":
-//                 fromDate = new Date();
-//                 fromDate.setDate(fromDate.getDate() - 1);
-//                 fromDate.setHours(0, 0, 0, 0);
-//                 toDate.setHours(0, 0, 0, 0);
-//                 break;
-//             case "This Week":
-//                 fromDate = new Date();
-//                 fromDate.setDate(fromDate.getDate() - fromDate.getDay());
-//                 fromDate.setHours(0, 0, 0, 0);
-//                 break;
-//             case "Previous Week":
-//                 fromDate = new Date();
-//                 const dayOfWeek = fromDate.getDay();
-//                 fromDate.setDate(fromDate.getDate() - dayOfWeek - 7);
-//                 fromDate.setHours(0, 0, 0, 0);
-//                 toDate.setDate(fromDate.getDate() + 6);
-//                 toDate.setHours(23, 59, 59, 999);
-//                 break;
-//             case "This Month":
-//                 fromDate = new Date();
-//                 fromDate.setDate(1);
-//                 fromDate.setHours(0, 0, 0, 0);
-//                 break;
-//             case "Previous Month":
-//                 fromDate = new Date();
-//                 fromDate.setMonth(fromDate.getMonth() - 1);
-//                 fromDate.setDate(1);
-//                 fromDate.setHours(0, 0, 0, 0);
-//                 toDate = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0);
-//                 toDate.setHours(23, 59, 59, 999);
-//                 break;
-//             case "Custom":
-//                 fromDate = new Date(from);
-//                 toDate = new Date(to);
-//                 break;
-//             default:
-//                 return res.status(400).json({
-//                     message: "Invalid period selection",
-//                     success: false
-//                 });
-//         }
-
-//         console.log("this ia",fromDate);
-
-
-//         const formattedFromDateStr = fromDate.toISOString();
-//         const formattedToDateStr = toDate.toISOString();
-
-//         const query = {
-//             changedBy: userId,
-//             createdAt: {
-//                 $gte: formattedFromDateStr,
-//                 $lte: formattedToDateStr
-//             }
-//         };
-
-//         const attributesToSelect = attribute === "all" ? {} : { [attribute]: 1, createdAt: 1 }; 
-
-//         const vehicleChanges = await VehicleChange.find(query).select(attributesToSelect);
-
-//         if (!vehicleChanges || vehicleChanges.length === 0) {
-//             return res.status(404).json({
-//                 success: false,
-//                 message: 'No changes found for the selected period',
-//             });
-//         }
-
-//         res.status(200).json({
-//             success: true,
-//             message: 'Vehicle changes fetched successfully for the selected period',
-//             data: vehicleChanges
-//         });
-
-//     } catch (error) {
-//         console.error('Error fetching vehicle changes:', error);
-//         res.status(500).json({
-//             success: false,
-//             message: 'Server error fetching vehicle changes',
-//             error: error.message,
-//         });
-//     }
-// };
-
 export const vehiclelog = async (req, res) => {
     try {
-        const userId = req.user.id; // Fetch the user ID
-        const { attribute, period, from, to } = req.query; // Get the query parameters
+        const userId = req.user.id;
+        const { attribute, period, from, to } = req.query;
 
-        let fromDate, toDate = new Date(); // Initialize toDate as current date
+        let fromDate, toDate = new Date();      
 
-        // Calculate fromDate and toDate based on the period
         switch (period) {
             case "Today":
-                fromDate = new Date(); // Start of today
-                fromDate.setHours(0, 0, 0, 0); 
-                toDate.setHours(23, 59, 59, 999); // End of today
+                fromDate = new Date();
+                fromDate.setHours(0, 0, 0, 0);
                 break;
-
             case "Yesterday":
                 fromDate = new Date();
-                fromDate.setDate(fromDate.getDate() - 1); // Set to yesterday
-                fromDate.setHours(0, 0, 0, 0); // Start of yesterday
-                toDate = new Date();
-                toDate.setDate(toDate.getDate() - 1); // End of yesterday
-                toDate.setHours(23, 59, 59, 999);
+                fromDate.setDate(fromDate.getDate() - 1);
+                fromDate.setHours(0, 0, 0, 0);
+                toDate.setHours(0, 0, 0, 0);
                 break;
-
             case "This Week":
                 fromDate = new Date();
-                const currentDayOfWeek = fromDate.getDay(); // Get current day of the week
-                const daysSinceWeekStart = currentDayOfWeek === 0 ? 6 : currentDayOfWeek - 1; // Calculate the start of the week
-                fromDate.setDate(fromDate.getDate() - daysSinceWeekStart); // Start of this week (Monday)
+                fromDate.setDate(fromDate.getDate() - fromDate.getDay());
                 fromDate.setHours(0, 0, 0, 0);
-                toDate.setHours(23, 59, 59, 999); // End of today
                 break;
-
             case "Previous Week":
                 fromDate = new Date();
                 const dayOfWeek = fromDate.getDay();
-                const daysToLastMonday = dayOfWeek === 0 ? 13 : dayOfWeek + 6; // Start of previous week (Monday)
-                fromDate.setDate(fromDate.getDate() - daysToLastMonday);
+                fromDate.setDate(fromDate.getDate() - dayOfWeek - 7);
                 fromDate.setHours(0, 0, 0, 0);
-                toDate = new Date(fromDate);
-                toDate.setDate(fromDate.getDate() + 6); // End of previous week (Sunday)
+                toDate.setDate(fromDate.getDate() + 6);
                 toDate.setHours(23, 59, 59, 999);
                 break;
-
             case "This Month":
                 fromDate = new Date();
-                fromDate.setDate(1); // Start of this month
+                fromDate.setDate(1);
                 fromDate.setHours(0, 0, 0, 0);
-                toDate.setHours(23, 59, 59, 999); // End of today
                 break;
-
             case "Previous Month":
                 fromDate = new Date();
-                fromDate.setMonth(fromDate.getMonth() - 1); // Set to the previous month
-                fromDate.setDate(1); // Start of previous month
+                fromDate.setMonth(fromDate.getMonth() - 1);
+                fromDate.setDate(1);
                 fromDate.setHours(0, 0, 0, 0);
-                toDate = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0); // End of previous month
+                toDate = new Date(fromDate.getFullYear(), fromDate.getMonth() + 1, 0);
                 toDate.setHours(23, 59, 59, 999);
                 break;
-
             case "Custom":
-                fromDate = new Date(from); // Custom start date
-                toDate = new Date(to); // Custom end date
+                fromDate = new Date(from);
+                toDate = new Date(to);
                 break;
-
             default:
                 return res.status(400).json({
                     message: "Invalid period selection",
@@ -1222,26 +1109,24 @@ export const vehiclelog = async (req, res) => {
                 });
         }
 
-        // Ensure dates are in ISO string format
+        console.log("this ia",fromDate);
+
+
         const formattedFromDateStr = fromDate.toISOString();
         const formattedToDateStr = toDate.toISOString();
 
-        // Construct the query
         const query = {
-            changedBy: userId, // Filter by user
+            changedBy: userId,
             createdAt: {
-                $gte: formattedFromDateStr, // From date
-                $lte: formattedToDateStr // To date
+                $gte: formattedFromDateStr,
+                $lte: formattedToDateStr
             }
         };
 
-        // Select specific attributes if provided, otherwise select all
-        const attributesToSelect = attribute === "all" ? {} : { [attribute]: 1, createdAt: 1 };
+        const attributesToSelect = attribute === "all" ? {} : { [attribute]: 1, createdAt: 1 }; 
 
-        // Fetch changes from the database
         const vehicleChanges = await VehicleChange.find(query).select(attributesToSelect);
 
-        // Check if any changes are found
         if (!vehicleChanges || vehicleChanges.length === 0) {
             return res.status(404).json({
                 success: false,
@@ -1249,7 +1134,6 @@ export const vehiclelog = async (req, res) => {
             });
         }
 
-        // Success response
         res.status(200).json({
             success: true,
             message: 'Vehicle changes fetched successfully for the selected period',
