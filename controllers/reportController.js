@@ -1109,17 +1109,16 @@ export const vehiclelog = async (req, res) => {
                 });
         }
 
-        console.log("this ia",fromDate);
 
 
-        const formattedFromDateStr = fromDate.toISOString();
-        const formattedToDateStr = toDate.toISOString();
+        // const formattedFromDateStr = fromDate.toISOString();
+        // const formattedToDateStr = toDate.toISOString();
 
         const query = {
             changedBy: userId,
             createdAt: {
-                $gte: formattedFromDateStr,
-                $lte: formattedToDateStr
+                $gte: fromDate,
+                $lte: toDate
             }
         };
 
