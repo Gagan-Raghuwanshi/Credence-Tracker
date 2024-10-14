@@ -94,6 +94,9 @@ export const getDevices = async (req, res) => {
   const role = req.user.role;
   const userId = req.user.id;
 
+  console.log("user check",role);
+  
+
   try {
     const { search, page = 1, limit = 10 } = req.query;
     const pageNumber = parseInt(page);

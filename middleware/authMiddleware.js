@@ -1,6 +1,7 @@
 
 import jwt from 'jsonwebtoken';
 import { User } from '../models/usermodel.js';
+import { SuperAdmin } from '../models/superadminModel.js';
 
 export const authenticateToken = async (req, res, next) => {
   const token = req.headers['authorization']?.split(' ')[1];
