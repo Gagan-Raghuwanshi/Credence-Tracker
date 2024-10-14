@@ -125,6 +125,10 @@ const createAlert = (deviceData, type) => {
 };
 
 const sendAlert = async (io, alert) => {
+
+                console.log("All alerts console",alert);
+                
+
     await new Alert(alert).save();
 };
 

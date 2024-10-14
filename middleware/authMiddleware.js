@@ -13,18 +13,26 @@ export const authenticateToken = async (req, res, next) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
     // Assign user properties based on their role
-    if (decoded.superadmin) {
+    let user;
+    let sperr = false;
+    user = await SuperAdmin.findById(decoded.id);
+    if (user) {
       req.user = { id: decoded.id, role: 'superadmin', users: true }; // Superadmin can create users
-    } else {
-      const user = await User.findById(decoded.id);
-      if (!user) return res.status(404).json({ message: 'User not found' });
-
+      sperr = true;
+    } else if(!user) {
+      user = await User.findById(decoded.id);
       req.user = { id: user._id, role: 'user', users: user.users }; // Regular user with users permission
+      sperr = true;
     }
-
+    
+    
+    if(!sperr){
+      return res.status(404).json({ message: 'User not found' });
+    }
     next();
   } catch (error) {
+    console.log("pavan error",error);
+    
     return res.status(403).json({ message: 'Invalid token' });
   }
 };
-
