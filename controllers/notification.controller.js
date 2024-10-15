@@ -1,6 +1,5 @@
 
 import { Notification } from "../models/notification.model.js";
-import cache from "../utils/cache.js";
 
 //  add a device
 

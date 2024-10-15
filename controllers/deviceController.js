@@ -6,7 +6,6 @@ import { Devicelist } from "../models/devicelist.model.js";
 import { ShareDevice } from "../models/shareDevice.model.js";
 import { User } from "../models/usermodel.js";
 import { SuperAdmin } from "../models/superadminModel.js";
-import cache from "../utils/cache.js";
 import { VehicleChange } from "../models/vehicleLogReports.model.js";
 
 //  add a device

@@ -1,5 +1,4 @@
 import { Category } from "../models/category.model.js";
-import cache from "../utils/cache.js";
 
 
 export const createCategory = async (req, res) => {
@@ -25,31 +24,44 @@ export const createCategory = async (req, res) => {
    };
 
 
-   export const getAllCategory = async (req, res) => {
+  //  export const getAllCategory = async (req, res) => {
 
 
-     const cacheKey = 'allCategory';
+  //    const cacheKey = 'allCategory';
    
-     const cachedCategory = cache.get(cacheKey);
-     if (cachedCategory) {
-       console.log('Cache hit');
-       return res.status(200).json(cachedCategory);
-     }
+  //    const cachedCategory = cache.get(cacheKey);
+  //    if (cachedCategory) {
+  //      console.log('Cache hit');
+  //      return res.status(200).json(cachedCategory);
+  //    }
    
-     try {
+  //    try {
           
-          const category = await Category.find();
-          return res.status(200).json(category);
+  //         const category = await Category.find();
+  //         return res.status(200).json(category);
       
-     } catch (error) {
-       res.status(500).json({
-         message: 'Error fetching Category',
-         error: error.message,
-       });
-     }
-   };
+  //    } catch (error) {
+  //      res.status(500).json({
+  //        message: 'Error fetching Category',
+  //        error: error.message,
+  //      });
+  //    }
+  //  };
 
 
+  export const getAllCategory = async (req, res) => {
+    try {
+      const category = await Category.find();
+  
+      return res.status(200).json(category);
+    } catch (error) {
+      res.status(500).json({
+        message: 'Error fetching Category',
+        error: error.message,
+      });
+    }
+  };
+  
 
 
 

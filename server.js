@@ -4,7 +4,7 @@ import { createServer } from "http";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import DBconnection from "./database/db.js"; // Database connection
+import DBconnection from "./database/db.js"; 
 import superadminRoutes from './routes/superadminRoute.js';
 import userRoutes from './routes/userRoute.js';
 import authRoutes from './routes/authRoute.js';
@@ -34,7 +34,7 @@ app.use(cookieParser());
 app.use(cors());
 
 
-// API will appear here 
+ 
 
 app.get("/", (req, res) => {
     return res.status(200).json({
