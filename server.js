@@ -56,7 +56,7 @@ app.use("/geofence", geofenceRoute)
 app.use("/history", historyRoute)
 app.use("/reports", reportRoute)
 app.use("/alerts", alertRoute)
-app.use("/notifications",notificationRoute )
+app.use("/notifications", notificationRoute)
 
 
 // setInterval(() => {
@@ -69,7 +69,7 @@ fetchdevicedata()
 
 
 
-const io = setupSocket(server); 
+const io = setupSocket(server);
 
 
 
