@@ -13,7 +13,7 @@ export const authenticateToken = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Assign user properties based on their role
+    
     let user;
     let sperr = false;
     user = await SuperAdmin.findById(decoded.id);
