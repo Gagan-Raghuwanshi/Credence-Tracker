@@ -1,9 +1,13 @@
 import mongoose from "mongoose";
 
 const vehicleChangeSchema = new mongoose.Schema({
-  ouid: {
-    type: mongoose.Schema.Types.ObjectId,
-    required: true
+  name: {
+    type: String,
+    default: null
+  },
+  deviceId: {
+    type: Number,
+    default: null
   },
   oldSimno: {
     type: String,
@@ -64,11 +68,11 @@ const vehicleChangeSchema = new mongoose.Schema({
   },
   message: {
     type: String,
-    required: true
+    default: null
   },
   added: {
     type: Date,
-    required: true
+    default: null
   },
   activeDate: {
     type: Date,
@@ -86,6 +90,9 @@ const vehicleChangeSchema = new mongoose.Schema({
     type: String,
     default: null
   }
+},
+{
+  timestamps:true
 });
 
 const VehicleChange = mongoose.model('VehicleChange', vehicleChangeSchema);

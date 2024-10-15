@@ -3,35 +3,58 @@ import { Notification } from "../models/notification.model.js";
 import cache from "../utils/cache.js";
 
 //  add a device
+
 export const addNotification = async (req, res) => {
   const {
-     type,
-     channel,
-     Devices
-
+    type,  
+    channel,
+    deviceId  
   } = req.body;
+
   const createdBy = req.user.id;
 
   try {
+    if (Array.isArray(deviceId)) {
+      const notifications = deviceId.map(async (id) => {
+        const notification = new Notification({
+          type,
+          channel,
+          deviceId: id, 
+          createdBy
+        });
 
-    const notification = new Notification({
-     type,
-     channel,
-     Devices,
-     createdBy
+        return await notification.save();  
+      });
 
-    });
+      await Promise.all(notifications); 
 
-    await notification.save();
+      return res.status(201).json({
+        message: 'Notifications added successfully for all devices',
+      });
 
-    return res.status(201).json({ message: 'Notification added successfully', notification });
+    } else {
+      const notification = new Notification({
+        type,
+        channel,
+        deviceId, 
+        createdBy
+      });
 
-  
+      await notification.save(); 
+      return res.status(201).json({
+        message: 'Notification added successfully for the single device',
+        notification,  
+      });
+    }
+
   } catch (error) {
-    return res.status(500).json({ message: 'Error adding Notification', error });
+    console.error('Error adding notification:', error);
+    return res.status(500).json({
+      message: 'Error adding notification',
+      error: error.message,
+    });
   }
 };
-
 
 
 export const getNotification = async (req, res) => {
@@ -58,7 +81,7 @@ export const getNotification = async (req, res) => {
        const notifications = await Notification.find(filter)
          .skip(startIndex)
          .limit(limitNumber)
-         .populate('Devices','name')
+         .populate('deviceId','name')
 
    
        res.status(200).json({

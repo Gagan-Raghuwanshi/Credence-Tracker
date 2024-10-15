@@ -1,18 +1,18 @@
 import mongoose from 'mongoose';
 const { Schema } = mongoose;
 const NotificationSchema = new Schema({
-type: {
+type: [{
      type: String,
      required: true,
-},
+}],
 channel: {
      type: String,
     
 }, 
-Devices:[{
+deviceId:{
      type:mongoose.Schema.Types.ObjectId,
      ref:"Device"
-}],
+},
 // AllDevices:{
 //      type:Boolean,
 //      default:false

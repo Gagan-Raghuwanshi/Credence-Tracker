@@ -74,8 +74,8 @@ const io = setupSocket(server);
 
 
 // setInterval(() => {
-    AlertFetching(io)
-    // }, 10000);
+//     AlertFetching(io)
+//     }, 10000);
 
 
 

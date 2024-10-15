@@ -9,10 +9,9 @@ import Alert from '../models/alert.model.js';
 const app = express();
 let deviceStatus = {};
 const stopLimit = 1;
-let data = null;
+let data = null; // Keep the data variable
 let alertsArray = [];
 const inactiveThreshold = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
-// const inactiveThreshold = 60 * 1000; // 1 minute
 
 const checkDeviceStatus = (io, deviceData) => {
     const { deviceId, status, attributes: { ignition, alarm }, speed, latitude, longitude } = deviceData;
@@ -126,38 +125,35 @@ const createAlert = (deviceData, type) => {
 };
 
 const sendAlert = async (io, alert) => {
-    // console.log('Alert sent:', alert); // Log the alert
-    const savedAlert = await new Alert(alert).save();
 
-    // await savedAlert.save(); 
+                console.log("All alerts console",alert);
+                
+
+    await new Alert(alert).save();
 };
 
-// Example array of selected deviceIds
-// const selectedDeviceIds = [2636, 2661, 2652, 3667, 2992]; // Replace with actual selected deviceIds
-const selectedDeviceIds = []; // Replace with actual selected deviceIds
-
+let selectedDeviceIds = []; // Replace with actual selected deviceIds
 
 const addDeviceToSelectedIds = async () => {
-    const notifications = await Notification.find().populate('Devices');
-    const types = await notifications.map(notification => notification.type);
-    console.log(types);
-    // console.log("Number of Notifications:", notifications, notifications.length);
+    const notifications = await Notification.find().populate('deviceId');
 
     notifications.forEach(notification => {
-        notification.Devices.forEach(device => {
-            if (device.deviceId) { // Check if the device has a deviceId property
-                if (!selectedDeviceIds.includes(Number(device.deviceId))) {
-                    selectedDeviceIds.push(Number(device.deviceId));
-                }
-                // console.log(selectedDeviceIds);
-            } else {
-                console.log(`Notification ${notification._id} has no devices or devices not populated.`);
+        if (notification.deviceId.deviceId) {
+            if (!selectedDeviceIds.includes(Number(notification.deviceId.deviceId))) {
+                selectedDeviceIds.push(Number(notification.deviceId.deviceId));
             }
-        });
+        } else {
+            console.log(`Notification ${notification._id} has no devices or devices not populated.`);
+        }
     });
 }
-// addDeviceToSelectedIds();
 
+const getAlertTypesForDevice = async (deviceId) => {
+    const notifications = await Notification.find().populate('deviceId');
+    return notifications
+        .filter((notification) => Number(notification.deviceId.deviceId) === deviceId)
+        .map((notification) => notification.type);
+};
 
 export const AlertFetching = async (io) => {
     try {
@@ -177,7 +173,7 @@ export const AlertFetching = async (io) => {
 
         const deviceApiData = new Map(deviceData.map(item => [item.id, item]));
 
-        addDeviceToSelectedIds();
+        await addDeviceToSelectedIds();
 
         // Filter the PositionApiData for selected deviceIds
         const filteredDevices = PositionApiData.filter(obj => selectedDeviceIds.includes(obj.deviceId));
@@ -199,6 +195,7 @@ export const AlertFetching = async (io) => {
 
         console.log('All Device IDs:', Array.from(selectedDeviceIds));
 
+        selectedDeviceIds = [];
     } catch (error) {
         console.error('Error fetching data:', error);
     }

@@ -7,6 +7,7 @@ import { ShareDevice } from "../models/shareDevice.model.js";
 import { User } from "../models/usermodel.js";
 import { SuperAdmin } from "../models/superadminModel.js";
 import cache from "../utils/cache.js";
+import { VehicleChange } from "../models/vehicleLogReports.model.js";
 
 //  add a device
 export const addDevice = async (req, res) => {
@@ -93,6 +94,9 @@ export const getDevices = async (req, res) => {
   const role = req.user.role;
   const userId = req.user.id;
 
+  console.log("user check",role);
+  
+
   try {
     const { search, page = 1, limit = 10 } = req.query;
     const pageNumber = parseInt(page);
@@ -108,7 +112,12 @@ export const getDevices = async (req, res) => {
     if (role === "superadmin") {
       console.log("Superadmin access: All devices");
     } else {
-      filter.createdBy = userId;
+      filter = {
+        $or: [
+          { createdBy: userId },  
+          { users: userId }      
+        ]
+      };
       console.log(
         `Restricted access for role ${role}: Only devices created by user ${userId}`
       );
@@ -150,7 +159,54 @@ export const updateDeviceById = async (req, res) => {
     if (!updatedDevice) {
       return res.status(404).json({ message: "Device not found" });
     }
-    res.status(200).json(updatedDevice);
+        
+        const {
+          name,
+          uniqueId,
+          deviceId,
+          sim,
+          groups,
+          users,
+          Driver,
+          geofences,
+          speed,
+          average,
+          model,
+          category,
+          installationdate,
+          expirationdate,
+          extenddate,
+          newName,newSimno,newImei,previousSubscriptionStartDate,ignNotConnectedChange,ignWirePositive,added,newTimezone,
+        } = updates
+
+            console.log("pavan data is coming",name, newName,newSimno,newImei,previousSubscriptionStartDate,ignNotConnectedChange,ignWirePositive,added,newTimezone);
+            
+            const createdBy = req.user.id;
+            const vehiclelogData = new VehicleChange({
+              name,
+              oldImei:uniqueId,
+              deviceId,
+              oldSimno:sim,
+              groups,
+              users,
+              Driver,
+              geofences,
+              speed,
+              average,
+              model,
+              category,
+              installationdate,
+              expirationdate,
+              extenddate,
+              changedBy:createdBy,
+              newName,newSimno,newImei,previousSubscriptionStartDate,ignNotConnectedChange,ignWirePositive,added,newTimezone,
+            });
+      
+                await vehiclelogData.save();
+
+        res.status(200).json(updatedDevice);
+
+
   } catch (error) {
     res.status(500).json({
       message: "Error updating Device",
