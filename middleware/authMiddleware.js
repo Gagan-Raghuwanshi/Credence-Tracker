@@ -18,21 +18,19 @@ export const authenticateToken = async (req, res, next) => {
     let sperr = false;
     user = await SuperAdmin.findById(decoded.id);
     if (user) {
-      req.user = { id: decoded.id, role: 'superadmin', users: true }; // Superadmin can create users
+      req.user = { id: decoded.id, role: 'superadmin', users: true }; 
       sperr = true;
     } else if(!user) {
       user = await User.findById(decoded.id);
-      req.user = { id: user._id, role: 'user', users: user.users }; // Regular user with users permission
+      req.user = { id: user._id, role: 'user', users: user.users }; 
       sperr = true;
     }
-    
-    
+      
     if(!sperr){
       return res.status(404).json({ message: 'User not found' });
     }
     next();
   } catch (error) {
-    console.log("pavan error",error);
     
     return res.status(403).json({ message: 'Invalid token' });
   }
