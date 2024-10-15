@@ -4,6 +4,7 @@ import axios from "axios";
 import { AlertFetching } from "../utils/alert.utils.js";
 import { ShareDevice } from "../models/shareDevice.model.js";
 import jwt from "jsonwebtoken";
+import { onUserConnect, onUserDisconnect } from "../utils/alert.utils.js";
 
 export const setupSocket = (server) => {
   const io = new Server(server, {
@@ -18,8 +19,14 @@ export const setupSocket = (server) => {
     console.log("A new user connected", socket.id);
     let singleDeviceInterval, allDeviceInterval;
 
+    // Get userId(objectId) when the user connects
+    socket.on('registerUser', (userId) => {
+      onUserConnect(socket, userId);
+    });
+
     socket.on("disconnect", (reason) => {
       console.log(`User ${socket.id} disconnected. Reason: ${reason}`);
+      onUserDisconnect(socket);  // For removing user from userSocketMap in the alerts
       // Clear intervals to stop data emission after disconnect
       clearInterval(singleDeviceInterval);
       clearInterval(allDeviceInterval);

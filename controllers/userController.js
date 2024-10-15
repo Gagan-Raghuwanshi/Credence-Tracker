@@ -5,14 +5,14 @@ import { User } from '../models/usermodel.js';
 export const createUser = async (req, res) => {
   console.log("User attempting to create a new user:", req.user);
   const { email, password, username,
-          mobile, users, notification,
-          devices, driver,groups,
-          category, model, report,
-          stop, travel, geofence,
-          maintenance,preferences,status,
-          distance,history,sensor,
-          idle,alerts ,vehicle,devicelimit,dataLimit,
-          entriesCount, geofenceReport} = req.body;
+    mobile, users, notification,
+    devices, driver, groups,
+    category, model, report,
+    stop, travel, geofence,
+    maintenance, preferences, status,
+    distance, history, sensor,
+    idle, alerts, vehicle, devicelimit, dataLimit,
+    entriesCount, geofenceReport } = req.body;
 
   // Check if the user has permission to create users
   const isAuthorized = req.user.superadmin || req.user.users;
@@ -47,17 +47,17 @@ export const createUser = async (req, res) => {
       stop: stop || false,
       travel: travel || false,
       geofence: geofence || false,
-      maintenance:maintenance || false,
-      preferences:preferences||false,
-      status:status||false,
-      distance:distance||false,
-      history:history||false,
-      sensor:sensor||false,
-      idle:idle||false,
-      alerts:alerts||false ,
-      vehicle:vehicle||false,
-      geofenceReport: geofenceReport|| false,
-      devicelimit:devicelimit || false,
+      maintenance: maintenance || false,
+      preferences: preferences || false,
+      status: status || false,
+      distance: distance || false,
+      history: history || false,
+      sensor: sensor || false,
+      idle: idle || false,
+      alerts: alerts || false,
+      vehicle: vehicle || false,
+      geofenceReport: geofenceReport || false,
+      devicelimit: devicelimit || false,
       dataLimit,
       entriesCount
     });
@@ -66,7 +66,7 @@ export const createUser = async (req, res) => {
 
     return res.status(201).json({ message: "User created successfully", user });
   } catch (error) {
-    console.log('error',error)
+    console.log('error', error)
     return res.status(500).json({ message: 'Error creating user', error });
   }
 };
@@ -191,7 +191,7 @@ export const updateUser = async (req, res) => {
     travel, geofence, maintenance, preferences,
     status, distance, history,
     sensor, idle, alerts,
-    vehicle, devicelimit,geofenceReport
+    vehicle, devicelimit, geofenceReport
   } = req.body;
 
   try {

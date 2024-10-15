@@ -1,7 +1,7 @@
 import { Device } from "../models/device.model.js";
 import { History } from "../models/history.model.js"
 import moment from 'moment';
-import {VehicleChange} from "../models/vehicleLogReports.model.js";
+import { VehicleChange } from "../models/vehicleLogReports.model.js";
 
 
 export const getStatusReport = async (req, res) => {
@@ -757,8 +757,8 @@ export const getIdleReports = async (req, res) => {
 //     }
 // };
 
-   console.log();
-   
+console.log();
+
 
 // export const vehiclelog = async (req, res) => {
 //     try {
@@ -924,6 +924,8 @@ export const getGeofenceReport = async (req, res) => {
                     success: false
                 });
         }
+        // const formattedFromDateStr = from.toISOString();
+        // const formattedToDateStr = to.toISOString();
 
         const query = {
             deviceId: { $in: parsedDeviceIds },
@@ -1120,7 +1122,7 @@ export const vehiclelog = async (req, res) => {
             }
         };
 
-        const attributesToSelect = attribute === "all" ? {} : { [attribute]: 1, added: 1 }; 
+        const attributesToSelect = attribute === "all" ? {} : { [attribute]: 1, added: 1 };
 
         const vehicleChanges = await VehicleChange.find(query).select(attributesToSelect);
 

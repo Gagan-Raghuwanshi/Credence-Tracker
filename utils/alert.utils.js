@@ -5,74 +5,93 @@ import axios from 'axios';
 import moment from 'moment';
 import { Notification } from '../models/notification.model.js';
 import Alert from '../models/alert.model.js';
+import { Device } from '../models/device.model.js';
 
-const app = express();
 let deviceStatus = {};
+let userSocketMap = {};
 const stopLimit = 1;
-let data = null; // Keep the data variable
+const speedLimit = 10;
+let data = null; // Store alarm data
 let alertsArray = [];
 const inactiveThreshold = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
 
-const checkDeviceStatus = (io, deviceData) => {
-    const { deviceId, status, attributes: { ignition, alarm }, speed, latitude, longitude } = deviceData;
 
-    const speedLimit = 60;
+const checkDeviceStatus = async (io, deviceData) => {
+    const { deviceId, name, status, attributes: { ignition, alarm }, speed, latitude, longitude } = deviceData;
+
 
     if (!deviceStatus[deviceId]) {
-        deviceStatus[deviceId] = { ignition, speed, status, lastActive: Date.now() };
+        deviceStatus[deviceId] = { ignition, speed, status, lastActive: Date.now(), lastAlertType: null }; // Initialize lastAlertType
         return;
     }
 
+    const alertTypes = await getAlertTypesForDevice(deviceId); // Get alert types for the specific device
+    const alertTypeArray = alertTypes[0]; // Extract the single array from alertTypes
+    // console.log(alertTypeArray);
+
     if (deviceStatus[deviceId].ignition !== ignition) {
-        const alert = createAlert(deviceData, 'Ignition'); // Create alert for ignition change
-        sendAlert(io, alert); // Send the alert
-        alertsArray.push(alert);
+        const alertType = ignition ? 'ignitionOn' : 'ignitionOff'; // Determine alert type based on ignition status
+        if (alertTypeArray.includes(alertType)) {
+            const alert = createAlert(deviceData, alertType); // Create alert for ignition change
+            await sendAlert(io, alert); // Send the alert
+            alertsArray.push(alert);
+        }
     }
 
-    if (speed > speedLimit && deviceStatus[deviceId].speed !== speedLimit) {
+    if (speed > speedLimit && deviceStatus[deviceId].speed <= speedLimit && alertTypeArray.includes('speedLimitExceeded')) {
         const alert = createAlert(deviceData, 'speedLimitExceeded'); // Create alert for speed limit exceeded
-        sendAlert(io, alert); // Send the alert
+        await sendAlert(io, alert); // Send the alert
         alertsArray.push(alert);
     }
 
     if (deviceStatus[deviceId].status !== status) {
-        const alert = createAlert(deviceData, status === 'online' ? 'statusOnline' : status === 'offline' ? 'statusOffline' : 'statusUnknown');
-        sendAlert(io, alert);
-        alertsArray.push(alert);
+        if (alertTypeArray.includes(status)) {
+            const alert = createAlert(deviceData, status === 'online' ? 'statusOnline' : status === 'offline' ? 'statusOffline' : 'statusUnknown');
+            await sendAlert(io, alert);
+            alertsArray.push(alert);
+        }
     }
 
     if (alarm && deviceStatus[deviceId].alarm !== alarm) {
         data = alarm; // Store alarm data
-        const alarmAlert = createAlert(deviceData, 'alarm'); // Create alert for general alarm
-        sendAlert(io, alarmAlert); // Send the alert
-        alertsArray.push(alarmAlert);
-        if (alarm === 'geofenceEnter') {
+        if (alertTypeArray.includes('alarm')) {
+            const alarmAlert = createAlert(deviceData, 'alarm'); // Create alert for general alarm
+            await sendAlert(io, alarmAlert); // Send the alert
+            alertsArray.push(alarmAlert);
+        }
+        if (alarm === 'geofenceEnter' && alertTypeArray.includes('geofenceEntered')) {
             const geofenceEnteredAlert = createAlert(deviceData, 'geofenceEntered'); // Create alert for geofence entered
-            sendAlert(io, geofenceEnteredAlert); // Send the alert
+            await sendAlert(io, geofenceEnteredAlert); // Send the alert
             alertsArray.push(geofenceEnteredAlert);
-        } else if (alarm === 'geofenceExit') {
+        } else if (alarm === 'geofenceExit' && alertTypeArray.includes('geofenceExited')) {
             const geofenceExitedAlert = createAlert(deviceData, 'geofenceExited'); // Create alert for geofence exited
-            sendAlert(io, geofenceExitedAlert); // Send the alert
+            await sendAlert(io, geofenceExitedAlert); // Send the alert
             alertsArray.push(geofenceExitedAlert);
         }
         data = null; // Reset data
     }
 
     // Check for device stopped status
-    if (speed <= stopLimit && deviceStatus[deviceId].speed !== speed && deviceStatus[deviceId].lastAlertType !== 'deviceStopped') {
-        const alert = createAlert(deviceData, 'deviceStopped'); // Create alert for device stopped
-        sendAlert(io, alert); // Send the alert
-        alertsArray.push(alert);
+    if (speed <= stopLimit && deviceStatus[deviceId].lastAlertType !== 'deviceStopped') {
+        if (alertTypeArray.includes('deviceStopped')) {
+            const alert = createAlert(deviceData, 'deviceStopped'); // Create alert for device stopped
+            await sendAlert(io, alert); // Send the alert
+            alertsArray.push(alert);
+        }
         deviceStatus[deviceId].lastAlertType = 'deviceStopped'; // Update last alert type
-    } else if (speed > stopLimit && deviceStatus[deviceId].speed !== speed && deviceStatus[deviceId].lastAlertType !== 'deviceMoving') {
-        const alert = createAlert(deviceData, 'deviceMoving'); // Create alert for device moving
-        sendAlert(io, alert); // Send the alert
-        alertsArray.push(alert);
+    } else if (speed > stopLimit && deviceStatus[deviceId].lastAlertType !== 'deviceMoving') {
+        if (alertTypeArray.includes('deviceMoving')) {
+            const alert = createAlert(deviceData, 'deviceMoving'); // Create alert for device moving
+            await sendAlert(io, alert); // Send the alert
+            alertsArray.push(alert);
+        }
         deviceStatus[deviceId].lastAlertType = 'deviceMoving'; // Update last alert type
     } else if (Date.now() - deviceStatus[deviceId].lastActive >= inactiveThreshold && deviceStatus[deviceId].lastAlertType !== 'deviceInactive') {
-        const alert = createAlert(deviceData, 'deviceInactive'); // Create alert for device inactive
-        sendAlert(io, alert); // Send the alert
-        alertsArray.push(alert);
+        if (alertTypeArray.includes('deviceInactive')) {
+            const alert = createAlert(deviceData, 'deviceInactive'); // Create alert for device inactive
+            await sendAlert(io, alert); // Send the alert
+            alertsArray.push(alert);
+        }
         deviceStatus[deviceId].lastAlertType = 'deviceInactive'; // Update last alert type
     }
 
@@ -85,7 +104,7 @@ const checkDeviceStatus = (io, deviceData) => {
 };
 
 const createAlert = (deviceData, type) => {
-    const { attributes: { ignition, speed, alarm }, status, latitude, longitude } = deviceData; // Destructuring device data
+    const { attributes: { ignition, alarm }, speed, status, name, latitude, longitude } = deviceData; // Destructuring device data
     const ignitionStatus = ignition ? 'ignitionOn' : 'ignitionOff'; // Determine ignition status
     const vehicleStatus = status === 'online' ? 'statusOnline' : status === 'offline' ? 'statusOffline' : 'statusUnknown'; // Determine vehicle status
     const deviceSpeed = speed <= stopLimit ? 'deviceStopped' : speed > stopLimit ? 'deviceMoving' : 'deviceInactive'; // Determine device speed status
@@ -93,30 +112,37 @@ const createAlert = (deviceData, type) => {
     let message; // Variable to hold alert message
 
     // Create message based on alert type
-    if (type === 'Ignition') {
-        message = `Vehicle ${deviceData.deviceId} has ${ignition ? 'started' : 'stopped'}!`;
+    if (type === 'ignitionOn') {
+        message = `Vehicle ${name} has started!`;
+    } else if (type === 'ignitionOff') {
+        message = `Vehicle ${name} has stopped!`;
     } else if (type === 'speedLimitExceeded') {
-        message = `Vehicle ${deviceData.deviceId} is overspeeding! Speed: ${speed} km/h`;
+        message = `Vehicle ${name} is overspeeding! Speed: ${speed} km/h`;
     } else if (type === 'deviceMoving') {
-        message = `Device ${deviceData.deviceId} is moving! Speed: ${speed} km/h`;
+        message = `Device ${name} is moving! Speed: ${speed} km/h`;
     } else if (type === 'deviceStopped') {
-        message = `Device ${deviceData.deviceId} is stopped! Speed: ${speed} km/h`;
+        message = `Device ${name} is stopped! Speed: ${speed} km/h`;
     } else if (type === 'deviceInactive') {
-        message = `Device ${deviceData.deviceId} has been inactive for 24 hours!`;
+        message = `Device ${name} has been inactive for 24 hours!`;
     } else if (type === 'alarm') {
-        message = `Alarm for ${deviceData.deviceId} is ${alarm}!`;
+        message = `Alarm for ${name} is ${alarm}!`;
     } else if (type === 'geofenceEntered') {
-        message = `Device ${deviceData.deviceId} has entered the geofence!`;
+        message = `Device ${name} has entered the geofence!`;
     } else if (type === 'geofenceExited') {
-        message = `Device ${deviceData.deviceId} has exited the geofence!`;
-    } else if (type === "statusOnline" ? "statusOnline" : type === "statusOffline" ? "statusOffline" : "statusUnknown") {
-        message = `Status of ${deviceData.deviceId} is ${status === 'online' ? 'online' : status === 'offline' ? 'offline' : 'unknown'}`;
+        message = `Device ${name} has exited the geofence!`;
+    } else if (type === 'statusOnline') {
+        message = `Status of ${name} is online.`;
+    } else if (type === 'statusOffline') {
+        message = `Status of ${name} is offline.`;
+    } else {
+        message = `Status of ${name} is unknown.`;
     }
 
     // Return the alert object
     return {
-        type: type === 'Ignition' ? ignitionStatus : type || vehicleStatus || deviceSpeed,
+        type: (type === 'ignitionOn' || type === 'ignitionOff') ? ignitionStatus : (type || vehicleStatus || deviceSpeed),
         deviceId: deviceData.deviceId,
+        name: name,
         added: formattedDate,
         location: [longitude, latitude],
         data,
@@ -124,8 +150,44 @@ const createAlert = (deviceData, type) => {
     };
 };
 
+// Call this when a user connects
+export const onUserConnect = (socket, userId) => {
+    userSocketMap[userId] = socket.id;
+};
+
+// Call this when a user disconnects
+export const onUserDisconnect = (socket) => {
+    for (const userId in userSocketMap) {
+        if (userSocketMap[userId] === socket.id) {
+            delete userSocketMap[userId];
+            break;
+        }
+    }
+};
+
+const getUserSocketId = (userId) => {
+    // console.log(userId)
+    return userSocketMap[userId] || null; // Return null if the user is not connected
+};
+
 const sendAlert = async (io, alert) => {
     await new Alert(alert).save();
+    // Find the user who created the notification for this device
+    const device = await Device.findOne({ deviceId: alert.deviceId });
+    const notifications = await Notification.find({ deviceId: device._id }).populate('createdBy');
+
+    notifications.forEach(notification => {
+        if (notification.createdBy) {
+            const userId = notification.createdBy._id; // Assuming createdBy is a reference to the user model
+            const userSocketId = getUserSocketId(userId); // Implement this function to get the user's socket ID
+            console.log(userId, userSocketId);
+            if (userSocketId) {
+                // Send alert to the specific user
+                console.log(alert);
+                io.to(userSocketId).emit('alert', alert);
+            }
+        }
+    });
 };
 
 let selectedDeviceIds = []; // Replace with actual selected deviceIds
@@ -178,16 +240,21 @@ export const AlertFetching = async (io) => {
             const match = deviceApiData.get(obj1.deviceId);
             if (match) {
                 obj1.status = match.status;
+                obj1.name = match.name;
             }
         });
 
         // Process the filtered device data
-        filteredDevices.forEach((deviceData) => checkDeviceStatus(io, deviceData));
+        for (const deviceData of filteredDevices) {
+            await checkDeviceStatus(io, deviceData);
+        }
 
         io.emit("Alerts", alertsArray); // Send only relevant alerts
+        console.log(alertsArray);
         alertsArray = []; // Reset the alertsArray after sending
 
         console.log("pavan check\ngagan check\nyash check\nprachi check");
+        console.log(userSocketMap);
 
         console.log('All Device IDs:', Array.from(selectedDeviceIds));
 
