@@ -10,7 +10,6 @@ import { Device } from '../models/device.model.js';
 let deviceStatus = {};
 let userSocketMap = {};
 const stopLimit = 1;
-const speedLimit = 10;
 let data = null; // Store alarm data
 let alertsArray = [];
 const inactiveThreshold = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
@@ -25,9 +24,11 @@ const checkDeviceStatus = async (io, deviceData) => {
         return;
     }
 
-    const alertTypes = await getAlertTypesForDevice(deviceId); // Get alert types for the specific device
+    let { alertTypes, speedLimit } = await getAlertTypesForDevice(deviceId); // Get alert types for the specific device
     const alertTypeArray = alertTypes[0]; // Extract the single array from alertTypes
+    speedLimit = Number(speedLimit);
     // console.log(alertTypeArray);
+    // console.log(speedLimit);
 
     if (deviceStatus[deviceId].ignition !== ignition) {
         const alertType = ignition ? 'ignitionOn' : 'ignitionOff'; // Determine alert type based on ignition status
@@ -134,7 +135,7 @@ const createAlert = (deviceData, type) => {
         message = `Status of ${name} is online.`;
     } else if (type === 'statusOffline') {
         message = `Status of ${name} is offline.`;
-    } else {
+    } else if (type === 'statusUnknown') {
         message = `Status of ${name} is unknown.`;
     }
 
@@ -172,7 +173,7 @@ const getUserSocketId = (userId) => {
 
 const sendAlert = async (io, alert) => {
     // Save the alert to the database
-    await new Alert(alert).save();
+    // await new Alert(alert).save();
     // Find the user who created the notification for this device
     const device = await Device.findOne({ deviceId: alert.deviceId });
     const notifications = await Notification.find({ deviceId: device._id }).populate('createdBy');
@@ -209,9 +210,18 @@ const addDeviceToSelectedIds = async () => {
 
 const getAlertTypesForDevice = async (deviceId) => {
     const notifications = await Notification.find().populate('deviceId');
-    return notifications
+    // Filter notifications for the specific device and map alert types
+    const alertTypes = notifications
         .filter((notification) => Number(notification.deviceId.deviceId) === deviceId)
         .map((notification) => notification.type);
+
+    const device = await Device.findOne({ deviceId: deviceId }); // Query to find the device
+    const speedLimit = device ? device.speed : null; // Get the speed if available
+
+    return {
+        alertTypes,
+        speedLimit
+    };
 };
 
 export const AlertFetching = async (io) => {
