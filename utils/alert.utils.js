@@ -171,10 +171,7 @@ const getUserSocketId = (userId) => {
 };
 
 const sendAlert = async (io, alert) => {
-
-                console.log("All alerts console",alert);
-                
-
+    // Save the alert to the database
     await new Alert(alert).save();
     
     const device = await Device.findOne({ deviceId: alert.deviceId });

@@ -6,6 +6,9 @@ const alertSchema = new mongoose.Schema({
         required: true,
         index: true, // For faster querying
     },
+    name: {
+        type: String,
+    },
     type: {
         type: String,
         required: true,
@@ -29,6 +32,15 @@ const alertSchema = new mongoose.Schema({
         ],
     },
     data: {
+        type: String,
+    },
+    added: {
+        type: String,
+    },
+    location: [{
+        type: Number,
+    }],
+    address: {
         type: String,
     },
     message: {

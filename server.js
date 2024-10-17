@@ -4,7 +4,7 @@ import { createServer } from "http";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
 import cors from "cors";
-import DBconnection from "./database/db.js"; 
+import DBconnection from "./database/db.js";
 import superadminRoutes from './routes/superadminRoute.js';
 import userRoutes from './routes/userRoute.js';
 import authRoutes from './routes/authRoute.js';
@@ -34,7 +34,7 @@ app.use(cookieParser());
 app.use(cors());
 
 
- 
+
 
 app.get("/", (req, res) => {
     return res.status(200).json({
@@ -73,9 +73,9 @@ const io = setupSocket(server);
 
 
 
-// setInterval(() => {
-//     AlertFetching(io)
-//     }, 10000);
+setInterval(() => {
+    AlertFetching(io)
+}, 10000);
 
 
 
