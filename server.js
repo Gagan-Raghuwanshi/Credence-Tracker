@@ -79,7 +79,7 @@ const io = setupSocket(server);
 
 
 
-// import './utils/notification.utils.js';
+
 // Start server and connect to database
 const PORT = process.env.PORT || 3000;
 server.listen(PORT, async () => {
