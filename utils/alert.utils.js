@@ -40,7 +40,7 @@ const checkDeviceStatus = async (io, deviceData) => {
     }
 
     if (speed > speedLimit && deviceStatus[deviceId].speed <= speedLimit && alertTypeArray.includes('speedLimitExceeded')) {
-        const alert = createAlert(deviceData, 'speedLimitExceeded'); // Create alert for speed limit exceeded
+        const alert = createAlert(deviceData, 'speedLimitExceeded');
         await sendAlert(io, alert); // Send the alert
         alertsArray.push(alert);
     }
@@ -167,8 +167,8 @@ export const onUserDisconnect = (socket) => {
 };
 
 const getUserSocketId = (userId) => {
-    // console.log(userId)
-    return userSocketMap[userId] || null; // Return null if the user is not connected
+
+    return userSocketMap[userId] || null;
 };
 
 const sendAlert = async (io, alert) => {
@@ -180,11 +180,11 @@ const sendAlert = async (io, alert) => {
 
     notifications.forEach(notification => {
         if (notification.createdBy) {
-            const userId = notification.createdBy._id; // Assuming createdBy is a reference to the user model
-            const userSocketId = getUserSocketId(userId); // Implement this function to get the user's socket ID
+            const userId = notification.createdBy._id;
+            const userSocketId = getUserSocketId(userId);
             console.log(userId, userSocketId);
             if (userSocketId) {
-                // Send alert to the specific user
+
                 console.log(alert);
                 io.to(userSocketId).emit('alert', alert);
             }
@@ -192,7 +192,7 @@ const sendAlert = async (io, alert) => {
     });
 };
 
-let selectedDeviceIds = []; // Replace with actual selected deviceIds
+let selectedDeviceIds = [];
 
 const addDeviceToSelectedIds = async () => {
     const notifications = await Notification.find().populate('deviceId');
@@ -244,7 +244,7 @@ export const AlertFetching = async (io) => {
 
         await addDeviceToSelectedIds();
 
-        // Filter the PositionApiData for selected deviceIds
+
         const filteredDevices = PositionApiData.filter(obj => selectedDeviceIds.includes(obj.deviceId));
 
         filteredDevices.forEach(obj1 => {
@@ -255,15 +255,14 @@ export const AlertFetching = async (io) => {
             }
         });
 
-        // Process the filtered device data
+
         for (const deviceData of filteredDevices) {
             await checkDeviceStatus(io, deviceData);
         }
 
-        io.emit("Alerts", alertsArray); // Send only relevant alerts
+        io.emit("Alerts", alertsArray);
         console.log(alertsArray);
-        alertsArray = []; // Reset the alertsArray after sending
-
+        alertsArray = [];
         console.log("pavan check\ngagan check\nyash check\nprachi check");
         console.log(userSocketMap);
 
