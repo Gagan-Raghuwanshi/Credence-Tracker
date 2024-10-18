@@ -10,7 +10,6 @@ import { Device } from '../models/device.model.js';
 let deviceStatus = {};
 let userSocketMap = {};
 const stopLimit = 1;
-const speedLimit = 10;
 let data = null; // Store alarm data
 let alertsArray = [];
 const inactiveThreshold = 24 * 60 * 60 * 1000; // 24 hours in milliseconds
@@ -25,9 +24,11 @@ const checkDeviceStatus = async (io, deviceData) => {
         return;
     }
 
-    const alertTypes = await getAlertTypesForDevice(deviceId); // Get alert types for the specific device
+    let { alertTypes, speedLimit } = await getAlertTypesForDevice(deviceId); // Get alert types for the specific device
     const alertTypeArray = alertTypes[0]; // Extract the single array from alertTypes
+    speedLimit = Number(speedLimit);
     // console.log(alertTypeArray);
+    // console.log(speedLimit);
 
     if (deviceStatus[deviceId].ignition !== ignition) {
         const alertType = ignition ? 'ignitionOn' : 'ignitionOff'; // Determine alert type based on ignition status
@@ -39,7 +40,7 @@ const checkDeviceStatus = async (io, deviceData) => {
     }
 
     if (speed > speedLimit && deviceStatus[deviceId].speed <= speedLimit && alertTypeArray.includes('speedLimitExceeded')) {
-        const alert = createAlert(deviceData, 'speedLimitExceeded'); 
+        const alert = createAlert(deviceData, 'speedLimitExceeded');
         await sendAlert(io, alert); // Send the alert
         alertsArray.push(alert);
     }
@@ -134,7 +135,7 @@ const createAlert = (deviceData, type) => {
         message = `Status of ${name} is online.`;
     } else if (type === 'statusOffline') {
         message = `Status of ${name} is offline.`;
-    } else {
+    } else if (type === 'statusUnknown') {
         message = `Status of ${name} is unknown.`;
     }
 
@@ -166,24 +167,24 @@ export const onUserDisconnect = (socket) => {
 };
 
 const getUserSocketId = (userId) => {
-    
-    return userSocketMap[userId] || null; 
+
+    return userSocketMap[userId] || null;
 };
 
 const sendAlert = async (io, alert) => {
     // Save the alert to the database
-    await new Alert(alert).save();
-    
+    // await new Alert(alert).save();
+    // Find the user who created the notification for this device
     const device = await Device.findOne({ deviceId: alert.deviceId });
     const notifications = await Notification.find({ deviceId: device._id }).populate('createdBy');
 
     notifications.forEach(notification => {
         if (notification.createdBy) {
-            const userId = notification.createdBy._id; 
-            const userSocketId = getUserSocketId(userId); 
+            const userId = notification.createdBy._id;
+            const userSocketId = getUserSocketId(userId);
             console.log(userId, userSocketId);
             if (userSocketId) {
-               
+
                 console.log(alert);
                 io.to(userSocketId).emit('alert', alert);
             }
@@ -209,9 +210,18 @@ const addDeviceToSelectedIds = async () => {
 
 const getAlertTypesForDevice = async (deviceId) => {
     const notifications = await Notification.find().populate('deviceId');
-    return notifications
+    // Filter notifications for the specific device and map alert types
+    const alertTypes = notifications
         .filter((notification) => Number(notification.deviceId.deviceId) === deviceId)
         .map((notification) => notification.type);
+
+    const device = await Device.findOne({ deviceId: deviceId }); // Query to find the device
+    const speedLimit = device ? device.speed : null; // Get the speed if available
+
+    return {
+        alertTypes,
+        speedLimit
+    };
 };
 
 export const AlertFetching = async (io) => {
@@ -234,7 +244,7 @@ export const AlertFetching = async (io) => {
 
         await addDeviceToSelectedIds();
 
-      
+
         const filteredDevices = PositionApiData.filter(obj => selectedDeviceIds.includes(obj.deviceId));
 
         filteredDevices.forEach(obj1 => {
@@ -245,14 +255,14 @@ export const AlertFetching = async (io) => {
             }
         });
 
-      
+
         for (const deviceData of filteredDevices) {
             await checkDeviceStatus(io, deviceData);
         }
 
-        io.emit("Alerts", alertsArray); 
+        io.emit("Alerts", alertsArray);
         console.log(alertsArray);
-        alertsArray = []; 
+        alertsArray = [];
         console.log("pavan check\ngagan check\nyash check\nprachi check");
         console.log(userSocketMap);
 
