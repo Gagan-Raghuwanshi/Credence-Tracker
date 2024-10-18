@@ -278,7 +278,8 @@ export const importUserData = async (req, res) => {
         
       } = data;
 
-      const createdBy = "66f3e61f6185596d1d00c384";
+      // const createdBy = "66f3e61f6185596d1d00c384";
+      const createdBy = req.user.id;
 
       try {
         if (!username || !password) {
