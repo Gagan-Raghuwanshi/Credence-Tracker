@@ -56,11 +56,23 @@ const deviceSchema = new mongoose.Schema({
     type: String,
     default: ""
   },
+  subStart: {
+    type: String,
+    default: ""
+  },
   expirationdate: {
     type: String,
     default: ""
   },
   extenddate: {
+    type: String,
+    default: null
+  },
+  inactiveDate: {
+    type: String,
+    default: null
+  },
+  modifiedDate: {
     type: String,
     default: null
   },
@@ -72,7 +84,7 @@ const deviceSchema = new mongoose.Schema({
   deviceId: {
     type: String,
     // required: true, 
-    unique: true
+    // unique: true
   },
   positionId: {
     type: String,

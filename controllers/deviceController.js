@@ -345,3 +345,171 @@ export const createShareDevice = async (req, res) => {
     });
   }
 };
+
+
+
+
+
+// code for import data
+
+
+// export const importDeviceData = async (req, res) => {
+//   try {
+//     const registrationData = req.body;
+
+//     if (!Array.isArray(registrationData) || registrationData.length === 0) {
+//       return res.status(400).json({ error: 'No registration data provided' });
+//     }
+
+//     const processedDevice = [];
+
+//     const registrationPromises = registrationData.map(async (data) => {
+//       const {
+//         name,
+//         uniqueId,
+//         sim,
+//         model,
+//         category,
+//         lastUpdate,
+//         vStatus,
+//         dStatus,
+//         added,
+//         subStart,
+//         expirationdate,
+//         inactiveDate,
+//         modifiedDate,
+        
+//       } = data;
+
+//       if (!name || !uniqueId ) {
+//         throw new Error(`Device name, unique ID are required.`);
+//       }
+
+//       let device = await Device.findOne({ name });
+
+//       if (!device) {
+
+//         device = new Device({
+
+//           statusOfRegister: 'pending'
+//         });
+
+//         await device.save();
+//       }
+
+//       const newDevice = new Device({
+//         name,
+//         uniqueId,
+//         sim,
+//         model,
+//         category,
+//         lastUpdate,
+//         vStatus,
+//         dStatus,
+//         added,
+//         subStart,
+//         expirationdate,
+//         inactiveDate,
+//         modifiedDate,
+//       });
+
+//       await newVehicle.save();
+
+//       processedDevice.push({ device, device: newDevice });
+//     });
+
+//     await Promise.all(registrationPromises);
+
+//     res.status(201).json({ registeredVehicles: processedDevice });
+//   } catch (error) {
+//     console.error('Error during registration:', error.message);
+//     res.status(400).json({ error: error.message });
+//   }
+// };
+
+
+
+export const importDeviceData = async (req, res) => {
+  try {
+    const registrationData = req.body;
+
+    if (!Array.isArray(registrationData) || registrationData.length === 0) {
+      return res.status(400).json({ error: 'No registration data provided' });
+    }
+
+    const processedDevices = [];
+    const failedEntries = [];
+
+
+
+    const registrationPromises = registrationData.map(async (data) => {
+      const {
+        name,
+        uniqueId,
+        sim,
+        model,
+        category,
+        lastUpdate,
+        installationdate,
+        subStart,
+        expirationdate,
+        inactiveDate,
+        modifiedDate,
+        deviceId
+      } = data;
+
+      try {
+        if (!name || !uniqueId) {
+          throw new Error(`Device name and unique ID are required for device: ${name || 'Unknown'}`);
+        }
+        
+        let existingDevice = await Device.findOne({ name });
+        if (existingDevice) {
+          throw new Error(`Device with name already exists: ${name}`);
+        }
+
+        const findbygivenId = await Devicelist.findOne({ uniqueId });        
+
+        if(findbygivenId){
+
+          const newDevice = new Device({
+            name,
+            uniqueId,
+            sim,
+            model,
+            category,
+            lastUpdate,
+            installationdate,
+            subStart,
+            expirationdate,
+            inactiveDate,
+            modifiedDate,
+            deviceId:findbygivenId.deviceId
+            
+          });
+  
+          const response = await newDevice.save();
+          processedDevices.push({ device: response.toObject() });
+        }else{
+            throw new Error("DeviceId cannot be null");
+        }
+
+
+      } catch (error) {
+        failedEntries.push({ error: error.message, data });
+      }
+    });
+
+    await Promise.allSettled(registrationPromises);
+
+    res.status(201).json({
+      success: processedDevices,
+      failed: failedEntries
+    });
+
+  } catch (error) {
+    console.error('Error during device registration:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
+
