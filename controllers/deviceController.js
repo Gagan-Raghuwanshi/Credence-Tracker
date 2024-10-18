@@ -7,6 +7,7 @@ import { ShareDevice } from "../models/shareDevice.model.js";
 import { User } from "../models/usermodel.js";
 import { SuperAdmin } from "../models/superadminModel.js";
 import { VehicleChange } from "../models/vehicleLogReports.model.js";
+import axios from "axios";
 
 //  add a device
 export const addDevice = async (req, res) => {
@@ -29,7 +30,10 @@ export const addDevice = async (req, res) => {
   const createdBy = req.user.id;
   console.log(createdBy);
   let user;
+
+
   try {
+
 
     if (req.user.role === 'superadmin') {
       user = await SuperAdmin.findById({ _id: createdBy });
@@ -43,14 +47,36 @@ export const addDevice = async (req, res) => {
     }
 
     const findUniqueId = await Device.findOne({ uniqueId });
-    const findbygivenId = await Devicelist.findOne({ uniqueId });
-    // console.log("findbygivenId",findbygivenId)
+    // const findbygivenId = await Devicelist.findOne({ uniqueId });
+
 
     if (!findUniqueId) {
+
+
+      const url = "http://104.251.212.84/api/devices";
+      const username = "hbtrack";
+      const password = "123456@";
+      let deviceListArray;
+      
+      try {
+        const response = await axios.get(url, {auth: { username: username, password: password },});
+        const data = response.data;
+        deviceListArray = data
+      } catch (error) {
+        console.error("There was a problem with the fetch operation:", error.message);
+        return res.json({message:"Internal server error... please try again... "})
+      }
+    
+      const findbygivenId = deviceListArray.find(device => device.uniqueId === uniqueId);
+
+      console.log("findbygivenId",findbygivenId)
+
+
+
       const device = new Device({
         name,
         uniqueId,
-        deviceId: findbygivenId.deviceId,
+        deviceId: findbygivenId.id,
         lastUpdate: findbygivenId.lastUpdate,
         positionId: findbygivenId.positionId,
         sim,
@@ -66,9 +92,7 @@ export const addDevice = async (req, res) => {
         expirationdate,
         extenddate,
         createdBy,
-        // positionId:findbygivenId.positionId,
-        // status:findbygivenId.status,
-        // lastUpdate:findbygivenId.lastUpdate,
+        
       });
 
       await device.save();
@@ -84,8 +108,7 @@ export const addDevice = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-
-    return res.status(500).json({ message: "Error adding device", error });
+    return res.status(500).json({ message: "Error adding device please try again...", error });
   }
 };
 
