@@ -1,4 +1,5 @@
 import { Group } from "../models/group.model.js";
+import { User } from "../models/usermodel.js";
 
 
 // post group
@@ -120,4 +121,69 @@ export const deleteGroup = async (req, res) => {
 };
 
 
+export const importGroupData = async (req, res) => {
+  try {
+    const registrationData = req.body;
+
+    if (!Array.isArray(registrationData) || registrationData.length === 0) {
+      return res.status(400).json({ error: 'No registration data provided' });
+    }
+
+    const processedDevices = [];
+    const failedEntries = [];
+
+    const registrationPromises = registrationData.map(async (data) => {
+      const {
+        email,
+        groupName,
+        attributes,
+        
+      } = data;
+      console.log("impoet group",data)
+
+      try {
+        if (!groupName || !email) {
+          throw new Error(`Email and Group Name are required for Create Group`);
+        }
+        
+        let group = await Group.findOne({ name:groupName });
+        if (group) {
+          throw new Error(`Group with this name already exists: ${group.name}`);
+        }
+
+        const user = await User.findOne({ email });        
+
+        if(user){
+          const newGroup = new Group({
+            createdBy:user._id,
+            name:groupName,
+            attributes
+            
+          });
+  
+          const response = await newGroup.save();
+          await response.populate('createdBy','email');
+          processedDevices.push({ group: response.toObject({transform: (doc, ret) => { delete ret._id; }}) });
+        }
+        else {
+          throw new Error("Wrong Email")
+        }
+
+      } catch (error) {
+        failedEntries.push({ error: error.message, data });
+      }
+    });
+
+    await Promise.allSettled(registrationPromises);
+
+    res.status(201).json({
+      success: processedDevices,
+      failed: failedEntries
+    });
+
+  } catch (error) {
+    console.error('Error during group registration:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
 

@@ -17,6 +17,6 @@ createdBy: {
      ref: 'User',
 },
 createdAt: { type: Date, default: Date.now },
-});
+},{versionKey: false});
 groupSchema.plugin(AutoIncrement(mongoose), { inc_field: 'id' });
 export const Group =  mongoose.model('Group', groupSchema);
