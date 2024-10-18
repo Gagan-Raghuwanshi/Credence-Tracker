@@ -3,10 +3,12 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcrypt';
 
 const userSchema = new mongoose.Schema({
-  email: { type: String, required: true, unique: true },
+  custName:{type:String},
+  email: { type: String, unique: true},
   password: { type: String, required: true },
-  username: { type: String, required: true },
+  username: { type: String, required: true, unique: true },
   mobile: { type: String},
+  contactPerson: { type: String},
   createdBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User', default: null },
   notification: { type: Boolean,default:false},
   devices: { type: Boolean ,default:false},

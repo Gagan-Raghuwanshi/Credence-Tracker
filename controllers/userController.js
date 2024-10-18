@@ -248,3 +248,80 @@ export const deleteUser = async (req, res) => {
     return res.status(500).json({ message: "Error deleting user", error });
   }
 };
+
+// import code start from here
+
+
+
+
+export const importUserData = async (req, res) => {
+  try {
+    const registrationData = req.body;
+
+    if (!Array.isArray(registrationData) || registrationData.length === 0) {
+      return res.status(400).json({ error: 'No registration data provided' });
+    }
+
+    const processedUsers = [];
+    const failedEntries = [];
+
+
+
+    const registrationPromises = registrationData.map(async (data) => {
+      const {
+        custName,
+        username,
+        email,
+        password,
+        mobile,
+        contactPerson,
+        
+      } = data;
+
+      const createdBy = "66f3e61f6185596d1d00c384";
+
+      try {
+        if (!username || !password) {
+          throw new Error(`UserName and password are required  ${username || 'Unknown'}`);
+        }
+        
+        let existingUser = await User.findOne({ username });
+        if (existingUser) {
+          throw new Error(`User already exists: ${username}`);
+        }
+
+
+          const newUser = new User({
+           
+                custName,
+                username,
+                email,
+                password,
+                mobile,
+                contactPerson,
+                createdBy
+          });
+  
+          const response = await newUser.save();
+          processedUsers.push({ user: response.toObject() });
+        
+
+      } catch (error) {
+        failedEntries.push({ error: error.message, data });
+      }
+    });
+
+    await Promise.allSettled(registrationPromises);
+
+
+    res.status(201).json({
+      success: processedUsers,
+      failed: failedEntries
+      
+    });
+
+  } catch (error) {
+    console.error('Error during User registration:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+};
