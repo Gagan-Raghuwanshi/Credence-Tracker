@@ -34,8 +34,8 @@ export const setupSocket = (server) => {
 
     /* ================= Live Tracking Start ================= */
     socket.on("credentials", (credentials) => {
-      const userr = credentials.username;
-      const pass = credentials.password;
+      const userr = "hbtrack"               //credentials.username;
+      const pass = "123456@"               //credentials.password;
       let deviceListData = "";
       let targetDeviceId = null;
       // console.log("credentials", userr, pass);
@@ -223,8 +223,8 @@ export const setupSocket = (server) => {
       setTimeout(() => {
         (async function () {
           const url = "http://104.251.212.84/api/devices";
-          const username = userr;
-          const password = pass;
+          const username = "hbtrack"               //credentials.username;
+          const password = "123456@"               //credentials.password;
 
           try {
             const response = await axios.get(url, {

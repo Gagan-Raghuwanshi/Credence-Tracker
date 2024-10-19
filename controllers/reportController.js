@@ -134,8 +134,9 @@ export const getStatusReport = async (req, res) => {
             distance: previousType === "Ignition Off" ? 0 : totalDistance,
             maxSpeed: maxSpeed,
             averageSpeed: averageSpeed,
-            startLocation: `${prevItem?.latitude || 0}, ${prevItem?.longitude || 0
-              }`,
+            startLocation: `${prevItem?.latitude || 0}, ${
+              prevItem?.longitude || 0
+            }`,
             endLocation: `${item.latitude || 0}, ${item.longitude || 0}`,
             startAddress: prevItem?.address || null,
             endAddress: item.address || null,
@@ -185,8 +186,9 @@ export const getStatusReport = async (req, res) => {
         distance: previousType === "Ignition Off" ? 0 : totalDistance,
         maxSpeed: maxSpeed,
         averageSpeed: averageSpeed,
-        startLocation: `${historyData[historyData.length - 2]?.latitude || 0
-          }, ${historyData[historyData.length - 2]?.longitude || 0}`,
+        startLocation: `${
+          historyData[historyData.length - 2]?.latitude || 0
+        }, ${historyData[historyData.length - 2]?.longitude || 0}`,
         endLocation: `${lastItem.latitude || 0}, ${lastItem.longitude || 0}`,
         startAddress: historyData[historyData.length - 2]?.address || null,
         endAddress: lastItem.address || null,
@@ -525,7 +527,8 @@ export const distanceReport = async (req, res) => {
 
     if (!deviceIds || !Array.isArray(deviceIds) || deviceIds.length === 0) {
       return res.status(400).json({
-        message: "Invalid or missing 'deviceIds'. It should be a non-empty array.",
+        message:
+          "Invalid or missing 'deviceIds'. It should be a non-empty array.",
         success: false,
       });
     }
@@ -542,7 +545,8 @@ export const distanceReport = async (req, res) => {
 
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
       return res.status(400).json({
-        message: "Invalid 'startDate' or 'endDate'. Please provide valid dates.",
+        message:
+          "Invalid 'startDate' or 'endDate'. Please provide valid dates.",
         success: false,
       });
     }
@@ -574,7 +578,10 @@ export const distanceReport = async (req, res) => {
         deviceTime instanceof Date ? deviceTime.toISOString() : deviceTime;
 
       if (typeof deviceTimeString !== "string") {
-        console.warn(`Invalid deviceTime for deviceId ${deviceId}:`, deviceTime);
+        console.warn(
+          `Invalid deviceTime for deviceId ${deviceId}:`,
+          deviceTime
+        );
         return;
       }
 
@@ -591,7 +598,9 @@ export const distanceReport = async (req, res) => {
       if (!deviceEntry[date]) {
         deviceEntry[date] = distance.toFixed(2); // Initialize with the current distance formatted to 2 decimals
       } else {
-        deviceEntry[date] = (parseFloat(deviceEntry[date]) + distance).toFixed(2); // Accumulate the distance and format to 2 decimals
+        deviceEntry[date] = (parseFloat(deviceEntry[date]) + distance).toFixed(
+          2
+        ); // Accumulate the distance and format to 2 decimals
       }
     });
 
@@ -604,6 +613,206 @@ export const distanceReport = async (req, res) => {
     return res.status(500).json({
       message:
         "An error occurred while fetching the distance report. Please try again later.",
+      success: false,
+      error: error.message,
+    });
+  }
+};
+
+// export const dayReport = async (req, res) => {
+//   try {
+//     const { deviceId, startDate, endDate } = req.body;
+
+//     // Validate deviceId
+//     if (!deviceId) {
+//       return res.status(400).json({
+//         message: "Invalid or missing 'deviceId'.",
+//         success: false,
+//       });
+//     }
+
+//     // Validate startDate and endDate
+//     if (!startDate || !endDate) {
+//       return res.status(400).json({
+//         message: "Both 'startDate' and 'endDate' are required.",
+//         success: false,
+//       });
+//     }
+
+//     const start = new Date(startDate);
+//     const end = new Date(endDate);
+//     end.setHours(23, 59, 59, 999); // Set to the end of the day
+
+//     // Query the database
+//     const historyData = await History.find({
+//       deviceId: deviceId,
+//       deviceTime: {
+//         $gte: start,
+//         $lte: end,
+//       },
+//     }).select("deviceTime attributes.distance attributes.ignition");
+
+//     // If no data found, return a 404
+//     if (historyData.length === 0) {
+//       return res.status(404).json({
+//         message: "No Record Found",
+//         success: false,
+//       });
+//     }
+
+//     let lastIgnitionOnTime = null;
+//     let lastIgnitionOffTime = null;
+//     let totalDistance = 0;
+//     let ignitionState = false; // Track current ignition state
+
+//     historyData.forEach((item) => {
+//       const {
+//         deviceTime,
+//         attributes: { ignition, distance },
+//       } = item;
+
+//       // Accumulate total distance
+//       totalDistance += distance;
+
+//       // Check ignition state
+//       if (ignition) {
+//         // If ignition is true, update last ignition on time
+//         lastIgnitionOnTime = deviceTime.toISOString();
+//         ignitionState = true; // Set ignition state to on
+//       } else {
+//         // If ignition is false and was previously true, record last ignition off time
+//         if (ignitionState) {
+//           lastIgnitionOffTime = deviceTime.toISOString();
+//           ignitionState = false; // Set ignition state to off
+//         }
+//       }
+//     });
+
+//     // Ensure we have reasonable defaults
+//     const ignitionOn = lastIgnitionOnTime || "N/A";
+//     const ignitionOff = lastIgnitionOffTime || (lastIgnitionOnTime ? lastIgnitionOnTime : "N/A");
+
+//     return res.status(200).json({
+//       message: "Day report generated successfully",
+//       data: [
+//         {
+//           deviceId: deviceId,
+//           date: start.toISOString().split("T")[0], // Use the start date for the report
+//           ignitionOn,
+//           ignitionOff,
+//           totalDistance: (totalDistance / 1000).toFixed(2) + " KM", // Convert to KM
+//         },
+//       ],
+//     });
+//   } catch (error) {
+//     console.error("Error generating day report:", error);
+//     return res.status(500).json({
+//       message: "An error occurred while generating the day report. Please try again later.",
+//       success: false,
+//       error: error.message,
+//     });
+//   }
+// };
+
+export const dayReport = async (req, res) => {
+  try {
+    const { deviceId, startDate, endDate } = req.body;
+
+    // Validate deviceId
+    if (!deviceId) {
+      return res.status(400).json({
+        message: "Invalid or missing 'deviceId'.",
+        success: false,
+      });
+    }
+
+    // Validate startDate and endDate
+    if (!startDate || !endDate) {
+      return res.status(400).json({
+        message: "Both 'startDate' and 'endDate' are required.",
+        success: false,
+      });
+    }
+
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    end.setHours(23, 59, 59, 999); // Set to the end of the day
+
+    // Query the database
+    const historyData = await History.find({
+      deviceId: deviceId,
+      deviceTime: {
+        $gte: start,
+        $lte: end,
+      },
+    }).select("deviceTime attributes.distance attributes.ignition");
+
+    // If no data found, return a 404
+    if (historyData.length === 0) {
+      return res.status(404).json({
+        message: "No Record Found",
+        success: false,
+      });
+    }
+
+    // Object to hold results by date
+    const report = {};
+
+    // Loop through the history data to calculate distances and ignition times
+    historyData.forEach((item) => {
+      const {
+        deviceTime,
+        attributes: { ignition, distance },
+      } = item;
+
+      // Parse the device time to get the date
+      const date = deviceTime.toISOString().split("T")[0];
+      // console.log("date",date)
+
+      // Initialize entry for the date if it doesn't exist
+      if (!report[date]) {
+        report[date] = {
+          deviceId,
+          date,
+          ignitionOn: null,
+          ignitionOff: null,
+          totalDistance: 0,
+        };
+      }
+
+      // Accumulate total distance
+      report[date].totalDistance += distance;
+
+      // Update ignition states
+      if (ignition) {
+        // If ignition is on
+        if (!report[date].ignitionOn) {
+          report[date].ignitionOn = deviceTime.toISOString(); // Set ignitionOn
+        }
+        report[date].ignitionOff = null; // Reset ignitionOff when ignition is on
+      } else {
+        // If ignition is off
+        if (report[date].ignitionOn && !report[date].ignitionOff) {
+          report[date].ignitionOff = deviceTime.toISOString(); // Set ignitionOff if it was previously on
+        }
+      }
+    });
+
+    // Convert the report object into an array and format distance
+    const reportArray = Object.values(report).map((entry) => ({
+      ...entry,
+      totalDistance: (entry.totalDistance / 1000).toFixed(2) + " KM", // Convert to KM
+    }));
+
+    return res.status(200).json({
+      message: "Day report generated successfully",
+      data: reportArray,
+    });
+  } catch (error) {
+    console.error("Error generating day report:", error);
+    return res.status(500).json({
+      message:
+        "An error occurred while generating the day report. Please try again later.",
       success: false,
       error: error.message,
     });
@@ -711,10 +920,10 @@ export const getIdleReports = async (req, res) => {
               const durationSeconds =
                 typesOnly.length > 0
                   ? (new Date(item.deviceTime).getTime() -
-                    new Date(
-                      historyData[typesOnly.length - 1].deviceTime
-                    ).getTime()) /
-                  1000
+                      new Date(
+                        historyData[typesOnly.length - 1].deviceTime
+                      ).getTime()) /
+                    1000
                   : 0;
 
               // Add durationSeconds to totalDurationSeconds
@@ -732,7 +941,7 @@ export const getIdleReports = async (req, res) => {
                 arrivalTime:
                   typesOnly.length > 0
                     ? historyData[typesOnly.length - 1]?.deviceTime ||
-                    item.deviceTime
+                      item.deviceTime
                     : item.deviceTime,
                 departureTime: item.deviceTime || null,
               });
@@ -770,7 +979,6 @@ export const getIdleReports = async (req, res) => {
     });
   }
 };
-
 
 export const getGeofenceReport = async (req, res) => {
   try {
@@ -972,7 +1180,8 @@ export const vehiclelog = async (req, res) => {
     const userId = req.user.id;
     const { attribute, period, from, to } = req.query;
 
-    let fromDate, toDate = new Date();
+    let fromDate,
+      toDate = new Date();
 
     switch (period) {
       case "Today":
@@ -1018,11 +1227,9 @@ export const vehiclelog = async (req, res) => {
       default:
         return res.status(400).json({
           message: "Invalid period selection",
-          success: false
+          success: false,
         });
     }
-
-
 
     // const formattedFromDateStr = fromDate.toISOString();
     // const formattedToDateStr = toDate.toISOString();
@@ -1031,11 +1238,12 @@ export const vehiclelog = async (req, res) => {
       changedBy: userId,
       createdAt: {
         $gte: fromDate,
-        $lte: toDate
-      }
+        $lte: toDate,
+      },
     };
 
-    const attributesToSelect = attribute === "all" ? {} : { [attribute]: 1, createdAt: 1 };
+    const attributesToSelect =
+      attribute === "all" ? {} : { [attribute]: 1, createdAt: 1 };
 
     const vehicleChanges = await VehicleChange.find(query).select(
       attributesToSelect
