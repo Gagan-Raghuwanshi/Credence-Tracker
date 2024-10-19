@@ -767,7 +767,6 @@ export const dayReport = async (req, res) => {
 
       // Parse the device time to get the date
       const date = deviceTime.toISOString().split("T")[0];
-      // console.log("date",date)
 
       // Initialize entry for the date if it doesn't exist
       if (!report[date]) {
@@ -777,6 +776,7 @@ export const dayReport = async (req, res) => {
           ignitionOn: null,
           ignitionOff: null,
           totalDistance: 0,
+          duration: null, // Add duration field
         };
       }
 
@@ -794,6 +794,16 @@ export const dayReport = async (req, res) => {
         // If ignition is off
         if (report[date].ignitionOn && !report[date].ignitionOff) {
           report[date].ignitionOff = deviceTime.toISOString(); // Set ignitionOff if it was previously on
+
+          // Calculate duration only if ignitionOn and ignitionOff are set
+          const ignitionOnTime = new Date(report[date].ignitionOn);
+          const ignitionOffTime = new Date(report[date].ignitionOff);
+          const durationInMilliseconds = ignitionOffTime - ignitionOnTime;
+
+          // Convert duration to hours and minutes
+          const durationHours = Math.floor((durationInMilliseconds / (1000 * 60 * 60)) % 24);
+          const durationMinutes = Math.floor((durationInMilliseconds / (1000 * 60)) % 60);
+          report[date].duration = `${durationHours}h ${durationMinutes}m`; // Format as "Xh Ym"
         }
       }
     });
@@ -818,6 +828,7 @@ export const dayReport = async (req, res) => {
     });
   }
 };
+
 
 export const getIdleReports = async (req, res) => {
   try {
