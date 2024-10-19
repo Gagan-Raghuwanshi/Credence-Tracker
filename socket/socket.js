@@ -256,6 +256,9 @@ export const setupSocket = (server) => {
               );
 
               const mergedData = data.map((obj1) => {
+                if (obj1.attributes.distance>500) {
+                  obj1.attributes.distance = 200;
+                }
                 const match = deviceListDataMap.get(obj1.deviceId);
                 return {
                   speed: obj1.speed,
