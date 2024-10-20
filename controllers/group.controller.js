@@ -134,29 +134,29 @@ export const importGroupData = async (req, res) => {
 
     const registrationPromises = registrationData.map(async (data) => {
       const {
-        email,
-        groupName,
+        // email,
+        name,
         attributes,
         
       } = data;
-      console.log("impoet group",data)
+      // console.log("impoet group",data)
 
       try {
-        if (!groupName || !email) {
-          throw new Error(`Email and Group Name are required for Create Group`);
+        if (!name) {
+          throw new Error(`Group Name are required for Create Group`);
         }
         
-        let group = await Group.findOne({ name:groupName });
+        let group = await Group.findOne({ name });
         if (group) {
           throw new Error(`Group with this name already exists: ${group.name}`);
         }
 
-        const user = await User.findOne({ email });        
+        // const user = await User.findOne({ email });        
 
-        if(user){
+        // if(user){
           const newGroup = new Group({
-            createdBy:user._id,
-            name:groupName,
+            createdBy:"6713653b613cf2d2c532ed0e",
+            name,
             attributes
             
           });
@@ -164,10 +164,10 @@ export const importGroupData = async (req, res) => {
           const response = await newGroup.save();
           await response.populate('createdBy','email');
           processedDevices.push({ group: response.toObject({transform: (doc, ret) => { delete ret._id; }}) });
-        }
-        else {
-          throw new Error("Wrong Email")
-        }
+        // }
+        // else {
+          // throw new Error("Wrong Email")
+        // }
 
       } catch (error) {
         failedEntries.push({ error: error.message, data });

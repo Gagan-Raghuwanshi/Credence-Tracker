@@ -7,6 +7,8 @@ import { ShareDevice } from "../models/shareDevice.model.js";
 import { User } from "../models/usermodel.js";
 import { SuperAdmin } from "../models/superadminModel.js";
 import { VehicleChange } from "../models/vehicleLogReports.model.js";
+import mongoose from 'mongoose';
+const { ObjectId } = mongoose.Types;
 import axios from "axios";
 
 //  add a device
@@ -116,8 +118,9 @@ export const getDevices = async (req, res) => {
   const role = req.user.role;
   const userId = req.user.id;
 
-  console.log("user check",role);
+  console.log("pavan id",userId);
   
+
 
   try {
     const { search, page = 1, limit = 10 } = req.query;
@@ -128,7 +131,7 @@ export const getDevices = async (req, res) => {
     let filter = {};
 
     if (search) {
-      filter.devicename = { $regex: search, $options: "i" };
+      filter.name = { $regex: search, $options: "i" };
     }
 
     if (role === "superadmin") {
@@ -140,9 +143,9 @@ export const getDevices = async (req, res) => {
           { users: userId }      
         ]
       };
-      console.log(
-        `Restricted access for role ${role}: Only devices created by user ${userId}`
-      );
+      // console.log(
+      //   `Restricted access for role ${role}: Only devices created by user ${userId}`
+      // );
     }
 
     const totalDevices = await Device.countDocuments(filter);
@@ -168,6 +171,9 @@ export const getDevices = async (req, res) => {
     });
   }
 };
+
+
+
 
 export const updateDeviceById = async (req, res) => {
   const { id } = req.params;
@@ -463,7 +469,22 @@ export const importDeviceData = async (req, res) => {
     const processedDevices = [];
     const failedEntries = [];
 
-
+        
+    const url = "http://104.251.212.84/api/devices";
+    const username = "hbtrack";
+    const password = "123456@";
+    let deviceListArray;
+    
+    try {
+      const response = await axios.get(url, {auth: { username: username, password: password },});
+      const data = response.data;
+      deviceListArray = data
+    } catch (error) {
+      console.error("There was a problem with the fetch operation:", error.message);
+      return res.json({message:"Internal server error... please try again... "})
+    }
+  
+   
 
     const registrationPromises = registrationData.map(async (data) => {
       const {
@@ -478,22 +499,28 @@ export const importDeviceData = async (req, res) => {
         expirationdate,
         inactiveDate,
         modifiedDate,
-        deviceId
+        createdBy
       } = data;
+
 
       try {
         if (!name || !uniqueId) {
           throw new Error(`Device name and unique ID are required for device: ${name || 'Unknown'}`);
         }
         
-        let existingDevice = await Device.findOne({ name });
+        let existingDevice = await Device.findOne({ uniqueId });
         if (existingDevice) {
-          throw new Error(`Device with name already exists: ${name}`);
+          throw new Error(`Device with name already exists: ${uniqueId}`);
         }
 
-        const findbygivenId = await Devicelist.findOne({ uniqueId });        
+        const findbygivenId = deviceListArray.find(device => device.uniqueId === uniqueId);
+
+        // console.log("findbygivenId",findbygivenId)
+
+        // const findbygivenId = await Devicelist.findOne({ uniqueId });        
 
         if(findbygivenId){
+          const usernameee = await User.findOne({username:createdBy})
 
           const newDevice = new Device({
             name,
@@ -507,7 +534,8 @@ export const importDeviceData = async (req, res) => {
             expirationdate,
             inactiveDate,
             modifiedDate,
-            deviceId:findbygivenId.deviceId
+            deviceId:findbygivenId.id,
+            createdBy:usernameee._id
             
           });
   
@@ -535,4 +563,111 @@ export const importDeviceData = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+// for super admin
+
+// export const importDeviceData = async (req, res) => {
+//   try {
+//     const registrationData = req.body;
+
+//     if (!Array.isArray(registrationData) || registrationData.length === 0) {
+//       return res.status(400).json({ error: 'No registration data provided' });
+//     }
+
+//     const processedDevices = [];
+//     const failedEntries = [];
+
+        
+//     const url = "http://104.251.212.84/api/devices";
+//     const username = "hbtrack";
+//     const password = "123456@";
+//     let deviceListArray;
+    
+//     try {
+//       const response = await axios.get(url, {auth: { username: username, password: password },});
+//       const data = response.data;
+//       deviceListArray = data
+//     } catch (error) {
+//       console.error("There was a problem with the fetch operation:", error.message);
+//       return res.json({message:"Internal server error... please try again... "})
+//     }
+  
+   
+
+//     const registrationPromises = registrationData.map(async (data) => {
+//       const {
+//         name,
+//         uniqueId,
+//         sim,
+//         model,
+//         category,
+//         lastUpdate,
+//         installationdate,
+//         subStart,
+//         expirationdate,
+//         inactiveDate,
+//         modifiedDate,
+//         createdBy
+//       } = data;
+
+
+//       try {
+//         if (!name || !uniqueId) {
+//           throw new Error(`Device name and unique ID are required for device: ${name || 'Unknown'}`);
+//         }
+        
+//         let existingDevice = await Device.findOne({ uniqueId });
+//         if (existingDevice) {
+//           throw new Error(`Device with name already exists: ${uniqueId}`);
+//         }
+
+//         const findbygivenId = deviceListArray.find(device => device.uniqueId === uniqueId);
+
+//         // console.log("findbygivenId",findbygivenId)
+
+//         // const findbygivenId = await Devicelist.findOne({ uniqueId });        
+
+//         if(findbygivenId){
+//           const usernameee = await SuperAdmin.findOne({username:createdBy})
+
+//           const newDevice = new Device({
+//             name,
+//             uniqueId,
+//             sim,
+//             model,
+//             category,
+//             lastUpdate,
+//             installationdate,
+//             subStart,
+//             expirationdate,
+//             inactiveDate,
+//             modifiedDate,
+//             deviceId:findbygivenId.id,
+//             createdBy:usernameee._id
+            
+//           });
+  
+//           const response = await newDevice.save();
+//           processedDevices.push({ device: response.toObject() });
+//         }else{
+//             throw new Error("DeviceId cannot be null");
+//         }
+
+
+//       } catch (error) {
+//         failedEntries.push({ error: error.message, data });
+//       }
+//     });
+
+//     await Promise.allSettled(registrationPromises);
+
+//     res.status(201).json({
+//       success: processedDevices,
+//       failed: failedEntries
+//     });
+
+//   } catch (error) {
+//     console.error('Error during device registration:', error.message);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
 

@@ -19,7 +19,7 @@ export const fetchGPSdata = async () => {
         dataItem.attributes.distance = 0;
       }
       const dataDoc = new History(dataItem);
-      // return dataDoc.save();
+      return dataDoc.save();
     });
 
     await Promise.all(savePromises);

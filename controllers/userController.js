@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import { User } from '../models/usermodel.js';
+import { SuperAdmin } from '../models/superadminModel.js';
 // import { decrypt } from '../models/cryptoUtils.js';
 
 export const createUser = async (req, res) => {
@@ -265,7 +266,8 @@ export const importUserData = async (req, res) => {
     const processedUsers = [];
     const failedEntries = [];
 
-
+        console.log("pavan",processedUsers);
+        
 
     const registrationPromises = registrationData.map(async (data) => {
       const {
@@ -275,11 +277,15 @@ export const importUserData = async (req, res) => {
         password,
         mobile,
         contactPerson,
+        address,
+        status,
+        timezone,
+        inactiveDate
         
       } = data;
 
-      // const createdBy = "66f3e61f6185596d1d00c384";
-      const createdBy = req.user.id;
+      const createdBy = "6713653b613cf2d2c532ed0e";
+      // const createdBy = req.user.id;
 
       try {
         if (!username || !password) {
@@ -300,7 +306,33 @@ export const importUserData = async (req, res) => {
                 password,
                 mobile,
                 contactPerson,
-                createdBy
+                address,
+                status,
+                inactiveDate,
+                timezone,
+                createdBy,
+                
+                notification:true,
+                  devices: true,
+                  driver: true,
+                  groups: true,
+                  category: true,
+                  model: true,
+                  users: true,
+                  report: true,
+                  stop: true,
+                  travel: true,
+                  geofence: true,
+                  geofenceReport: true,
+                  maintenance: true,
+                  preferences: true,
+                  distance: true,
+                  history: true,
+                  sensor: true,
+                  idle: true,
+                  alerts : true,
+                  vehicle: true,
+                 
           });
   
           const response = await newUser.save();
@@ -326,3 +358,119 @@ export const importUserData = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+// export const importUserData = async (req, res) => {
+//   try {
+//     const registrationData = req.body;
+
+//     if (!Array.isArray(registrationData) || registrationData.length === 0) {
+//       return res.status(400).json({ error: 'No registration data provided' });
+//     }
+
+//     const processedUsers = [];
+//     const failedEntries = [];
+
+//         console.log("pavan",processedUsers);
+        
+
+//     const registrationPromises = registrationData.map(async (data) => {
+
+
+
+//       const {
+//         custName,
+//         username,
+//         email,
+//         password,
+//         mobile,
+//         contactPerson,
+//         address,
+//         status,
+//         timezone,
+//         inactiveDate,
+//         admin
+        
+//       } = data;
+
+//       // const createdBy = "67124e99c5f3e28e3db35899";
+//       // const createdBy = req.user.id;
+
+//       try {
+//         if (!username || !password) {
+//           throw new Error(`UserName and password are required  ${username || 'Unknown'}`);
+//         }
+        
+//         let existingUser = await User.findOne({ username });
+//         if (existingUser) {
+//           throw new Error(`User already exists: ${username}`);
+//         }
+
+//             const createdbyfind = await User.findOne({username:admin})
+
+//             if(createdbyfind){
+
+//               const newUser = new User({
+               
+//                     custName,
+//                     username,
+//                     email,
+//                     password,
+//                     mobile,
+//                     contactPerson,
+//                     address,
+//                     status,
+//                     inactiveDate,
+//                     timezone,
+//                     createdBy:createdbyfind._id,
+    
+//                     notification:true,
+//                       devices: true,
+//                       driver: true,
+//                       groups: true,
+//                       category: true,
+//                       model: true,
+//                       users: true,
+//                       report: true,
+//                       stop: true,
+//                       travel: true,
+//                       geofence: true,
+//                       geofenceReport: true,
+//                       maintenance: true,
+//                       preferences: true,
+//                       distance: true,
+//                       history: true,
+//                       sensor: true,
+//                       idle: true,
+//                       alerts : true,
+//                       vehicle: true,
+                     
+//               });
+      
+//               const response = await newUser.save();
+//               processedUsers.push({ user: response.toObject() });
+            
+//             }else{
+//               throw new Error(`Admin not found for: ${username}`);
+
+//             }
+
+
+//       } catch (error) {
+//         failedEntries.push({ error: error.message, data });
+//       }
+//     });
+
+//     await Promise.allSettled(registrationPromises);
+
+
+//     res.status(201).json({
+//       success: processedUsers,
+//       failed: failedEntries
+      
+//     });
+
+//   } catch (error) {
+//     console.error('Error during User registration:', error.message);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
