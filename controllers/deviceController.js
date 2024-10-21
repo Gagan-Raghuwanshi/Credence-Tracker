@@ -121,8 +121,6 @@ export const getDevices = async (req, res) => {
 
   console.log("pavan id", userId);
 
-
-
   try {
     const { search, page = 1, limit = 10 } = req.query;
     const pageNumber = parseInt(page);
@@ -132,21 +130,27 @@ export const getDevices = async (req, res) => {
     let filter = {};
 
     if (search) {
-      filter.name = { $regex: search, $options: "i" };
+      filter.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { uniqueId: { $regex: search, $options: "i" } },
+        { sim: { $regex: search, $options: "i" } },
+        { model: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } }
+      ];
     }
 
     if (role === "superadmin") {
       console.log("Superadmin access: All devices");
     } else {
-      filter = {
-        $or: [
-          { createdBy: userId },
-          { users: userId }
-        ]
-      };
-      // console.log(
-      //   `Restricted access for role ${role}: Only devices created by user ${userId}`
-      // );
+      filter.$and = [
+        {
+          $or: [
+            { createdBy: userId },
+            { users: userId }
+          ]
+        },
+        filter.$or
+      ];
     }
 
     const totalDevices = await Device.countDocuments(filter);

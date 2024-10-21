@@ -3,20 +3,31 @@ import Geofence from "../models/geofence.model.js";
 
 export const getGeofences = async (req, res) => {
     try {
-        // Get page and limit from query parameters, with default values
+        // Get page, limit, and search from query parameters, with default values
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || '';
 
         // Calculate the starting index for the documents
         const skip = (page - 1) * limit;
 
         const role = req.user.role;
 
-        // Fetch the drivers with pagination
+        // Fetch the geofences with pagination and search
         let geofences;
 
+        const searchQuery = {
+            $or: [
+                { name: { $regex: search, $options: 'i' } },
+                { area: { $regex: search, $options: 'i' } },
+                { geofenceCode: { $regex: search, $options: 'i' } },
+                { type: { $regex: search, $options: 'i' } },
+                { deviceId: { $regex: search, $options: 'i' } },
+            ],
+        };
+
         if (role === 'superadmin') {
-            geofences = await Geofence.find()
+            geofences = await Geofence.find(searchQuery)
                 .skip(skip)
                 .limit(limit);
 
@@ -25,7 +36,7 @@ export const getGeofences = async (req, res) => {
                 geofence.deviceDetails = await Device.find({ deviceId: { $in: geofence.deviceIds } });
             }
         } else if (role === 'user') {
-            geofences = await Geofence.find({ createdBy: req.user.id })
+            geofences = await Geofence.find({ createdBy: req.user.id, ...searchQuery })
                 .skip(skip)
                 .limit(limit);
 
@@ -38,9 +49,8 @@ export const getGeofences = async (req, res) => {
         }
         geofences = geofences.reverse();
         const totalGeofences = role === 'superadmin'
-            ? await Geofence.countDocuments()
-            : await Geofence.countDocuments({ createdBy: req.user.id });
-
+            ? await Geofence.countDocuments(searchQuery)
+            : await Geofence.countDocuments({ createdBy: req.user.id, ...searchQuery });
 
         // If no data found
         if (!geofences || geofences.length === 0) {

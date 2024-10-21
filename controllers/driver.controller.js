@@ -2,24 +2,37 @@ import { Driver } from '../models/driver.model.js';
 
 export const getDrivers = async (req, res) => {
     try {
-        // Get page and limit from query parameters, with default values
+        // Get page, limit, and search from query parameters, with default values
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
+        const search = req.query.search || '';
 
         // Calculate the starting index for the documents
         const skip = (page - 1) * limit;
 
         const role = req.user.role;
 
-        // Fetch the drivers with pagination
+        // Fetch the drivers with pagination and search
         let drivers;
 
+        const searchQuery = {
+            $or: [
+                { name: { $regex: search, $options: 'i' } },
+                { phone: { $regex: search, $options: 'i' } },
+                { email: { $regex: search, $options: 'i' } },
+                { deviceId: { $regex: search, $options: 'i' } },
+                { licenseNumber: { $regex: search, $options: 'i' } },
+                { aadharNumber: { $regex: search, $options: 'i' } },
+                { address: { $regex: search, $options: 'i' } },
+            ],
+        };
+
         if (role === 'superadmin') {
-            drivers = await Driver.find()
+            drivers = await Driver.find(searchQuery)
                 .skip(skip)
                 .limit(limit);
         } else if (role === 'user') {
-            drivers = await Driver.find({ createdBy: req.user.id })
+            drivers = await Driver.find({ createdBy: req.user.id, ...searchQuery })
                 .skip(skip)
                 .limit(limit);
         } else {
@@ -27,9 +40,8 @@ export const getDrivers = async (req, res) => {
         }
         drivers = drivers.reverse();
         const totalDrivers = role === 'superadmin'
-            ? await Driver.countDocuments()
-            : await Driver.countDocuments({ createdBy: req.user.id });
-
+            ? await Driver.countDocuments(searchQuery)
+            : await Driver.countDocuments({ createdBy: req.user.id, ...searchQuery });
 
         // Send response with drivers and pagination info
         res.status(200).json({
