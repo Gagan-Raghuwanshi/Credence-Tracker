@@ -28,19 +28,19 @@ export const createGroup = async (req, res) => {
   }
 };
 
-        // Get Group by login role
+// Get Group by login role
 
 export const getGroups = async (req, res) => {
- 
+
 
   try {
-    const { search, page = 1, limit = 10 } = req.query;
+    const { search, page = 1, limit = Number.MAX_SAFE_INTEGER } = req.query;
     const pageNumber = parseInt(page);
     const limitNumber = parseInt(limit);
     const startIndex = (pageNumber - 1) * limitNumber;
 
-    const role = req.user.role; 
-    const userId = req.user.id; 
+    const role = req.user.role;
+    const userId = req.user.id;
 
     let filter = {};
 
@@ -77,13 +77,13 @@ export const getGroups = async (req, res) => {
   }
 };
 
-        // Update group feild 
+// Update group feild 
 export const updateGroup = async (req, res) => {
   const { id } = req.params;
   const updates = req.body;
   try {
     const updatedGroup = await Group.findOneAndUpdate(
-      { _id:id },
+      { _id: id },
       updates,
       { new: true, runValidators: true }
     );
@@ -100,11 +100,11 @@ export const updateGroup = async (req, res) => {
 };
 
 
-        // Delete group by ID
+// Delete group by ID
 export const deleteGroup = async (req, res) => {
   const { id } = req.params;
   try {
-    const deletedGroup = await Group.findOneAndDelete({ _id:id });
+    const deletedGroup = await Group.findOneAndDelete({ _id: id });
     if (!deletedGroup) {
       return res.status(404).json({ message: 'Group not found' });
     }
@@ -137,7 +137,7 @@ export const importGroupData = async (req, res) => {
         // email,
         name,
         attributes,
-        
+
       } = data;
       // console.log("impoet group",data)
 
@@ -145,29 +145,29 @@ export const importGroupData = async (req, res) => {
         if (!name) {
           throw new Error(`Group Name are required for Create Group`);
         }
-        
+
         let group = await Group.findOne({ name });
         if (group) {
           throw new Error(`Group with this name already exists: ${group.name}`);
         }
 
-        const gId = await User.findOne({username:name}).select('_id')
+        const gId = await User.findOne({ username: name }).select('_id')
         // const user = await User.findOne({ email });        
 
         // if(user){
-          const newGroup = new Group({
-            createdBy:gId,                //"6713653b613cf2d2c532ed0e",
-            name,
-            attributes
-            
-          });
-  
-          const response = await newGroup.save();
-          await response.populate('createdBy','email');
-          processedDevices.push({ group: response.toObject({transform: (doc, ret) => { delete ret._id; }}) });
+        const newGroup = new Group({
+          createdBy: gId,                //"6713653b613cf2d2c532ed0e",
+          name,
+          attributes
+
+        });
+
+        const response = await newGroup.save();
+        await response.populate('createdBy', 'email');
+        processedDevices.push({ group: response.toObject({ transform: (doc, ret) => { delete ret._id; } }) });
         // }
         // else {
-          // throw new Error("Wrong Email")
+        // throw new Error("Wrong Email")
         // }
 
       } catch (error) {

@@ -122,7 +122,7 @@ export const getDevices = async (req, res) => {
   console.log("pavan id", userId);
 
   try {
-    const { search, page = 1, limit = 10 } = req.query;
+    const { search, page = 1, limit = Number.MAX_SAFE_INTEGER } = req.query;
     const pageNumber = parseInt(page);
     const limitNumber = parseInt(limit);
     const startIndex = (pageNumber - 1) * limitNumber;
