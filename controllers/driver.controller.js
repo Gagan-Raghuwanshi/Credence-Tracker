@@ -12,21 +12,27 @@ export const getDrivers = async (req, res) => {
 
         const role = req.user.role;
 
-        // Fetch the drivers with pagination and search
-        let drivers;
-
+        // Create search query for string-based fields
         const searchQuery = {
             $or: [
                 { name: { $regex: search, $options: 'i' } },
-                { phone: { $regex: search, $options: 'i' } },
                 { email: { $regex: search, $options: 'i' } },
-                { deviceId: { $regex: search, $options: 'i' } },
                 { licenseNumber: { $regex: search, $options: 'i' } },
                 { aadharNumber: { $regex: search, $options: 'i' } },
                 { address: { $regex: search, $options: 'i' } },
             ],
         };
 
+        // Check if the search query is numeric and add conditions for numeric fields
+        if (!isNaN(search) && search.trim() !== '') {
+            searchQuery.$or.push(
+                { phone: parseInt(search) },   // Exact match for phone
+                { deviceId: parseInt(search) } // Exact match for deviceId
+            );
+        }
+
+        // Fetch drivers based on role and search query
+        let drivers;
         if (role === 'superadmin') {
             drivers = await Driver.find(searchQuery)
                 .skip(skip)
@@ -38,7 +44,10 @@ export const getDrivers = async (req, res) => {
         } else {
             return res.status(403).json({ message: 'Forbidden: Invalid role' });
         }
-        drivers = drivers.reverse();
+
+        // drivers = drivers.reverse(); // Optional: reverse the order if needed
+
+        // Count total drivers for pagination
         const totalDrivers = role === 'superadmin'
             ? await Driver.countDocuments(searchQuery)
             : await Driver.countDocuments({ createdBy: req.user.id, ...searchQuery });
@@ -56,7 +65,8 @@ export const getDrivers = async (req, res) => {
         console.error('Error fetching drivers:', error);
         res.status(500).json({ error: 'Internal server error' });
     }
-}
+};
+
 
 export const registerDriver = async (req, res) => {
     try {
