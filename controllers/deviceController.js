@@ -119,7 +119,7 @@ export const getDevices = async (req, res) => {
   const role = req.user.role;
   const userId = req.user.id;
 
-  console.log("pavan id", userId);
+  console.log("User ID:", userId);
 
   try {
     const { search, page = 1, limit = Number.MAX_SAFE_INTEGER } = req.query;
@@ -148,9 +148,11 @@ export const getDevices = async (req, res) => {
             { createdBy: userId },
             { users: userId }
           ]
-        },
-        filter.$or
+        }
       ];
+      if (filter.$or) {
+        filter.$and.push(filter.$or);
+      }
     }
 
     const totalDevices = await Device.countDocuments(filter);
@@ -170,6 +172,7 @@ export const getDevices = async (req, res) => {
       devices,
     });
   } catch (error) {
+    console.error("Error fetching devices:", error.message);
     res.status(500).json({
       message: "Error fetching devices",
       error: error.message,

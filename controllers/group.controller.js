@@ -188,3 +188,16 @@ export const importGroupData = async (req, res) => {
   }
 };
 
+// api for getting groups by user id
+export const getGroupByUserId = async (req, res) => {
+  const { id } = req.params;
+  try {
+    const groups = await Group.find({ createdBy: id });
+    res.status(200).json(groups);
+  } catch (error) {
+    res.status(500).json({
+      message: 'Error fetching groups',
+      error: error.message,
+    });
+  }
+};
