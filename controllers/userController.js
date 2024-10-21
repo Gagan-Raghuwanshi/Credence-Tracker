@@ -13,7 +13,7 @@ export const createUser = async (req, res) => {
     maintenance, preferences, status,
     distance, history, sensor,
     idle, alerts, vehicle, devicelimit, dataLimit,
-    entriesCount, geofenceReport } = req.body;
+    entriesCount, geofenceReport, groupsAssigned } = req.body;
 
   // Check if the user has permission to create users
   const isAuthorized = req.user.superadmin || req.user.users;
@@ -36,6 +36,7 @@ export const createUser = async (req, res) => {
       password,
       username,
       mobile,
+      groupsAssigned,
       createdBy: req.user.id, // Track who created the user
       notification: notification || false,
       devices: devices || false,

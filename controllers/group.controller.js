@@ -1,3 +1,4 @@
+import { Device } from "../models/device.model.js";
 import { Group } from "../models/group.model.js";
 import { User } from "../models/usermodel.js";
 
@@ -190,10 +191,14 @@ export const importGroupData = async (req, res) => {
 
 // api for getting groups by user id
 export const getGroupByUserId = async (req, res) => {
-  const { id } = req.params;
+  const userId = req.params.id;
   try {
-    const groups = await Group.find({ createdBy: id });
-    res.status(200).json(groups);
+    const devices = await Device.find({ users: { $in: [userId] } });
+    console.log(devices)
+    const deviceGroupIds = devices.flatMap(device => device.groups);
+    const uniqueGroupIds = [...new Set(deviceGroupIds.map(id => id.toString()))];
+    const allGroups = await Group.find({ _id: { $in: uniqueGroupIds } });
+    res.status(200).json(allGroups);
   } catch (error) {
     res.status(500).json({
       message: 'Error fetching groups',
