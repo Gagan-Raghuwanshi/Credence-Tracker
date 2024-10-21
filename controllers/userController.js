@@ -77,18 +77,32 @@ export const getUsers = async (req, res) => {
     const limit = parseInt(req.query.limit) || 10;
     const skip = (page - 1) * limit;
     const role = req.user.role;
+    const search = req.query.search || '';
 
     console.log('role:', role);
     let users;
 
     if (role === 'superadmin') {
-      users = await User.find()
+      users = await User.find({
+        $or: [
+          { email: new RegExp(search, 'i') },
+          { username: new RegExp(search, 'i') },
+          { mobile: new RegExp(search, 'i') },
+        ],
+      })
         .select('-password')
         .populate('createdBy', 'username _id')
         .skip(skip)
         .limit(limit);
     } else if (role === 'user') {
-      users = await User.find({ createdBy: req.user.id })
+      users = await User.find({
+        createdBy: req.user.id,
+        $or: [
+          { email: new RegExp(search, 'i') },
+          { username: new RegExp(search, 'i') },
+          { mobile: new RegExp(search, 'i') },
+        ],
+      })
         .select('-password')
         .populate('createdBy', 'username _id')
         .skip(skip)
@@ -98,8 +112,21 @@ export const getUsers = async (req, res) => {
     }
     users = users.reverse();
     const totalUsers = role === 'superadmin'
-      ? await User.countDocuments()
-      : await User.countDocuments({ createdBy: req.user.id });
+      ? await User.countDocuments({
+          $or: [
+            { email: new RegExp(search, 'i') },
+            { username: new RegExp(search, 'i') },
+            { mobile: new RegExp(search, 'i') },
+          ],
+        })
+      : await User.countDocuments({
+          createdBy: req.user.id,
+          $or: [
+            { email: new RegExp(search, 'i') },
+            { username: new RegExp(search, 'i') },
+            { mobile: new RegExp(search, 'i') },
+          ],
+        });
 
     const totalPages = Math.ceil(totalUsers / limit);
 
