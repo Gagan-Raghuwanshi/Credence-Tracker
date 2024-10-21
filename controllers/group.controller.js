@@ -151,11 +151,12 @@ export const importGroupData = async (req, res) => {
           throw new Error(`Group with this name already exists: ${group.name}`);
         }
 
+        const gId = await User.findOne({username:name}).select('_id')
         // const user = await User.findOne({ email });        
 
         // if(user){
           const newGroup = new Group({
-            createdBy:"6713653b613cf2d2c532ed0e",
+            createdBy:gId,                //"6713653b613cf2d2c532ed0e",
             name,
             attributes
             

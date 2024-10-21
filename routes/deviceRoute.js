@@ -6,6 +6,7 @@ import { authenticateToken } from '../middleware/authMiddleware.js';
 
 router.post('/',authenticateToken, addDevice);
 router.post('/import', importDeviceData);
+// router.patch('/importupdate', importDeviceUpdate);
 router.get('/',authenticateToken, getDevices);
 router.get('/getDeviceByGroup/:groupId',authenticateToken, getDeviceByGroup);
 router.put('/:id',authenticateToken, updateDeviceById);

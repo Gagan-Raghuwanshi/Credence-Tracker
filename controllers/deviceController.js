@@ -10,6 +10,7 @@ import { VehicleChange } from "../models/vehicleLogReports.model.js";
 import mongoose from 'mongoose';
 const { ObjectId } = mongoose.Types;
 import axios from "axios";
+import { Group } from "../models/group.model.js";
 
 //  add a device
 export const addDevice = async (req, res) => {
@@ -59,19 +60,19 @@ export const addDevice = async (req, res) => {
       const username = "hbtrack";
       const password = "123456@";
       let deviceListArray;
-      
+
       try {
-        const response = await axios.get(url, {auth: { username: username, password: password },});
+        const response = await axios.get(url, { auth: { username: username, password: password }, });
         const data = response.data;
         deviceListArray = data
       } catch (error) {
         console.error("There was a problem with the fetch operation:", error.message);
-        return res.json({message:"Internal server error... please try again... "})
+        return res.json({ message: "Internal server error... please try again... " })
       }
-    
+
       const findbygivenId = deviceListArray.find(device => device.uniqueId === uniqueId);
 
-      console.log("findbygivenId",findbygivenId)
+      console.log("findbygivenId", findbygivenId)
 
 
 
@@ -94,7 +95,7 @@ export const addDevice = async (req, res) => {
         expirationdate,
         extenddate,
         createdBy,
-        
+
       });
 
       await device.save();
@@ -118,8 +119,8 @@ export const getDevices = async (req, res) => {
   const role = req.user.role;
   const userId = req.user.id;
 
-  console.log("pavan id",userId);
-  
+  console.log("pavan id", userId);
+
 
 
   try {
@@ -139,8 +140,8 @@ export const getDevices = async (req, res) => {
     } else {
       filter = {
         $or: [
-          { createdBy: userId },  
-          { users: userId }      
+          { createdBy: userId },
+          { users: userId }
         ]
       };
       // console.log(
@@ -187,52 +188,52 @@ export const updateDeviceById = async (req, res) => {
     if (!updatedDevice) {
       return res.status(404).json({ message: "Device not found" });
     }
-        
-        const {
-          name,
-          uniqueId,
-          deviceId,
-          sim,
-          groups,
-          users,
-          Driver,
-          geofences,
-          speed,
-          average,
-          model,
-          category,
-          installationdate,
-          expirationdate,
-          extenddate,
-          newName,newSimno,newImei,previousSubscriptionStartDate,ignNotConnectedChange,ignWirePositive,added,newTimezone,
-        } = updates
 
-            console.log("pavan data is coming",name, newName,newSimno,newImei,previousSubscriptionStartDate,ignNotConnectedChange,ignWirePositive,added,newTimezone);
-            
-            const createdBy = req.user.id;
-            const vehiclelogData = new VehicleChange({
-              name,
-              oldImei:uniqueId,
-              deviceId,
-              oldSimno:sim,
-              groups,
-              users,
-              Driver,
-              geofences,
-              speed,
-              average,
-              model,
-              category,
-              installationdate,
-              expirationdate,
-              extenddate,
-              changedBy:createdBy,
-              newName,newSimno,newImei,previousSubscriptionStartDate,ignNotConnectedChange,ignWirePositive,added,newTimezone,
-            });
-      
-                await vehiclelogData.save();
+    const {
+      name,
+      uniqueId,
+      deviceId,
+      sim,
+      groups,
+      users,
+      Driver,
+      geofences,
+      speed,
+      average,
+      model,
+      category,
+      installationdate,
+      expirationdate,
+      extenddate,
+      newName, newSimno, newImei, previousSubscriptionStartDate, ignNotConnectedChange, ignWirePositive, added, newTimezone,
+    } = updates
 
-        res.status(200).json(updatedDevice);
+    console.log("pavan data is coming", name, newName, newSimno, newImei, previousSubscriptionStartDate, ignNotConnectedChange, ignWirePositive, added, newTimezone);
+
+    const createdBy = req.user.id;
+    const vehiclelogData = new VehicleChange({
+      name,
+      oldImei: uniqueId,
+      deviceId,
+      oldSimno: sim,
+      groups,
+      users,
+      Driver,
+      geofences,
+      speed,
+      average,
+      model,
+      category,
+      installationdate,
+      expirationdate,
+      extenddate,
+      changedBy: createdBy,
+      newName, newSimno, newImei, previousSubscriptionStartDate, ignNotConnectedChange, ignWirePositive, added, newTimezone,
+    });
+
+    await vehiclelogData.save();
+
+    res.status(200).json(updatedDevice);
 
 
   } catch (error) {
@@ -407,7 +408,7 @@ export const createShareDevice = async (req, res) => {
 //         expirationdate,
 //         inactiveDate,
 //         modifiedDate,
-        
+
 //       } = data;
 
 //       if (!name || !uniqueId ) {
@@ -469,22 +470,22 @@ export const importDeviceData = async (req, res) => {
     const processedDevices = [];
     const failedEntries = [];
 
-        
+
     const url = "http://104.251.212.84/api/devices";
     const username = "hbtrack";
     const password = "123456@";
     let deviceListArray;
-    
+
     try {
-      const response = await axios.get(url, {auth: { username: username, password: password },});
+      const response = await axios.get(url, { auth: { username: username, password: password }, });
       const data = response.data;
       deviceListArray = data
     } catch (error) {
       console.error("There was a problem with the fetch operation:", error.message);
-      return res.json({message:"Internal server error... please try again... "})
+      return res.json({ message: "Internal server error... please try again... " })
     }
-  
-   
+
+
 
     const registrationPromises = registrationData.map(async (data) => {
       const {
@@ -507,7 +508,7 @@ export const importDeviceData = async (req, res) => {
         if (!name || !uniqueId) {
           throw new Error(`Device name and unique ID are required for device: ${name || 'Unknown'}`);
         }
-        
+
         let existingDevice = await Device.findOne({ uniqueId });
         if (existingDevice) {
           throw new Error(`Device with name already exists: ${uniqueId}`);
@@ -519,8 +520,8 @@ export const importDeviceData = async (req, res) => {
 
         // const findbygivenId = await Devicelist.findOne({ uniqueId });        
 
-        if(findbygivenId){
-          const usernameee = await User.findOne({username:createdBy})
+        if (findbygivenId) {
+          const usernameee = await User.findOne({ username: createdBy })
 
           const newDevice = new Device({
             name,
@@ -534,15 +535,15 @@ export const importDeviceData = async (req, res) => {
             expirationdate,
             inactiveDate,
             modifiedDate,
-            deviceId:findbygivenId.id,
-            createdBy:usernameee._id
-            
+            deviceId: findbygivenId.id,
+            createdBy: usernameee._id
+
           });
-  
+
           const response = await newDevice.save();
           processedDevices.push({ device: response.toObject() });
-        }else{
-            throw new Error("DeviceId cannot be null");
+        } else {
+          throw new Error("DeviceId cannot be null");
         }
 
 
@@ -563,6 +564,9 @@ export const importDeviceData = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 };
+
+console.log();
+
 // for super admin
 
 // export const importDeviceData = async (req, res) => {
@@ -576,12 +580,12 @@ export const importDeviceData = async (req, res) => {
 //     const processedDevices = [];
 //     const failedEntries = [];
 
-        
+
 //     const url = "http://104.251.212.84/api/devices";
 //     const username = "hbtrack";
 //     const password = "123456@";
 //     let deviceListArray;
-    
+
 //     try {
 //       const response = await axios.get(url, {auth: { username: username, password: password },});
 //       const data = response.data;
@@ -590,8 +594,8 @@ export const importDeviceData = async (req, res) => {
 //       console.error("There was a problem with the fetch operation:", error.message);
 //       return res.json({message:"Internal server error... please try again... "})
 //     }
-  
-   
+
+
 
 //     const registrationPromises = registrationData.map(async (data) => {
 //       const {
@@ -614,7 +618,7 @@ export const importDeviceData = async (req, res) => {
 //         if (!name || !uniqueId) {
 //           throw new Error(`Device name and unique ID are required for device: ${name || 'Unknown'}`);
 //         }
-        
+
 //         let existingDevice = await Device.findOne({ uniqueId });
 //         if (existingDevice) {
 //           throw new Error(`Device with name already exists: ${uniqueId}`);
@@ -643,9 +647,9 @@ export const importDeviceData = async (req, res) => {
 //             modifiedDate,
 //             deviceId:findbygivenId.id,
 //             createdBy:usernameee._id
-            
+
 //           });
-  
+
 //           const response = await newDevice.save();
 //           processedDevices.push({ device: response.toObject() });
 //         }else{
@@ -671,3 +675,115 @@ export const importDeviceData = async (req, res) => {
 //   }
 // };
 
+// import  device update
+
+
+
+
+// export const importDeviceUpdate = async (req, res) => {
+//   try {
+//     const registrationData = req.body;
+
+//     if (!Array.isArray(registrationData) || registrationData.length === 0) {
+//       return res.status(400).json({ error: 'No registration data provided' });
+//     }
+
+//     const processedDevices = [];
+//     const failedEntries = [];
+
+
+
+
+
+
+//     const registrationPromises = registrationData.map(async (data) => {
+//       const {
+//         name,
+//         uniqueId,
+//         // sim,
+//         // model,
+//         // category,
+//         // lastUpdate,
+//         // installationdate,
+//         // subStart,
+//         // expirationdate,
+//         // inactiveDate,
+//         // modifiedDate,
+//         // createdBy
+//       } = data;
+
+
+//       try {
+//         if (!name || !uniqueId) {
+//           throw new Error(`Device name and unique ID are required for device: ${name || 'Unknown'}`);
+//         }
+
+//         let existingDevice = await Device.findOne({ uniqueId });
+
+//         if (existingDevice) {
+//           // Remove the element at index 0, if the array has any elements
+//           if (existingDevice.groups.length > 0) {
+//             existingDevice.groups.splice(0, 1); // Removes the first element (0th index)
+//           }
+//         const groupId = await Group.findOne({name}).select('_id')
+//           // Insert the new groupId at the 0th index
+//           existingDevice.groups.unshift(groupId);
+        
+//           // Save the updated device
+//           await existingDevice.save();
+//         }
+
+//         // if (existingDevice) {
+//         //   throw new Error(`Device with name already exists: ${uniqueId}`);
+//         // }
+
+//         // const findbygivenId = deviceListArray.find(device => device.uniqueId === uniqueId);
+
+//         // console.log("findbygivenId",findbygivenId)
+
+//         // const findbygivenId = await Devicelist.findOne({ uniqueId });        
+
+//         // if(findbygivenId){
+//         //   const usernameee = await User.findOne({username:createdBy})
+
+//         //   const newDevice = new Device({
+//         //     name,
+//         //     uniqueId,
+//         //     sim,
+//         //     model,
+//         //     category,
+//         //     lastUpdate,
+//         //     installationdate,
+//         //     subStart,
+//         //     expirationdate,
+//         //     inactiveDate,
+//         //     modifiedDate,
+//         //     deviceId:findbygivenId.id,
+//         //     createdBy:usernameee._id
+
+//         //   });
+
+//         //   const response = await newDevice.save();
+//         //   processedDevices.push({ device: response.toObject() });
+//         // }else{
+//         //     throw new Error("DeviceId cannot be null");
+//         // }
+
+
+//       } catch (error) {
+//         failedEntries.push({ error: error.message, data });
+//       }
+//     });
+
+//     await Promise.allSettled(registrationPromises);
+
+//     res.status(201).json({
+//       success: processedDevices,
+//       failed: failedEntries
+//     });
+
+//   } catch (error) {
+//     console.error('Error during device registration:', error.message);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// };
