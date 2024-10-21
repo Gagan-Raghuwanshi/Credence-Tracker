@@ -4,7 +4,7 @@ export const getDrivers = async (req, res) => {
     try {
         // Get page, limit, and search from query parameters, with default values
         const page = parseInt(req.query.page) || 1;
-        const limit = parseInt(req.query.limit) || 10;
+        const limit = parseInt(req.query.limit) || Number.MAX_SAFE_INTEGER;
         const search = req.query.search || '';
 
         // Calculate the starting index for the documents
