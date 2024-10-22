@@ -3,14 +3,14 @@ import jwt from 'jsonwebtoken';
 import { User } from '../models/usermodel.js';
 import { SuperAdmin } from '../models/superadminModel.js';
 
-export const  loginUser = async (req, res) => {
+export const loginUser = async (req, res) => {
   const { username, password } = req.body;
   let user = null;
   let isSuperadmin = false;
-  
+
   try {
     user = await User.findOne({ username });
-    
+
     if (!user) {
       user = await SuperAdmin.findOne({ username });
       if (user) {
@@ -19,7 +19,7 @@ export const  loginUser = async (req, res) => {
         return res.status(404).json({ message: 'User not found' });
       }
     }
-    
+
     const passwordMatch = await bcrypt.compare(password, user.password);
     if (!passwordMatch) {
       return res.status(401).json({ message: 'Invalid password' });
@@ -28,6 +28,7 @@ export const  loginUser = async (req, res) => {
     // Update token payload based on user type
     const token = jwt.sign(
       {
+        username: user.username,
         id: user._id,
         users: isSuperadmin ? false : user.users, // Set users to false if superadmin
         superadmin: isSuperadmin,
