@@ -34,8 +34,8 @@ export const setupSocket = (server) => {
 
     /* ================= Live Tracking Start ================= */
     socket.on("credentials", (credentials) => {
-      const userr = "hbtrack"               //credentials.username;
-      const pass = "123456@"               //credentials.password;
+      const userr = credentials.username            //"hbtrack";
+      const pass = credentials.password            //"123456@";
       let deviceListData = "";
       let targetDeviceId = null;
       // console.log("credentials", userr, pass);
@@ -223,8 +223,8 @@ export const setupSocket = (server) => {
       setTimeout(() => {
         (async function () {
           const url = "http://104.251.212.84/api/devices";
-          const username = "hbtrack"               //credentials.username;
-          const password = "123456@"               //credentials.password;
+          const username = userr               //credentials.username;
+          const password = pass               //credentials.password;
 
           try {
             const response = await axios.get(url, {
@@ -256,7 +256,7 @@ export const setupSocket = (server) => {
               );
 
               const mergedData = data.map((obj1) => {
-                if (obj1.attributes.distance>500) {
+                if (obj1.attributes.distance > 500) {
                   obj1.attributes.distance = 200;
                 }
                 const match = deviceListDataMap.get(obj1.deviceId);
