@@ -193,12 +193,8 @@ export const importGroupData = async (req, res) => {
 export const getGroupByUserId = async (req, res) => {
   const userId = req.params.id;
   try {
-    const devices = await Device.find({ users: { $in: [userId] } });
-    console.log(devices)
-    const deviceGroupIds = devices.flatMap(device => device.groups);
-    const uniqueGroupIds = [...new Set(deviceGroupIds.map(id => id.toString()))];
-    const allGroups = await Group.find({ _id: { $in: uniqueGroupIds } });
-    res.status(200).json(allGroups);
+    const user = await User.findById(userId).select('username').populate('groupsAssigned');
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({
       message: 'Error fetching groups',

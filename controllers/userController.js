@@ -220,7 +220,7 @@ export const updateUser = async (req, res) => {
     travel, geofence, maintenance, preferences,
     status, distance, history,
     sensor, idle, alerts,
-    vehicle, devicelimit, geofenceReport
+    vehicle, devicelimit, geofenceReport, groupsAssigned
   } = req.body;
 
   try {
@@ -256,6 +256,7 @@ export const updateUser = async (req, res) => {
     user.vehicle = vehicle !== undefined ? vehicle : user.vehicle;
     user.geofenceReport = geofenceReport !== undefined ? geofenceReport : user.geofenceReport;
     user.devicelimit = devicelimit !== undefined ? devicelimit : user.devicelimit;
+    user.groupsAssigned = groupsAssigned !== undefined ? groupsAssigned : user.groupsAssigned;
     await user.save();
 
     return res.status(200).json({ message: 'User updated successfully', user });
