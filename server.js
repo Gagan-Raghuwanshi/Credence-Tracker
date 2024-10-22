@@ -69,7 +69,7 @@ fetchdevicedata()
 
 
 
-// const io = setupSocket(server);
+const io = setupSocket(server);
 
 
 

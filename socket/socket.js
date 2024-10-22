@@ -55,7 +55,8 @@ export const setupSocket = (server) => {
             name: "",
           };
           (async function () {
-            const url = "http://104.251.212.84/api/devices";
+            // const url = "http://104.251.212.84/api/devices";
+            const url = "https://rocketsalestracker.com/api/devices";
             const username = userr;
             const password = pass;
 
@@ -77,7 +78,8 @@ export const setupSocket = (server) => {
 
           // in this setinterval i am emiting event
           (async function () {
-            const url = "http://104.251.212.84/api/positions";
+            // const url = "http://104.251.212.84/api/positions";
+            const url = "https://rocketsalestracker.com/api/positions";
             const username = userr;
             const password = pass;
 
@@ -139,7 +141,8 @@ export const setupSocket = (server) => {
             };
             // setInterval(() => {
             (async function () {
-              const url = "http://104.251.212.84/api/devices";
+              // const url = "http://104.251.212.84/api/devices";
+              const url = "https://rocketsalestracker.com/api/devices";
               const username = userr;
               const password = pass;
 
@@ -164,7 +167,8 @@ export const setupSocket = (server) => {
             // in this setinterval i am emiting event
             // setInterval(() => {
             (async function () {
-              const url = "http://104.251.212.84/api/positions";
+              // const url = "http://104.251.212.84/api/positions";
+              const url = "https://rocketsalestracker.com/api/positions";
               const username = userr;
               const password = pass;
 
@@ -222,7 +226,8 @@ export const setupSocket = (server) => {
       // fetch all device data instant for first time
       setTimeout(() => {
         (async function () {
-          const url = "http://104.251.212.84/api/devices";
+          // const url = "http://104.251.212.84/api/devices";
+          const url = "https://rocketsalestracker.com/api/devices";
           const username = userr               //credentials.username;
           const password = pass               //credentials.password;
 
@@ -241,7 +246,8 @@ export const setupSocket = (server) => {
 
         setTimeout(() => {
           (async function () {
-            const url = "http://104.251.212.84/api/positions";
+            // const url = "http://104.251.212.84/api/positions";
+            const url = "https://rocketsalestracker.com/api/positions";
             const username = userr;
             const password = pass;
 
@@ -296,7 +302,8 @@ export const setupSocket = (server) => {
 
       allDeviceInterval = setInterval(() => {
         (async function () {
-          const url = "http://104.251.212.84/api/devices";
+          // const url = "http://104.251.212.84/api/devices";
+          const url = "https://rocketsalestracker.com/api/devices";
           const username = userr;
           const password = pass;
 
@@ -314,7 +321,8 @@ export const setupSocket = (server) => {
         })();
 
         (async function () {
-          const url = "http://104.251.212.84/api/positions";
+          // const url = "http://104.251.212.84/api/positions";
+          const url = "https://rocketsalestracker.com/api/positions";
           const username = userr;
           const password = pass;
 
@@ -387,7 +395,8 @@ export const setupSocket = (server) => {
               };
 
             (async function () {
-              const url = "http://104.251.212.84/api/devices";
+              // const url = "http://104.251.212.84/api/devices";
+              const url = "https://rocketsalestracker.com/api/devices";
               const username = existingDevice.username;
               const password = decryptedPassword;
 
@@ -409,7 +418,8 @@ export const setupSocket = (server) => {
 
             // this is for devices end
             (async function () {
-              const url = "http://104.251.212.84/api/positions";
+              // const url = "http://104.251.212.84/api/positions";
+              const url = "https://rocketsalestracker.com/api/positions";
               const username = existingDevice.username;
               const password = decryptedPassword;
 
@@ -471,7 +481,8 @@ export const setupSocket = (server) => {
                 };
 
               (async function () {
-                const url = "http://104.251.212.84/api/devices";
+                // const url = "http://104.251.212.84/api/devices";
+                const url = "https://rocketsalestracker.com/api/devices";
                 const username = existingDevice.username;
                 const password = decryptedPassword;
 
@@ -493,7 +504,8 @@ export const setupSocket = (server) => {
 
               // this is for devices end
               (async function () {
-                const url = "http://104.251.212.84/api/positions";
+                // const url = "http://104.251.212.84/api/positions";
+                const url = "https://rocketsalestracker.com/api/positions";
                 const username = existingDevice.username;
                 const password = decryptedPassword;
 
