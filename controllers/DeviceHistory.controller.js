@@ -126,7 +126,7 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
         $lte: formattedToDateStr, // To date (less than or equal)
       },
     });
-    const vehicleNumber = await Device.findOne({deviceId}).select('name -_id');
+    const vehicleNumber = await Device.findOne({ deviceId }).select('name -_id');
     if (deviceDataByDateRange.length === 0) {
       return res.status(404).json({
         message: "No Trip Found",
@@ -190,7 +190,7 @@ export const showOnlyDeviceTripStartingPointAndEndingPoint = async (
       // Create a new object to hold only the required fields
       const arrivalElement = {
         deviceId: index[0].deviceId,
-        name:vehicleNumber.name,
+        name: vehicleNumber.name,
         startTime: index[0].deviceTime,
         maxSpeed: maxSpeed,
         avgSpeed: avgSpeed,
@@ -330,7 +330,7 @@ export const liveData = async (req, res) => {
       });
     }
   })();
-  
+
   (async function () {
     try {
       const url = "http://104.251.212.84/api/positions";

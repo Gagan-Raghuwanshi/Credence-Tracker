@@ -64,7 +64,7 @@ setInterval(() => {
 }, 10000);
 
 // setInterval(() => {
-fetchdevicedata()
+// fetchdevicedata()
 // }, 10000);
 
 
