@@ -226,13 +226,13 @@ const getAlertTypesForDevice = async (deviceId) => {
 
 export const AlertFetching = async (io) => {
     try {
-        const { data: PositionApiData } = await axios.get('http://104.251.212.84/api/positions', {
+        const { data: PositionApiData } = await axios.get('http://63.142.251.13:8082/positions', {
             auth: {
                 username: 'hbtrack',
                 password: '123456@'
             }
         });
-        const resdevice = await axios.get('http://104.251.212.84/api/devices', {
+        const resdevice = await axios.get('http://63.142.251.13:8082/api/devices', {
             auth: {
                 username: 'hbtrack',
                 password: '123456@'

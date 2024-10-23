@@ -3,7 +3,8 @@ import { Device } from "../models/device.model.js";
 import axios from "axios";
 
 export const fetchGPSdata = async () => {
-  const url = "http://104.251.212.84/api/positions";
+  // const url = "http://104.251.212.84/api/positions";
+  const url = "http://63.142.251.13:8082/positions";
   const username = "hbtrack";
   const password = "123456@";
 
