@@ -56,7 +56,7 @@ export const addDevice = async (req, res) => {
     if (!findUniqueId) {
 
 
-      const url = "http://104.251.212.84/api/devices";
+      const url = "http://63.142.251.13:8082/api/devices";
       const username = "hbtrack";
       const password = "123456@";
       let deviceListArray;
@@ -99,6 +99,21 @@ export const addDevice = async (req, res) => {
       });
 
       await device.save();
+      await axios({
+        method: "POST",
+        url: "http://63.142.251.13:8082/api/devices",
+        auth: {
+          username: "hbtrack",
+          password: "123456@"
+        },
+        data: {
+          name,
+          uniqueId,
+          phone: sim,
+          model,
+          category
+        },
+      })
 
       user.entriesCount += 1;
       await user.save();
@@ -478,7 +493,7 @@ export const importDeviceData = async (req, res) => {
     const failedEntries = [];
 
 
-    const url = "http://104.251.212.84/api/devices";
+    const url = "http://63.142.251.13:8082/api/devices";
     const username = "hbtrack";
     const password = "123456@";
     let deviceListArray;

@@ -312,7 +312,7 @@ export const liveData = async (req, res) => {
   let deviceListData;
   (async function () {
     try {
-      const url = "http://104.251.212.84/api/devices";
+      const url = "http://63.142.251.13:8082/api/devices";
       const username = userr;
       const password = pass;
 
@@ -333,7 +333,7 @@ export const liveData = async (req, res) => {
 
   (async function () {
     try {
-      const url = "http://104.251.212.84/api/positions";
+      const url = "http://63.142.251.13:8082/api/positions";
       const username = userr;
       const password = pass;
 
