@@ -63,9 +63,9 @@ setInterval(() => {
     fetchGPSdata();
 }, 10000);
 
-setInterval(() => {
-    fetchdevicedata()
-}, 10000);
+// setInterval(() => {
+//     fetchdevicedata()
+// }, 10000);
 
 
 
