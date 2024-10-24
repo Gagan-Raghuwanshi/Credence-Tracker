@@ -55,33 +55,52 @@ export const addDevice = async (req, res) => {
 
     if (!findUniqueId) {
 
+      // Commented for Election Vehicles Purpose
+      // const url = "http://63.142.251.13:8082/api/devices";
+      // const username = "hbtrack";
+      // const password = "123456@";
+      // let deviceListArray;
 
-      const url = "http://63.142.251.13:8082/api/devices";
-      const username = "hbtrack";
-      const password = "123456@";
-      let deviceListArray;
+      // try {
+      //   const response = await axios.get(url, { auth: { username: username, password: password }, });
+      //   const data = response.data;
+      //   deviceListArray = data
+      // } catch (error) {
+      //   console.error("There was a problem with the fetch operation:", error.message);
+      //   return res.json({ message: "Internal server error... please try again... " })
+      // }
 
-      try {
-        const response = await axios.get(url, { auth: { username: username, password: password }, });
-        const data = response.data;
-        deviceListArray = data
-      } catch (error) {
-        console.error("There was a problem with the fetch operation:", error.message);
-        return res.json({ message: "Internal server error... please try again... " })
-      }
+      // const findbygivenId = deviceListArray.find(device => device.uniqueId === uniqueId);
 
-      const findbygivenId = deviceListArray.find(device => device.uniqueId === uniqueId);
+      // console.log("findbygivenId", findbygivenId)
 
-      console.log("findbygivenId", findbygivenId)
-
+      const { data } = await axios({
+        method: "POST",
+        url: "http://63.142.251.13:8082/api/devices",
+        auth: {
+          username: "hbtrack",
+          password: "123456@"
+        },
+        data: {
+          name,
+          uniqueId,
+          phone: sim,
+          model,
+          category
+        },
+      })
+      console.log(data);
 
 
       const device = new Device({
         name,
         uniqueId,
-        deviceId: findbygivenId.id,
-        lastUpdate: findbygivenId.lastUpdate,
-        positionId: findbygivenId.positionId,
+        deviceId: data.id,
+        lastUpdate: data.lastUpdate,
+        positionId: data.positionId,
+        // deviceId: findbygivenId.id,  // Commented for Election Vehicles Purpose
+        // lastUpdate: findbygivenId.lastUpdate,
+        // positionId: findbygivenId.positionId,
         sim,
         groups,
         users,
@@ -99,21 +118,7 @@ export const addDevice = async (req, res) => {
       });
 
       await device.save();
-      await axios({
-        method: "POST",
-        url: "http://63.142.251.13:8082/api/devices",
-        auth: {
-          username: "hbtrack",
-          password: "123456@"
-        },
-        data: {
-          name,
-          uniqueId,
-          phone: sim,
-          model,
-          category
-        },
-      })
+      
 
       user.entriesCount += 1;
       await user.save();

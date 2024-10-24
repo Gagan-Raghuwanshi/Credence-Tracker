@@ -38,7 +38,10 @@ app.use(cors());
 
 app.get("/", (req, res) => {
     return res.status(200).json({
-        message: "hello"
+        success: true,
+        message: "This is new Credence Backend Server",
+        status: 200,
+        statusText: "OK",
     });
 });
 
